@@ -1,5 +1,5 @@
 import Hero from "@/components/Hero";
-import { Heart, Smartphone, Building, Users } from "lucide-react";
+import { Heart, Smartphone, Building, Users, Church } from "lucide-react";
 
 export const metadata = {
   title: "Give | Alive Church Norwich",
