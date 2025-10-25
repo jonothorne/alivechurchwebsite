@@ -1,5 +1,7 @@
 import Hero from "@/components/Hero";
 import { Calendar, MapPin, Clock } from "lucide-react";
+import { getEvents, getSiteSettings } from "@/sanity/lib/queries";
+import Link from "next/link";
 
 export const metadata = {
   title: "Events | Alive Church Norwich",
@@ -7,19 +9,10 @@ export const metadata = {
     "Discover upcoming events at Alive Church. Join us for worship services, special events, and community gatherings.",
 };
 
-export default function EventsPage() {
-  // Placeholder events - will be replaced with CMS data
-  const upcomingEvents = [
-    {
-      title: "Sunday Service",
-      date: "Every Sunday",
-      time: "11:00 AM",
-      location: "Alive House, Nelson Street, Norwich",
-      description:
-        "Join us for dynamic worship, powerful teaching, and genuine community.",
-      category: "Service",
-    },
-  ];
+export default async function EventsPage() {
+  // Fetch events and settings from CMS
+  const events = await getEvents().catch(() => []);
+  const settings = await getSiteSettings().catch(() => null);
 
   return (
     <div>
@@ -42,40 +35,94 @@ export default function EventsPage() {
           </div>
 
           <div className="grid gap-6">
-            {upcomingEvents.map((event, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="md:flex">
-                  <div className="md:w-1/4 bg-gradient-to-br from-primary to-primary-dark p-8 text-white flex flex-col justify-center">
-                    <div className="text-center">
-                      <Calendar className="h-12 w-12 mx-auto mb-4" />
-                      <p className="text-2xl font-bold">{event.date}</p>
-                      {event.category && (
-                        <span className="inline-block mt-2 bg-white/20 px-3 py-1 rounded-full text-sm">
-                          {event.category}
-                        </span>
+            {events && events.length > 0 ? (
+              events.map((event: any) => (
+                <div
+                  key={event._id}
+                  className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="md:flex">
+                    {event.image ? (
+                      <div className="md:w-1/4 relative min-h-[200px]">
+                        <img
+                          src={event.image}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                        />
+                        {event.category && (
+                          <span className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            {event.category}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="md:w-1/4 bg-gradient-to-br from-primary to-primary-dark p-8 text-white flex flex-col justify-center">
+                        <div className="text-center">
+                          <Calendar className="h-12 w-12 mx-auto mb-4" />
+                          <p className="text-2xl font-bold">
+                            {new Date(event.startDate).toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </p>
+                          {event.category && (
+                            <span className="inline-block mt-2 bg-white/20 px-3 py-1 rounded-full text-sm">
+                              {event.category}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="md:w-3/4 p-8">
+                      <h3 className="text-2xl font-bold mb-4">{event.title}</h3>
+                      <p className="text-gray-700 mb-6">{event.description}</p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="h-5 w-5 text-primary" />
+                          <span>
+                            {new Date(event.startDate).toLocaleDateString("en-GB", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                            {event.endDate && event.endDate !== event.startDate && (
+                              <> - {new Date(event.endDate).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })}</>
+                            )}
+                          </span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <MapPin className="h-5 w-5 text-primary" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      {event.registrationRequired && event.registrationUrl && (
+                        <Link
+                          href={event.registrationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+                        >
+                          Register Now
+                        </Link>
                       )}
                     </div>
                   </div>
-                  <div className="md:w-3/4 p-8">
-                    <h3 className="text-2xl font-bold mb-4">{event.title}</h3>
-                    <p className="text-gray-700 mb-6">{event.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="h-5 w-5 text-primary" />
-                        <span>{event.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="h-5 w-5 text-primary" />
-                        <span>{event.location}</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-600 text-lg">
+                  No upcoming events at the moment. Check back soon!
+                </p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* CMS Notice */}

@@ -2,11 +2,12 @@ import Hero from "@/components/Hero";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import { Calendar, Users, Heart, ArrowRight } from "lucide-react";
-import { getHomepageContent } from "@/sanity/lib/queries";
+import { getHomepageContent, getSiteSettings } from "@/sanity/lib/queries";
 
 export default async function Home() {
   // Fetch content from CMS (falls back to defaults if not available)
   const content = await getHomepageContent().catch(() => null);
+  const settings = await getSiteSettings().catch(() => null);
 
   return (
     <div>
@@ -39,13 +40,15 @@ export default async function Home() {
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm font-semibold text-primary uppercase">When</p>
-                    <p className="text-xl font-bold">Sundays at 11:00 AM</p>
+                    <p className="text-xl font-bold">
+                      {settings?.serviceTime || "Sundays at 11:00 AM"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-primary uppercase">Where</p>
                     <p className="text-lg">
-                      Alive House, Nelson Street<br />
-                      Norwich NR2 4DR
+                      {settings?.address?.street || "Alive House, Nelson Street"}<br />
+                      {settings?.address?.city || "Norwich"} {settings?.address?.postcode || "NR2 4DR"}
                     </p>
                   </div>
                 </div>

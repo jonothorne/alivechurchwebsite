@@ -110,3 +110,32 @@ export async function getTeamMembers() {
     }`
   );
 }
+
+// Get site settings
+export async function getSiteSettings() {
+  return client.fetch(
+    `*[_type == "siteSettings"][0]{
+      title,
+      description,
+      "logo": logo.asset->url,
+      serviceTime,
+      address{
+        street,
+        city,
+        postcode
+      },
+      contact{
+        email,
+        phone
+      },
+      social{
+        facebook,
+        instagram,
+        twitter,
+        youtube
+      },
+      vision,
+      mission
+    }`
+  );
+}
