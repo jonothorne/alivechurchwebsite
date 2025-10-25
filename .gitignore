@@ -45,3 +45,6 @@ next-env.d.ts
 /sanity/node_modules
 /sanity/.sanity
 /sanity/dist
+
+# raw photos (use public/images for curated photos only)
+/photos
