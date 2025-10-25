@@ -1,5 +1,6 @@
 import Hero from "@/components/Hero";
 import { Target, Compass, Lightbulb } from "lucide-react";
+import { getVisionContent } from "@/sanity/lib/queries";
 
 export const metadata = {
   title: "Our Vision & Mission | Alive Church Norwich",
@@ -7,7 +8,9 @@ export const metadata = {
     "Our vision is to see community-wide transformation. Our mission is to be restorers of the breach.",
 };
 
-export default function VisionPage() {
+export default async function VisionPage() {
+  // Fetch content from CMS (falls back to defaults if not available)
+  const content = await getVisionContent().catch(() => null);
   return (
     <div>
       <Hero
@@ -15,7 +18,7 @@ export default function VisionPage() {
         subtitle="Our Purpose"
         description="Driven by a passion to see lives transformed and communities restored."
         small
-        backgroundImage="/images/worship/worship-1.jpg"
+        backgroundImage={content?.heroImage || "/images/worship/worship-1.jpg"}
       />
 
       {/* Vision Section */}
@@ -27,7 +30,7 @@ export default function VisionPage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Vision</h2>
             <p className="text-2xl text-gray-700 font-semibold mb-4">
-              To see community-wide transformation
+              {content?.visionStatement || "To see community-wide transformation"}
             </p>
             <p className="text-lg text-gray-600 leading-relaxed">
               We believe God has called us to be agents of change in our city. Our vision
@@ -49,7 +52,7 @@ export default function VisionPage() {
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Mission</h2>
             <p className="text-2xl text-gray-700 font-semibold mb-4">
-              To be restorers of the breach
+              {content?.missionStatement || "To be restorers of the breach"}
             </p>
             <div className="text-lg text-gray-600 leading-relaxed space-y-4">
               <p>
@@ -93,53 +96,64 @@ export default function VisionPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Community</h3>
-              <p className="text-gray-700">
-                We believe in the power of authentic, Christ-centered relationships. Church
-                isn't a building—it's a family where everyone belongs and no one walks alone.
-              </p>
-            </div>
+            {content?.coreValues && content.coreValues.length > 0 ? (
+              content.coreValues.map((value: any, index: number) => (
+                <div key={index} className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">{value.title}</h3>
+                  <p className="text-gray-700">{value.description}</p>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Community</h3>
+                  <p className="text-gray-700">
+                    We believe in the power of authentic, Christ-centered relationships. Church
+                    isn't a building—it's a family where everyone belongs and no one walks alone.
+                  </p>
+                </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Family</h3>
-              <p className="text-gray-700">
-                Family is foundational to who we are. We honor the family unit, support
-                parents, invest in children, and treat every member as part of our church family.
-              </p>
-            </div>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Family</h3>
+                  <p className="text-gray-700">
+                    Family is foundational to who we are. We honor the family unit, support
+                    parents, invest in children, and treat every member as part of our church family.
+                  </p>
+                </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Presence of God</h3>
-              <p className="text-gray-700">
-                As a pentecostal church, we value the presence and power of the Holy Spirit.
-                We create space for encounter, worship, and experiencing God in fresh ways.
-              </p>
-            </div>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Presence of God</h3>
+                  <p className="text-gray-700">
+                    As a pentecostal church, we value the presence and power of the Holy Spirit.
+                    We create space for encounter, worship, and experiencing God in fresh ways.
+                  </p>
+                </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Restoration</h3>
-              <p className="text-gray-700">
-                We believe in second chances, new beginnings, and the redemptive power of God.
-                No one is beyond hope, and nothing is impossible with God.
-              </p>
-            </div>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Restoration</h3>
+                  <p className="text-gray-700">
+                    We believe in second chances, new beginnings, and the redemptive power of God.
+                    No one is beyond hope, and nothing is impossible with God.
+                  </p>
+                </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Generosity</h3>
-              <p className="text-gray-700">
-                We're committed to living generous lives—with our time, resources, and gifts.
-                We believe it's more blessed to give than to receive.
-              </p>
-            </div>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Generosity</h3>
+                  <p className="text-gray-700">
+                    We're committed to living generous lives—with our time, resources, and gifts.
+                    We believe it's more blessed to give than to receive.
+                  </p>
+                </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-2xl font-bold mb-3 text-primary">Excellence</h3>
-              <p className="text-gray-700">
-                We pursue excellence in all we do, not for show, but to honor God and serve
-                people well. Our best is an offering to the One who gave His best for us.
-              </p>
-            </div>
+                <div className="bg-gray-50 p-8 rounded-lg">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">Excellence</h3>
+                  <p className="text-gray-700">
+                    We pursue excellence in all we do, not for show, but to honor God and serve
+                    people well. Our best is an offering to the One who gave His best for us.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>

@@ -2,18 +2,25 @@ import Hero from "@/components/Hero";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import { Calendar, Users, Heart, ArrowRight } from "lucide-react";
+import { getHomepageContent } from "@/sanity/lib/queries";
 
-export default function Home() {
+export default async function Home() {
+  // Fetch content from CMS (falls back to defaults if not available)
+  const content = await getHomepageContent().catch(() => null);
+
   return (
     <div>
       {/* Hero Section */}
       <Hero
-        title="Welcome to Alive Church"
-        subtitle="Norwich"
-        description="A modern pentecostal church rooted in community and family. Join us as we pursue transformation and restoration together."
-        ctaText="Plan Your Visit"
-        ctaLink="/about"
-        backgroundImage="/images/hero/hero-1.jpg"
+        title={content?.heroTitle || "Welcome to Alive Church"}
+        subtitle={content?.heroSubtitle || "Norwich"}
+        description={
+          content?.heroDescription ||
+          "A modern pentecostal church rooted in community and family. Join us as we pursue transformation and restoration together."
+        }
+        ctaText={content?.heroCtaText || "Plan Your Visit"}
+        ctaLink={content?.heroCtaLink || "/about"}
+        backgroundImage={content?.heroImage || "/images/hero/hero-1.jpg"}
       />
 
       {/* Service Info Section */}
@@ -120,13 +127,15 @@ export default function Home() {
                 <div>
                   <h3 className="text-xl font-bold text-primary mb-2">Our Vision</h3>
                   <p className="text-gray-700">
-                    To see community-wide transformation through the power of God's love.
+                    {content?.visionText ||
+                      "To see community-wide transformation through the power of God's love."}
                   </p>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-primary mb-2">Our Mission</h3>
                   <p className="text-gray-700">
-                    To be restorers of the breach, rebuilding lives and communities.
+                    {content?.missionText ||
+                      "To be restorers of the breach, rebuilding lives and communities."}
                   </p>
                 </div>
               </div>
@@ -153,38 +162,53 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Our Church Family
+              {content?.communityGalleryTitle || "Our Church Family"}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              See what it's like to be part of Alive Church - a vibrant community
-              worshipping together, growing together, and making a difference.
+              {content?.communityGalleryDescription ||
+                "See what it's like to be part of Alive Church - a vibrant community worshipping together, growing together, and making a difference."}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
-              <img
-                src="/images/community/community-1.jpg"
-                alt="Alive Church Community"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <p className="text-white text-xl font-semibold">
-                  Worshipping Together
-                </p>
-              </div>
-            </div>
-            <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
-              <img
-                src="/images/community/community-2.jpg"
-                alt="Alive Church Worship"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <p className="text-white text-xl font-semibold">
-                  Growing in Faith
-                </p>
-              </div>
-            </div>
+            {content?.communityImages && content.communityImages.length > 0 ? (
+              content.communityImages.map((item: any, index: number) => (
+                <div key={index} className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
+                  <img
+                    src={item.image}
+                    alt={item.caption || "Church Community"}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.caption && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                      <p className="text-white text-xl font-semibold">{item.caption}</p>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
+                  <img
+                    src="/images/community/community-1.jpg"
+                    alt="Alive Church Community"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                    <p className="text-white text-xl font-semibold">Worshipping Together</p>
+                  </div>
+                </div>
+                <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
+                  <img
+                    src="/images/community/community-2.jpg"
+                    alt="Alive Church Worship"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                    <p className="text-white text-xl font-semibold">Growing in Faith</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>

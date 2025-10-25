@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import Button from "@/components/Button";
 import { Church, Heart, Users2 } from "lucide-react";
 import Link from "next/link";
+import { getAboutContent } from "@/sanity/lib/queries";
 
 export const metadata = {
   title: "About Us | Alive Church Norwich",
@@ -9,15 +10,20 @@ export const metadata = {
     "Learn about Alive Church - a modern pentecostal church in Norwich with 40 years of history, rooted in community and family.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // Fetch content from CMS (falls back to defaults if not available)
+  const content = await getAboutContent().catch(() => null);
   return (
     <div>
       <Hero
-        title="About Alive Church"
-        subtitle="Our Story"
-        description="For 40 years, we've been a community of faith, hope, and love in the heart of Norwich."
+        title={content?.heroTitle || "About Alive Church"}
+        subtitle={content?.heroSubtitle || "Our Story"}
+        description={
+          content?.heroDescription ||
+          "For 40 years, we've been a community of faith, hope, and love in the heart of Norwich."
+        }
         small
-        backgroundImage="/images/hero/hero-2.jpg"
+        backgroundImage={content?.heroImage || "/images/hero/hero-2.jpg"}
       />
 
       {/* Our Story Section */}
@@ -55,38 +61,62 @@ export default function AboutPage() {
             What We Believe In
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Church className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Community</h3>
-              <p className="text-gray-600">
-                We believe in the power of authentic community. Church is family, and
-                everyone has a place at the table. We grow stronger together.
-              </p>
-            </div>
+            {content?.coreValues && content.coreValues.length > 0 ? (
+              content.coreValues.map((value: any, index: number) => {
+                // Map icon names to components
+                const IconComponent =
+                  value.icon === "church"
+                    ? Church
+                    : value.icon === "heart"
+                    ? Heart
+                    : Users2;
 
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Heart className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Family</h3>
-              <p className="text-gray-600">
-                Family is at the heart of everything we do. We support, encourage, and
-                journey through life together as the family of God.
-              </p>
-            </div>
+                return (
+                  <div key={index} className="bg-white p-8 rounded-lg shadow-md">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                      <IconComponent className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{value.title}</h3>
+                    <p className="text-gray-600">{value.description}</p>
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div className="bg-white p-8 rounded-lg shadow-md">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                    <Church className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Community</h3>
+                  <p className="text-gray-600">
+                    We believe in the power of authentic community. Church is family, and
+                    everyone has a place at the table. We grow stronger together.
+                  </p>
+                </div>
 
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Users2 className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Transformation</h3>
-              <p className="text-gray-600">
-                We're committed to seeing lives transformed and communities restored
-                through the power of God's Word and Spirit.
-              </p>
-            </div>
+                <div className="bg-white p-8 rounded-lg shadow-md">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                    <Heart className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Family</h3>
+                  <p className="text-gray-600">
+                    Family is at the heart of everything we do. We support, encourage, and
+                    journey through life together as the family of God.
+                  </p>
+                </div>
+
+                <div className="bg-white p-8 rounded-lg shadow-md">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                    <Users2 className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Transformation</h3>
+                  <p className="text-gray-600">
+                    We're committed to seeing lives transformed and communities restored
+                    through the power of God's Word and Spirit.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
