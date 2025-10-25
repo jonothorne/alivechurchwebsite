@@ -15,6 +15,7 @@ export default function VisionPage() {
         subtitle="Our Purpose"
         description="Driven by a passion to see lives transformed and communities restored."
         small
+        backgroundImage="/images/worship/worship-1.jpg"
       />
 
       {/* Vision Section */}

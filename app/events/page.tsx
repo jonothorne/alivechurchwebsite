@@ -28,6 +28,7 @@ export default function EventsPage() {
         subtitle="What's Happening"
         description="Join us for worship, community events, and special gatherings designed to help you grow in faith and connect with others."
         small
+        backgroundImage="/images/worship/worship-2.jpg"
       />
 
       {/* Events List Section */}

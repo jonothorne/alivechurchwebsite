@@ -17,6 +17,7 @@ export default function AboutPage() {
         subtitle="Our Story"
         description="For 40 years, we've been a community of faith, hope, and love in the heart of Norwich."
         small
+        backgroundImage="/images/hero/hero-2.jpg"
       />
 
       {/* Our Story Section */}

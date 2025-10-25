@@ -13,6 +13,7 @@ export default function Home() {
         description="A modern pentecostal church rooted in community and family. Join us as we pursue transformation and restoration together."
         ctaText="Plan Your Visit"
         ctaLink="/about"
+        backgroundImage="/images/hero/hero-1.jpg"
       />
 
       {/* Service Info Section */}
@@ -142,6 +143,47 @@ export default function Home() {
               <p className="text-lg">
                 - Phil & Jo Thorne, Senior Pastors
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Gallery Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Our Church Family
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              See what it's like to be part of Alive Church - a vibrant community
+              worshipping together, growing together, and making a difference.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
+              <img
+                src="/images/community/community-1.jpg"
+                alt="Alive Church Community"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <p className="text-white text-xl font-semibold">
+                  Worshipping Together
+                </p>
+              </div>
+            </div>
+            <div className="relative h-80 rounded-2xl overflow-hidden shadow-lg group">
+              <img
+                src="/images/community/community-2.jpg"
+                alt="Alive Church Worship"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <p className="text-white text-xl font-semibold">
+                  Growing in Faith
+                </p>
+              </div>
             </div>
           </div>
         </div>
