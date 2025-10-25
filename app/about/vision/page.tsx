@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import { Target, Compass, Lightbulb } from "lucide-react";
 import { getVisionContent } from "@/sanity/lib/queries";
+import { PortableText } from "@portabletext/react";
 
 export const metadata = {
   title: "Our Vision & Mission | Alive Church Norwich",
@@ -32,13 +33,19 @@ export default async function VisionPage() {
             <p className="text-2xl text-gray-700 font-semibold mb-4">
               {content?.visionStatement || "To see community-wide transformation"}
             </p>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              We believe God has called us to be agents of change in our city. Our vision
-              extends beyond the four walls of our church—we're passionate about seeing
-              entire communities transformed by the power of God's love. From individuals
-              to families, from neighborhoods to the whole of Norwich, we dream of a city
-              where God's kingdom is evident in every sphere of life.
-            </p>
+            {content?.visionDescription ? (
+              <div className="text-lg text-gray-600 leading-relaxed prose prose-lg max-w-none">
+                <PortableText value={content.visionDescription} />
+              </div>
+            ) : (
+              <p className="text-lg text-gray-600 leading-relaxed">
+                We believe God has called us to be agents of change in our city. Our vision
+                extends beyond the four walls of our church—we're passionate about seeing
+                entire communities transformed by the power of God's love. From individuals
+                to families, from neighborhoods to the whole of Norwich, we dream of a city
+                where God's kingdom is evident in every sphere of life.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -54,19 +61,25 @@ export default async function VisionPage() {
             <p className="text-2xl text-gray-700 font-semibold mb-4">
               {content?.missionStatement || "To be restorers of the breach"}
             </p>
-            <div className="text-lg text-gray-600 leading-relaxed space-y-4">
-              <p>
-                Inspired by Isaiah 58:12, we're committed to rebuilding what has been broken,
-                restoring what has been lost, and repairing the foundations for generations
-                to come. This isn't just poetic language—it's a practical call to action.
-              </p>
-              <p>
-                We restore lives through prayer, discipleship, and genuine community. We
-                rebuild families through biblical teaching and practical support. We repair
-                communities through service, compassion, and the demonstration of God's love
-                in tangible ways.
-              </p>
-            </div>
+            {content?.missionDescription ? (
+              <div className="text-lg text-gray-600 leading-relaxed prose prose-lg max-w-none">
+                <PortableText value={content.missionDescription} />
+              </div>
+            ) : (
+              <div className="text-lg text-gray-600 leading-relaxed space-y-4">
+                <p>
+                  Inspired by Isaiah 58:12, we're committed to rebuilding what has been broken,
+                  restoring what has been lost, and repairing the foundations for generations
+                  to come. This isn't just poetic language—it's a practical call to action.
+                </p>
+                <p>
+                  We restore lives through prayer, discipleship, and genuine community. We
+                  rebuild families through biblical teaching and practical support. We repair
+                  communities through service, compassion, and the demonstration of God's love
+                  in tangible ways.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Scripture Reference */}

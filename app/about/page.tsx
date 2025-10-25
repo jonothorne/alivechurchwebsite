@@ -3,6 +3,7 @@ import Button from "@/components/Button";
 import { Church, Heart, Users2 } from "lucide-react";
 import Link from "next/link";
 import { getAboutContent } from "@/sanity/lib/queries";
+import { PortableText } from "@portabletext/react";
 
 export const metadata = {
   title: "About Us | Alive Church Norwich",
@@ -31,25 +32,31 @@ export default async function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Story</h2>
-            <div className="prose prose-lg max-w-none">
-              <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                Alive Church was founded 40 years ago by Senior Pastor Phil Thorne with a
-                simple but powerful vision: to see lives transformed by the love of God. What
-                began as a small gathering has grown into a vibrant, multi-generational
-                community of believers committed to making a difference in Norwich and beyond.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                Together with Pastor Jo, Phil continues to lead our church family with passion,
-                wisdom, and a heart for both people and God. Over four decades, we've witnessed
-                countless lives changed, families restored, and communities impacted through
-                the power of the Gospel.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Today, Alive Church is a modern pentecostal church with our core roots firmly
-                planted in community and family. We believe church isn't just a Sunday morning
-                event—it's a way of life, a family you belong to, and a movement you're part of.
-              </p>
-            </div>
+            {content?.storyContent ? (
+              <div className="prose prose-lg max-w-none text-gray-700">
+                <PortableText value={content.storyContent} />
+              </div>
+            ) : (
+              <div className="prose prose-lg max-w-none">
+                <p className="text-lg text-gray-700 leading-relaxed mb-4">
+                  Alive Church was founded 40 years ago by Senior Pastor Phil Thorne with a
+                  simple but powerful vision: to see lives transformed by the love of God. What
+                  began as a small gathering has grown into a vibrant, multi-generational
+                  community of believers committed to making a difference in Norwich and beyond.
+                </p>
+                <p className="text-lg text-gray-700 leading-relaxed mb-4">
+                  Together with Pastor Jo, Phil continues to lead our church family with passion,
+                  wisdom, and a heart for both people and God. Over four decades, we've witnessed
+                  countless lives changed, families restored, and communities impacted through
+                  the power of the Gospel.
+                </p>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Today, Alive Church is a modern pentecostal church with our core roots firmly
+                  planted in community and family. We believe church isn't just a Sunday morning
+                  event—it's a way of life, a family you belong to, and a movement you're part of.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -129,34 +136,45 @@ export default async function AboutPage() {
               What to Expect When You Visit
             </h2>
             <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold mb-2">Warm Welcome</h3>
-                <p className="text-gray-700">
-                  From the moment you arrive, you'll be greeted by our friendly team.
-                  We want you to feel at home, not like a visitor.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Dynamic Worship</h3>
-                <p className="text-gray-700">
-                  Our worship is passionate and contemporary, creating an atmosphere
-                  where you can encounter God and express your faith freely.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Practical Teaching</h3>
-                <p className="text-gray-700">
-                  Expect messages that are relevant, biblical, and applicable to your
-                  everyday life. We believe God's Word has power to transform.
-                </p>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Genuine Community</h3>
-                <p className="text-gray-700">
-                  After the service, grab a coffee and connect with others. Church
-                  doesn't end when the music stops—it's just getting started.
-                </p>
-              </div>
+              {content?.whatToExpect && content.whatToExpect.length > 0 ? (
+                content.whatToExpect.map((item: any, index: number) => (
+                  <div key={index}>
+                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                    <p className="text-gray-700">{item.description}</p>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Warm Welcome</h3>
+                    <p className="text-gray-700">
+                      From the moment you arrive, you'll be greeted by our friendly team.
+                      We want you to feel at home, not like a visitor.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Dynamic Worship</h3>
+                    <p className="text-gray-700">
+                      Our worship is passionate and contemporary, creating an atmosphere
+                      where you can encounter God and express your faith freely.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Practical Teaching</h3>
+                    <p className="text-gray-700">
+                      Expect messages that are relevant, biblical, and applicable to your
+                      everyday life. We believe God's Word has power to transform.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Genuine Community</h3>
+                    <p className="text-gray-700">
+                      After the service, grab a coffee and connect with others. Church
+                      doesn't end when the music stops—it's just getting started.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

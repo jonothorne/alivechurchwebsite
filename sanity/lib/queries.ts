@@ -35,6 +35,10 @@ export async function getAboutContent() {
         title,
         description,
         icon
+      },
+      whatToExpect[]{
+        title,
+        description
       }
     }`
   );

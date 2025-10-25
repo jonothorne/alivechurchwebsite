@@ -80,6 +80,29 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: "whatToExpect",
+      title: "What to Expect When You Visit",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "title",
+              title: "Title",
+              type: "string",
+            },
+            {
+              name: "description",
+              title: "Description",
+              type: "text",
+              rows: 2,
+            },
+          ],
+        },
+      ],
+    }),
   ],
   preview: {
     prepare() {
