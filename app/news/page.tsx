@@ -1,5 +1,7 @@
 import Hero from "@/components/Hero";
 import Card from "@/components/Card";
+import { getPosts } from "@/sanity/lib/queries";
+import Link from "next/link";
 
 export const metadata = {
   title: "News & Updates | Alive Church Norwich",
@@ -7,17 +9,9 @@ export const metadata = {
     "Stay updated with the latest news, announcements, and stories from Alive Church.",
 };
 
-export default function NewsPage() {
-  // Placeholder news items - will be replaced with CMS data
-  const newsItems = [
-    {
-      title: "Welcome to Alive Church Website",
-      excerpt:
-        "We're excited to launch our new website! Stay tuned for updates, news, and resources.",
-      date: "October 2024",
-      category: "Announcement",
-    },
-  ];
+export default async function NewsPage() {
+  // Fetch posts from CMS
+  const posts = await getPosts(50).catch(() => []);
 
   return (
     <div>
@@ -39,34 +33,65 @@ export default function NewsPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {newsItems.map((item, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
-              >
-                <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                  <p className="text-gray-500 text-sm">Featured Image</p>
-                </div>
-                <div className="p-6">
-                  {item.category && (
-                    <span className="inline-block bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold mb-3">
-                      {item.category}
-                    </span>
+            {posts && posts.length > 0 ? (
+              posts.map((post: any) => (
+                <div
+                  key={post._id}
+                  className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
+                >
+                  {post.featuredImage ? (
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={post.featuredImage}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                      <p className="text-gray-500 text-sm">No Image</p>
+                    </div>
                   )}
-                  {item.date && (
-                    <p className="text-sm text-gray-500 mb-2">{item.date}</p>
-                  )}
-                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                  <p className="text-gray-600 mb-4">{item.excerpt}</p>
-                  <a
-                    href="#"
-                    className="text-primary font-semibold hover:underline inline-flex items-center gap-1"
-                  >
-                    Read more →
-                  </a>
+                  <div className="p-6">
+                    {post.categories && post.categories.length > 0 && (
+                      <span className="inline-block bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                        {post.categories[0]}
+                      </span>
+                    )}
+                    {post.publishedAt && (
+                      <p className="text-sm text-gray-500 mb-2">
+                        {new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                    {post.author && (
+                      <p className="text-sm text-gray-600 mb-2">By {post.author}</p>
+                    )}
+                    <h3 className="text-xl font-bold mb-3">{post.title}</h3>
+                    <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                    <Link
+                      href={`/news/${post.slug?.current || post.slug}`}
+                      className="text-primary font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      Read more →
+                    </Link>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-600 text-lg">
+                  No blog posts yet. Create your first post in the{" "}
+                  <Link href="/studio" className="text-primary hover:underline font-semibold">
+                    CMS
+                  </Link>
+                  !
+                </p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* CMS Notice */}
