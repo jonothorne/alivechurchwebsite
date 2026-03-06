@@ -3570,6 +3570,21 @@ body.cms-edit-mode [data-cms-editable]:hover {
     line-height: 1.8;
 }
 
+.about-card a,
+.about a,
+.content-section a:not(.btn) {
+    color: var(--color-magenta);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color var(--transition-fast);
+}
+
+.about-card a:hover,
+.about a:hover,
+.content-section a:not(.btn):hover {
+    color: var(--color-purple);
+}
+
 /* Book Overview Page */
 .study-book-hero {
     padding: 4rem 0;
