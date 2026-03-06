@@ -335,9 +335,23 @@
         }
 
         if (cmd === 'createLink') {
+            // Save the current selection before prompt steals focus
+            const selection = window.getSelection();
+            if (!selection.rangeCount || selection.isCollapsed) {
+                alert('Please select some text first to create a link.');
+                return;
+            }
+            const range = selection.getRangeAt(0).cloneRange();
+
             const url = prompt('Enter URL:', 'https://');
-            if (url) {
+            if (url && url !== 'https://') {
+                // Restore the selection
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                // Now create the link
                 document.execCommand('createLink', false, url);
+                state.hasUnsavedChanges = true;
             }
             return;
         }
