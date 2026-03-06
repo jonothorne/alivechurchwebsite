@@ -1,0 +1,9 @@
+# Enable Rewrite Engine
+RewriteEngine On
+RewriteBase /groups/
+
+# Route clean URLs to .php files in this directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L,QSA]

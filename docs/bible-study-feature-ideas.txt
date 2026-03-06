@@ -1,0 +1,61 @@
+Bible Study System - Future Feature Ideas
+==========================================
+Saved: March 2026
+
+## User Engagement Features
+
+1. Reading Plans
+   - Curated journeys like "30 Days Through John" or "Understanding Grace"
+   - Daily email reminders with the day's reading
+   - Progress tracking with completion badges
+
+2. Personal Notes & Highlights
+   - Let users highlight verses and add private notes
+   - Save favourite passages to a personal collection
+   - Export notes as a PDF devotional journal
+
+3. Audio Version
+   - Text-to-speech or recorded audio for each study
+   - Great for commuters, visually impaired, or those who prefer listening
+
+## Community Features
+
+4. Discussion Questions
+   - Add reflection questions at the end of each study
+   - Optional: small group discussion guide PDF download
+
+5. Prayer Requests by Topic
+   - "Struggling with anxiety? Others are praying through this too"
+   - Link prayer requests to relevant Bible study topics
+
+6. Testimonies
+   - Let users share how a particular study helped them
+   - "This study on forgiveness changed my marriage"
+
+## Content Enhancement
+
+7. Cross-References [IN PROGRESS]
+   - "This passage connects to Romans 8:28" - clickable links between studies
+   - "Related studies on this theme" at the bottom
+
+8. Original Language Insights
+   - Expandable sections showing Greek/Hebrew word meanings
+   - "The word 'love' here is *agape*, meaning..."
+
+9. Historical Context Boxes
+   - Collapsible sections with background info
+   - Maps, timelines, cultural notes
+
+## Practical Tools
+
+10. Verse of the Day
+    - Homepage widget pulling from published studies
+    - Shareable to social media
+
+11. Print/PDF Export
+    - Download a study as a beautifully formatted PDF
+    - Print entire book studies as a booklet
+
+12. Scripture Memory Cards
+    - Generate flashcards from key verses in each study
+    - Spaced repetition system for memorisation

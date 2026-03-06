@@ -1,0 +1,493 @@
+/**
+ * Alive Church CMS - Inline Editor Styles
+ *
+ * IMPORTANT: This stylesheet must not override site styles.
+ * All CMS-specific elements are prefixed with .cms- or #cms-
+ * Editable elements only get outline styles, not typography changes.
+ */
+
+/* ============================================
+   Edit Mode Body Adjustments
+   ============================================ */
+
+/* Adjust sticky header to sit below CMS toolbar */
+body.cms-edit-mode .site-header {
+    top: 50px;
+}
+
+/* ============================================
+   Main Toolbar (Top Bar)
+   ============================================ */
+
+#cms-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    z-index: 99999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    /* Contain styles within toolbar only */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    /* CSS containment to isolate styles */
+    contain: layout style;
+}
+
+/* Ensure all toolbar descendants use toolbar fonts, not site fonts */
+#cms-toolbar * {
+    font-family: inherit;
+}
+
+.cms-toolbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 100%;
+    padding: 0 20px;
+}
+
+.cms-toolbar-left,
+.cms-toolbar-center,
+.cms-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cms-toolbar-logo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.cms-toolbar-status {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.cms-toolbar-page {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+}
+
+.cms-toolbar-page strong {
+    color: #667eea;
+}
+
+/* Toolbar Buttons */
+.cms-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.cms-btn svg {
+    opacity: 0.8;
+}
+
+.cms-btn-ghost {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.cms-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.cms-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+.cms-btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   Floating Toolbar (WYSIWYG)
+   ============================================ */
+
+.cms-floating-toolbar {
+    position: absolute;
+    display: none;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    background: #1a1a2e;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 99998;
+    /* Isolate toolbar styles */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    contain: layout style;
+}
+
+.cms-floating-toolbar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+.cms-floating-toolbar button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.cms-floating-toolbar .cms-toolbar-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+}
+
+.cms-floating-toolbar .cms-save-btn {
+    width: auto;
+    padding: 0 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    font-weight: 500;
+}
+
+.cms-floating-toolbar .cms-save-btn:hover {
+    opacity: 0.9;
+}
+
+.cms-floating-toolbar .cms-cancel-btn {
+    width: auto;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================
+   Editable Elements
+   ============================================ */
+
+/*
+ * IMPORTANT: These styles use :where() to have ZERO specificity,
+ * ensuring they never override site styles. Only outline is added.
+ */
+
+/* Hover state - outline only, zero specificity */
+:where([data-cms-editable]):hover,
+:where([data-cms-global]):hover {
+    outline: 2px dashed rgba(102, 126, 234, 0.6);
+    outline-offset: 4px;
+}
+
+/* Active editing state */
+:where([data-cms-editable]).cms-editing,
+:where([data-cms-global]).cms-editing {
+    outline: 2px solid #667eea;
+    outline-offset: 4px;
+}
+
+/* Saved flash */
+:where([data-cms-editable]).cms-saved,
+:where([data-cms-global]).cms-saved {
+    outline: 2px solid #10b981;
+    outline-offset: 4px;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+
+.cms-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cms-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.cms-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* Isolate modal styles from site */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.cms-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cms-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1a1a2e;
+}
+
+.cms-modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.cms-modal-close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.cms-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ============================================
+   Media Library
+   ============================================ */
+
+.cms-media-library {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cms-media-upload {
+    position: relative;
+}
+
+.cms-media-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.cms-media-upload label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cms-media-upload label:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.cms-media-upload label svg {
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.cms-media-upload label span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.cms-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.cms-media-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.cms-media-item:hover {
+    border-color: #667eea;
+    transform: scale(1.02);
+}
+
+.cms-media-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cms-media-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: #fff;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   Forms
+   ============================================ */
+
+.cms-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cms-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cms-form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.cms-form-group input,
+.cms-form-group select,
+.cms-form-group textarea {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.cms-form-group input:focus,
+.cms-form-group select:focus,
+.cms-form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.cms-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+    .cms-toolbar-center {
+        display: none;
+    }
+
+    .cms-btn svg + span,
+    .cms-btn span:not(:only-child) {
+        display: none;
+    }
+
+    .cms-toolbar-right {
+        gap: 8px;
+    }
+
+    .cms-floating-toolbar {
+        flex-wrap: wrap;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* ============================================
+   Dark mode support (if site has dark mode)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .cms-modal-content {
+        background: #1e293b;
+        color: #f1f5f9;
+    }
+
+    .cms-modal-header {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    .cms-modal-header h3 {
+        color: #f1f5f9;
+    }
+
+    .cms-form-group label {
+        color: #e2e8f0;
+    }
+
+    .cms-form-group input,
+    .cms-form-group select,
+    .cms-form-group textarea {
+        background: #0f172a;
+        border-color: #334155;
+        color: #f1f5f9;
+    }
+}

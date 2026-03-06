@@ -1,0 +1,36 @@
+Bible Study System - Future Feature Ideas
+==========================================
+
+DAILY ENGAGEMENT
+----------------
+- Reading streaks: Track consecutive days of reading with visual streak counter and milestone celebrations (7 days, 30 days, etc.)
+- Daily verse/devotional: A curated verse or short devotional on the homepage each day
+- Push notifications: Remind users to read at their preferred time (requires PWA/service worker)
+- "Continue where you left off": Prominent button on homepage to jump back into last study
+
+GAMIFICATION & PROGRESS
+-----------------------
+- Achievements/badges: "Finished Genesis", "7-day streak", "Night owl reader", etc.
+- Progress visualizations: Bible completion wheel/map showing which books/chapters are done
+- Reading goals: Set weekly/monthly chapter targets with progress tracking
+- Year-in-review: Annual stats summary (chapters read, time spent, streaks)
+
+READING EXPERIENCE
+------------------
+- Audio playback: Text-to-speech or recorded audio for studies [IN PROGRESS]
+- Font size/family preferences: Saved per-user
+- Focus mode: Distraction-free reading with minimal UI
+- Verse-by-verse mode: Step through one verse at a time with reflection prompts
+
+SOCIAL & COMMUNITY
+------------------
+- Share highlights: Generate shareable images of highlighted verses
+- Discussion/comments: Per-chapter discussions
+- Prayer requests: Linked to specific studies
+- Reading groups: Do plans together with friends/small groups
+
+PWA/APP FEATURES
+----------------
+- Install as app: Add to homescreen with app icon
+- Offline reading: Cache studies for offline access
+- Quick actions: "Read today's chapter" shortcut

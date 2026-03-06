@@ -1,0 +1,26 @@
+# Robots.txt for Alive Church Website
+# https://alivechur.ch
+
+User-agent: *
+
+# Allow all public content
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /includes/
+Disallow: /database/
+Disallow: /templates/
+
+# Disallow user-specific pages (require login)
+Disallow: /my-studies/
+Disallow: /logout
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Disallow search results (thin content)
+Disallow: /bible-study/search?
+
+# Sitemap location
+Sitemap: https://alivechur.ch/sitemap.xml

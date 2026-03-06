@@ -1,0 +1,23 @@
+[
+    {
+        "email": "jono@alive.me.uk",
+        "subscribed_at": "2026-02-07 10:25:32",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "status": "confirmed"
+    },
+    {
+        "email": "jonothorneuk@gmail.com",
+        "subscribed_at": "2026-02-11 12:30:25",
+        "ip_address": "::1",
+        "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "status": "confirmed"
+    },
+    {
+        "email": "office@alive.me.uk",
+        "subscribed_at": "2026-02-11 12:33:25",
+        "ip_address": "::1",
+        "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "status": "confirmed"
+    }
+]
