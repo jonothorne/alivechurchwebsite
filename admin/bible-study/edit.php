@@ -247,7 +247,7 @@ HTML is also supported for formatting."><?= htmlspecialchars($study['content'] ?
                     <select id="author_id" name="author_id">
                         <?php foreach ($authors as $author): ?>
                             <option value="<?= $author['id']; ?>" <?= ($study['author_id'] ?? $current_user['id']) == $author['id'] ? 'selected' : ''; ?>>
-                                <?= htmlspecialchars($author['full_name'] ?: $author['username']); ?>
+                                <?= htmlspecialchars($author['full_name'] ?? $author['username'] ?? ''); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

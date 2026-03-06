@@ -38,6 +38,7 @@ $routes = [
     '/ministries' => '/ministries.php',
     '/next-steps' => '/next-steps.php',
     '/prayer' => '/prayer.php',
+    '/contact-us' => '/contact-us.php',
     '/groups/join' => '/groups/join.php',
     '/events/register' => '/events/register.php',
     '/serve/apply' => '/serve/apply.php',
@@ -54,14 +55,11 @@ $routes = [
     '/my-studies/history' => '/my-studies-history.php',
     '/my-studies/settings' => '/my-studies-settings.php',
     '/reading-plans' => '/reading-plans.php',
-    '/forgot-password' => '/forgot-password.php',
-    '/reset-password' => '/reset-password.php',
 
     // Admin routes
     '/admin' => '/admin/index.php',
     '/admin/login' => '/admin/login.php',
     '/admin/logout' => '/admin/logout.php',
-    '/admin/page-sections' => '/admin/page-sections.php',
     '/admin/events' => '/admin/events.php',
     '/admin/events/edit' => '/admin/events/edit.php',
     '/admin/blog' => '/admin/blog.php',

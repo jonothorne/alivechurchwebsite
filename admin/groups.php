@@ -187,7 +187,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
                                     <span style="color: #94a3b8;">—</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?= htmlspecialchars($group['location'] ?: '—'); ?></td>
+                            <td><?= htmlspecialchars($group['location'] ?? '—'); ?></td>
                             <td>
                                 <?php if ($group['category']): ?>
                                     <span class="badge" style="background: #3b82f6; color: white;"><?= htmlspecialchars(ucwords(str_replace('-', ' ', $group['category']))); ?></span>

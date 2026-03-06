@@ -14,15 +14,6 @@ if (!function_exists('is_logged_in')) {
     }
 }
 
-if (!function_exists('require_admin')) {
-    function require_admin() {
-        if (!is_logged_in()) {
-            header('Location: /admin/login');
-            exit;
-        }
-    }
-}
-
 if (!function_exists('require_auth')) {
     function require_auth() {
         if (!is_logged_in()) {
@@ -41,37 +32,6 @@ if (!function_exists('get_logged_in_user')) {
             return $_SESSION['admin_user'];
         }
         return null;
-    }
-}
-
-if (!function_exists('login_user')) {
-    function login_user($username, $password) {
-        require_once __DIR__ . '/db-config.php';
-        $pdo = getDbConnection();
-
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND role IN ('admin', 'editor') AND active = TRUE");
-        $stmt->execute([$username, $username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password_hash'])) {
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_user'] = [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'email' => $user['email'],
-                'full_name' => $user['full_name'],
-                'role' => $user['role']
-            ];
-
-            // Update last login
-            $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
-
-            return true;
-        }
-        return false;
     }
 }
 

@@ -234,3 +234,80 @@ CREATE TABLE IF NOT EXISTS activity_log (
     INDEX idx_entity (entity_type, entity_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Content blocks - stores all editable content (CMS)
+CREATE TABLE IF NOT EXISTS content_blocks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_slug VARCHAR(100) NOT NULL,
+    block_key VARCHAR(100) NOT NULL,
+    content_type ENUM('text', 'html', 'image', 'link', 'json') DEFAULT 'html',
+    content LONGTEXT,
+    metadata JSON,
+    version INT DEFAULT 1,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT,
+    UNIQUE KEY unique_block (page_slug, block_key),
+    INDEX idx_page (page_slug),
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Content revisions for undo/history
+CREATE TABLE IF NOT EXISTS content_revisions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    block_id INT NOT NULL,
+    content LONGTEXT,
+    version INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INT,
+    INDEX idx_block (block_id),
+    INDEX idx_version (block_id, version),
+    FOREIGN KEY (block_id) REFERENCES content_blocks(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Global content blocks (footer, header elements, etc.)
+CREATE TABLE IF NOT EXISTS global_content (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    block_key VARCHAR(100) UNIQUE NOT NULL,
+    content_type ENUM('text', 'html', 'image', 'link', 'json') DEFAULT 'html',
+    content LONGTEXT,
+    description VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT,
+    INDEX idx_key (block_key),
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Reusable content components (testimonials, team members, etc.)
+CREATE TABLE IF NOT EXISTS content_components (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    component_type VARCHAR(50) NOT NULL,
+    title VARCHAR(200),
+    content JSON NOT NULL,
+    display_order INT DEFAULT 0,
+    visible BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_type (component_type),
+    INDEX idx_order (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Page visit tracking for analytics
+CREATE TABLE IF NOT EXISTS page_visits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_url VARCHAR(500) NOT NULL,
+    page_title VARCHAR(255) DEFAULT NULL,
+    referrer VARCHAR(500) DEFAULT NULL,
+    user_id INT DEFAULT NULL,
+    session_id VARCHAR(64) NOT NULL,
+    ip_address VARCHAR(45) DEFAULT NULL,
+    user_agent VARCHAR(500) DEFAULT NULL,
+    device_type ENUM('desktop', 'tablet', 'mobile') DEFAULT 'desktop',
+    browser VARCHAR(50) DEFAULT NULL,
+    visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_visited_at (visited_at),
+    INDEX idx_page_url (page_url(100)),
+    INDEX idx_user_id (user_id),
+    INDEX idx_session_id (session_id),
+    INDEX idx_device_type (device_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

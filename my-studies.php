@@ -88,7 +88,7 @@ include __DIR__ . '/includes/header.php';
             <?php foreach ($todaysReading as $reading): ?>
                 <div class="today-card">
                     <div class="today-plan"><?= htmlspecialchars($reading['plan_title']); ?> - Day <?= $reading['day_number']; ?></div>
-                    <h3><?= htmlspecialchars($reading['title'] ?: $reading['scripture_reference']); ?></h3>
+                    <h3><?= htmlspecialchars($reading['title'] ?? $reading['scripture_reference'] ?? ''); ?></h3>
                     <?php if ($reading['description']): ?>
                         <p><?= htmlspecialchars($reading['description']); ?></p>
                     <?php endif; ?>

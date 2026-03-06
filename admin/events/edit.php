@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <form method="POST" class="card">
     <div class="card-header">
         <h2><?= $isNew ? 'Add New Event Details' : 'Edit Event Details'; ?></h2>
-        <a href="/events/<?= htmlspecialchars($event['slug'] ?: 'preview'); ?>" target="_blank" class="btn btn-outline">Preview Page</a>
+        <a href="/events/<?= htmlspecialchars($event['slug'] ?? 'preview'); ?>" target="_blank" class="btn btn-outline">Preview Page</a>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">

@@ -35,7 +35,7 @@ if (!$page) {
     <title>Editing: <?= htmlspecialchars($page['title']); ?> - Visual Editor</title>
 
     <!-- CSRF Token -->
-    <meta name="csrf-token" content="<?= htmlspecialchars(get_csrf_token()); ?>">
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()); ?>">
 
     <!-- GrapesJS Core CSS -->
     <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.7/dist/css/grapes.min.css">

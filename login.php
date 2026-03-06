@@ -84,7 +84,6 @@ include __DIR__ . '/includes/header.php';
                         <input type="checkbox" name="remember" value="1">
                         <span>Remember me</span>
                     </label>
-                    <a href="/forgot-password" class="link-muted">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-block">Sign In</button>

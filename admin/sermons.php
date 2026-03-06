@@ -369,9 +369,9 @@ if ($view === 'series') {
                                 <?php if (!$series_id): ?>
                                     <td><?= htmlspecialchars($sermon['series_title'] ?? 'No Series'); ?></td>
                                 <?php endif; ?>
-                                <td><?= htmlspecialchars($sermon['speaker'] ?: '—'); ?></td>
+                                <td><?= htmlspecialchars($sermon['speaker'] ?? '—'); ?></td>
                                 <td><?= date('M j, Y', strtotime($sermon['sermon_date'])); ?></td>
-                                <td><?= htmlspecialchars($sermon['duration'] ?: '—'); ?></td>
+                                <td><?= htmlspecialchars($sermon['duration'] ?? '—'); ?></td>
                                 <td>
                                     <?php if ($sermon['visible']): ?>
                                         <span class="badge badge-success">Visible</span>

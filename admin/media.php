@@ -227,7 +227,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
                     <div style="height: 150px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                         <?php if ($media['file_type'] === 'image'): ?>
                             <img src="/<?= htmlspecialchars($media['file_path']); ?>"
-                                 alt="<?= htmlspecialchars($media['alt_text'] ?: $media['original_filename']); ?>"
+                                 alt="<?= htmlspecialchars($media['alt_text'] ?? $media['original_filename'] ?? ''); ?>"
                                  style="max-width: 100%; max-height: 100%; object-fit: contain;">
                         <?php elseif ($media['file_type'] === 'video'): ?>
                             <span style="font-size: 3rem;">🎥</span>
