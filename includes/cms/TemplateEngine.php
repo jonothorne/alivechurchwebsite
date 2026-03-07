@@ -37,6 +37,56 @@ class TemplateEngine {
             'name' => 'Blank',
             'description' => 'Completely blank page with just header/footer',
             'file' => 'blank.php'
+        ],
+        'two-column' => [
+            'name' => 'Two Column',
+            'description' => 'Content with image/media side by side',
+            'file' => 'two-column.php'
+        ],
+        'split-hero' => [
+            'name' => 'Split Hero',
+            'description' => 'Hero with image on one side, text on other',
+            'file' => 'split-hero.php'
+        ],
+        'team' => [
+            'name' => 'Team/Staff',
+            'description' => 'Grid layout for team member profiles',
+            'file' => 'team.php'
+        ],
+        'contact' => [
+            'name' => 'Contact Page',
+            'description' => 'Contact info, map, and optional form',
+            'file' => 'contact.php'
+        ],
+        'gallery' => [
+            'name' => 'Gallery',
+            'description' => 'Image gallery with lightbox',
+            'file' => 'gallery.php'
+        ],
+        'text-heavy' => [
+            'name' => 'Text Heavy',
+            'description' => 'Optimized for long-form content like policies',
+            'file' => 'text-heavy.php'
+        ],
+        'cards' => [
+            'name' => 'Card Grid',
+            'description' => 'Grid of cards for ministries, services, etc.',
+            'file' => 'cards.php'
+        ],
+        'centered' => [
+            'name' => 'Centered',
+            'description' => 'Centered narrow content, great for focused pages',
+            'file' => 'centered.php'
+        ],
+        'video-hero' => [
+            'name' => 'Video Hero',
+            'description' => 'Full-screen video background hero',
+            'file' => 'video-hero.php'
+        ],
+        'announcement' => [
+            'name' => 'Announcement',
+            'description' => 'Bold announcement or event promotion page',
+            'file' => 'announcement.php'
         ]
     ];
 

@@ -232,11 +232,24 @@ class UserStudies {
      */
     public function startPlan($planId) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO user_reading_plan_progress (user_id, plan_id)
-            VALUES (?, ?)
-            ON DUPLICATE KEY UPDATE is_paused = FALSE, started_at = IF(completed_at IS NOT NULL, NOW(), started_at), completed_at = NULL
+            INSERT INTO user_reading_plan_progress (user_id, plan_id, current_day, last_completed_day)
+            VALUES (?, ?, 1, 0)
+            ON DUPLICATE KEY UPDATE
+                is_paused = FALSE,
+                current_day = 1,
+                last_completed_day = 0,
+                started_at = NOW(),
+                completed_at = NULL
         ");
         $stmt->execute([$this->userId, $planId]);
+
+        // Clear previous completions when restarting
+        $stmt = $this->pdo->prepare("
+            DELETE FROM user_reading_plan_completions
+            WHERE user_id = ? AND plan_id = ?
+        ");
+        $stmt->execute([$this->userId, $planId]);
+
         return true;
     }
 

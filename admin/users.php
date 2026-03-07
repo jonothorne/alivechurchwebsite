@@ -343,10 +343,10 @@ if ($edit_user && !empty($edit_user['social_links'])) {
                 </thead>
                 <tbody>
                     <?php foreach ($users as $user): ?>
-                        <tr <?= $user['id'] === $_SESSION['admin_user_id'] ? 'style="background: #f0f9ff;"' : ''; ?>>
+                        <tr <?= $user['id'] === ($_SESSION['admin_user_id'] ?? null) ? 'style="background: #f0f9ff;"' : ''; ?>>
                             <td>
                                 <strong><?= htmlspecialchars($user['username']); ?></strong>
-                                <?php if ($user['id'] === $_SESSION['admin_user_id']): ?>
+                                <?php if ($user['id'] === ($_SESSION['admin_user_id'] ?? null)): ?>
                                     <span class="badge badge-success" style="margin-left: 0.5rem;">You</span>
                                 <?php endif; ?>
                                 <?php if ($user['full_name']): ?>
@@ -379,7 +379,7 @@ if ($edit_user && !empty($edit_user['social_links'])) {
                             </td>
                             <td class="table-actions">
                                 <a href="?edit=<?= $user['id']; ?>" class="btn btn-sm btn-outline">Edit</a>
-                                <?php if ($user['id'] !== $_SESSION['admin_user_id']): ?>
+                                <?php if ($user['id'] !== ($_SESSION['admin_user_id'] ?? null)): ?>
                                     <a href="?delete=<?= $user['id']; ?>" class="btn btn-sm btn-danger" data-confirm-delete>Delete</a>
                                 <?php else: ?>
                                     <button class="btn btn-sm btn-danger" disabled style="opacity: 0.5; cursor: not-allowed;">Delete</button>

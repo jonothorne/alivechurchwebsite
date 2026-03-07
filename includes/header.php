@@ -48,7 +48,7 @@ $is_bible_study_page = strpos($current_url, '/bible-study') === 0
     || strpos($current_url, '/reading-plan') === 0
     || strpos($current_url, '/reading-plans') === 0
     || strpos($current_url, '/my-studies') === 0;
-$show_study_subnav = $current_user && $is_bible_study_page;
+$show_study_subnav = $is_bible_study_page;
 
 // Check if on "I'm New" pages (for sub-nav)
 $is_new_visitor_page = $current_url === '/visit'
@@ -77,9 +77,15 @@ $show_events_subnav = $is_events_page;
 $is_give_page = $current_url === '/give';
 $show_give_subnav = $is_give_page;
 
+// Check if on "Blog" pages (for sub-nav)
+$is_blog_page = $current_url === '/blog'
+    || strpos($current_url, '/blog/') === 0
+    || strpos($current_url, '/author/') === 0;
+$show_blog_subnav = $is_blog_page;
+
 // Get last read study for "Read" button in subnav
 $last_read_url = '/bible-study';
-if ($current_user && $show_study_subnav) {
+if ($current_user && $is_bible_study_page) {
     $lastReadStmt = $pdo->prepare("
         SELECT b.slug as book_slug, s.chapter
         FROM user_reading_history h
@@ -102,6 +108,16 @@ if ($current_user && $show_study_subnav) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title); ?></title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#eb008b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alive Church">
+    <link rel="apple-touch-icon" href="/assets/imgs/icons/icon-192x192.png">
+    <meta name="description" content="<?= htmlspecialchars($page_description ?? 'You Belong Here - Alive Church Norwich. Bible studies, reading plans, events, and community.'); ?>">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet">
@@ -112,19 +128,40 @@ if ($current_user && $show_study_subnav) {
     <script>
     // Apply theme immediately to prevent flash of wrong theme
     (function() {
-        <?php if ($current_user && !empty($current_user['preferences'])): ?>
-        // User is logged in - check their preference
-        var userPrefs = <?= $current_user['preferences'] ?: '{}' ?>;
-        var savedTheme = userPrefs.theme || null;
-        <?php else: ?>
-        // Not logged in - check localStorage
-        var savedTheme = localStorage.getItem('theme');
-        <?php endif; ?>
+        // Check if running as installed PWA (standalone mode)
+        var isStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true
+            || document.referrer.includes('android-app://');
 
-        if (savedTheme === 'dark' || savedTheme === 'light') {
-            document.documentElement.setAttribute('data-theme', savedTheme);
+        window.isPWA = isStandalone;
+
+        if (isStandalone) {
+            // PWA mode: follow system preference
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (window.isPWA) {
+                    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                }
+            });
+        } else {
+            // Browser mode: use saved preference
+            <?php if ($current_user && !empty($current_user['preferences'])): ?>
+            // User is logged in - check their preference
+            var userPrefs = <?= $current_user['preferences'] ?: '{}' ?>;
+            var savedTheme = userPrefs.theme || null;
+            <?php else: ?>
+            // Not logged in - check localStorage
+            var savedTheme = localStorage.getItem('theme');
+            <?php endif; ?>
+
+            if (savedTheme === 'dark' || savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+            // If no saved theme, let CSS handle system preference
         }
-        // If no saved theme, let CSS handle system preference
 
         // Pass login state to main.js
         window.isLoggedIn = <?= $current_user ? 'true' : 'false' ?>;
@@ -240,9 +277,6 @@ if ($current_user && $show_study_subnav) {
                         </a>
                     </div>
                 </div>
-            <?php else: ?>
-                <a href="/login" class="btn-login">Log In</a>
-                <a href="/register" class="btn btn-primary btn-sm">Sign Up</a>
             <?php endif; ?>
         </div>
     </div>
@@ -258,13 +292,14 @@ if ($current_user && $show_study_subnav) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
                     <span>Topics</span>
                 </a>
-                <a href="/my-studies" class="study-subnav-item <?= $current_url === '/my-studies' ? 'active' : ''; ?>">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                    <span>My Studies</span>
-                </a>
                 <a href="/reading-plans" class="study-subnav-item <?= strpos($current_url, '/reading-plan') === 0 ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span>Reading Plans</span>
+                </a>
+                <?php if ($current_user): ?>
+                <a href="/my-studies" class="study-subnav-item <?= $current_url === '/my-studies' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>My Studies</span>
                 </a>
                 <a href="/my-studies/saved" class="study-subnav-item <?= $current_url === '/my-studies/saved' ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -278,6 +313,16 @@ if ($current_user && $show_study_subnav) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <span>History</span>
                 </a>
+                <?php else: ?>
+                <div class="study-subnav-auth">
+                    <a href="/login?redirect=<?= urlencode($current_url); ?>" class="study-subnav-item login">
+                        <span>Log In</span>
+                    </a>
+                    <a href="/register?redirect=<?= urlencode($current_url); ?>" class="study-subnav-item register">
+                        <span>Sign Up</span>
+                    </a>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
@@ -394,6 +439,44 @@ if ($current_user && $show_study_subnav) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     <span>Questions?</span>
                 </a>
+            </div>
+        </div>
+    </nav>
+    <?php endif; ?>
+    <?php if ($show_blog_subnav): ?>
+    <nav class="section-subnav" aria-label="Blog navigation">
+        <div class="container">
+            <div class="section-subnav-inner">
+                <a href="/blog" class="section-subnav-item <?= $current_url === '/blog' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>All Posts</span>
+                </a>
+                <a href="/blog?category=stories" class="section-subnav-item <?= strpos($current_url, 'category=stories') !== false ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Stories</span>
+                </a>
+                <a href="/blog?category=devotionals" class="section-subnav-item <?= strpos($current_url, 'category=devotionals') !== false ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span>Devotionals</span>
+                </a>
+                <a href="/blog?category=news" class="section-subnav-item <?= strpos($current_url, 'category=news') !== false ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/></svg>
+                    <span>News</span>
+                </a>
+                <a href="/blog?category=events" class="section-subnav-item <?= strpos($current_url, 'category=events') !== false ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Events</span>
+                </a>
+                <?php if (!$current_user): ?>
+                <div class="study-subnav-auth">
+                    <a href="/login?redirect=<?= urlencode($current_url); ?>" class="section-subnav-item login">
+                        <span>Log In</span>
+                    </a>
+                    <a href="/register?redirect=<?= urlencode($current_url); ?>" class="section-subnav-item register">
+                        <span>Sign Up</span>
+                    </a>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </nav>

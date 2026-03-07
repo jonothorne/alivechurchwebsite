@@ -107,6 +107,8 @@
             <button data-cmd="formatBlock" data-value="h2" title="Heading 2">H2</button>
             <button data-cmd="formatBlock" data-value="h3" title="Heading 3">H3</button>
             <button data-cmd="formatBlock" data-value="p" title="Paragraph">P</button>
+            <button data-cmd="formatBlock" data-value="blockquote" title="Quote">❝</button>
+            <button data-cmd="introText" title="Intro Text">Intro</button>
             <span class="cms-toolbar-divider"></span>
             <button data-cmd="insertUnorderedList" title="Bullet List">•</button>
             <button data-cmd="insertOrderedList" title="Numbered List">1.</button>
@@ -127,7 +129,52 @@
             btn.addEventListener('mousedown', (e) => {
                 e.preventDefault(); // Prevent losing focus
                 handleToolbarCommand(btn.dataset.cmd, btn.dataset.value);
+                // Update button states after command
+                setTimeout(updateToolbarState, 10);
             });
+        });
+
+        // Listen for selection changes to update button states
+        document.addEventListener('selectionchange', () => {
+            if (state.isEditing) {
+                updateToolbarState();
+            }
+        });
+    }
+
+    /**
+     * Update toolbar button active states based on current selection
+     */
+    function updateToolbarState() {
+        const toolbar = document.getElementById('cms-floating-toolbar');
+        if (!toolbar) return;
+
+        // Check inline formatting
+        const isBold = document.queryCommandState('bold');
+        const isItalic = document.queryCommandState('italic');
+        const isUnderline = document.queryCommandState('underline');
+
+        // Check block formatting
+        const block = findCurrentBlock();
+        const blockTag = block ? block.tagName : '';
+        const hasIntro = block ? block.classList.contains('intro-text') : false;
+
+        // Update button states
+        toolbar.querySelectorAll('button').forEach(btn => {
+            const cmd = btn.dataset.cmd;
+            const value = btn.dataset.value;
+            let isActive = false;
+
+            if (cmd === 'bold') isActive = isBold;
+            else if (cmd === 'italic') isActive = isItalic;
+            else if (cmd === 'underline') isActive = isUnderline;
+            else if (cmd === 'formatBlock' && value === 'h2') isActive = blockTag === 'H2';
+            else if (cmd === 'formatBlock' && value === 'h3') isActive = blockTag === 'H3';
+            else if (cmd === 'formatBlock' && value === 'p') isActive = blockTag === 'P' && !hasIntro;
+            else if (cmd === 'formatBlock' && value === 'blockquote') isActive = blockTag === 'BLOCKQUOTE';
+            else if (cmd === 'introText') isActive = hasIntro;
+
+            btn.classList.toggle('active', isActive);
         });
     }
 
@@ -192,6 +239,43 @@
         el.addEventListener('input', handleContentChange);
         el.addEventListener('blur', handleBlur);
         el.addEventListener('keydown', handleKeydown);
+
+        // Add click handlers for images inside editable content
+        setupImageClickHandlers(el);
+    }
+
+    /**
+     * Setup click handlers for images inside editable content
+     */
+    function setupImageClickHandlers(container) {
+        const images = container.querySelectorAll('img');
+        images.forEach(img => {
+            // Add visual indicator class
+            img.classList.add('cms-editable-image');
+
+            // Remove any existing handler to avoid duplicates
+            img.removeEventListener('click', handleImageClick);
+
+            // Add click handler
+            img.addEventListener('click', handleImageClick);
+        });
+    }
+
+    /**
+     * Handle click on image inside editable content
+     */
+    function handleImageClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const img = e.target;
+
+        // Open media library and replace image on selection
+        openMediaLibrary((src) => {
+            img.src = src;
+            state.hasUnsavedChanges = true;
+            updateStatus('Image updated - remember to save');
+        });
     }
 
     /**
@@ -291,28 +375,96 @@
     }
 
     /**
-     * Position the floating toolbar above the current element
+     * Position the floating toolbar - fixed at bottom center of viewport
      */
     function positionFloatingToolbar(el) {
         const toolbar = document.getElementById('cms-floating-toolbar');
-        const rect = el.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        let top = rect.top + scrollTop - toolbar.offsetHeight - 10;
-        let left = rect.left + (rect.width / 2) - (toolbar.offsetWidth / 2);
-
-        // Keep toolbar in viewport
-        if (top < 60) { // Below CMS toolbar
-            top = rect.bottom + scrollTop + 10;
-        }
-        if (left < 10) left = 10;
-        if (left + toolbar.offsetWidth > window.innerWidth - 10) {
-            left = window.innerWidth - toolbar.offsetWidth - 10;
-        }
-
-        toolbar.style.top = top + 'px';
-        toolbar.style.left = left + 'px';
+        // Use fixed positioning so toolbar follows scroll
+        toolbar.style.position = 'fixed';
+        toolbar.style.bottom = '20px';
+        toolbar.style.top = 'auto';
+        toolbar.style.left = '50%';
+        toolbar.style.transform = 'translateX(-50%)';
         toolbar.style.display = 'flex';
+    }
+
+    /**
+     * Find the current block element containing the cursor
+     */
+    function findCurrentBlock() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return null;
+
+        let node = selection.getRangeAt(0).commonAncestorContainer;
+
+        // If text node, get parent element
+        if (node.nodeType === 3) {
+            node = node.parentElement;
+        }
+
+        // Walk up to find a block element, but stop at contentEditable
+        while (node && node !== document.body) {
+            if (node.hasAttribute && node.hasAttribute('contenteditable')) {
+                return null; // Hit the container, no block found
+            }
+            if (node.tagName && ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(node.tagName)) {
+                // Make sure this isn't the contentEditable container
+                if (!node.hasAttribute('contenteditable')) {
+                    return node;
+                }
+            }
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    /**
+     * Convert current block to paragraph
+     */
+    function convertToParagraph() {
+        const block = findCurrentBlock();
+        if (block && block.tagName !== 'P') {
+            const p = document.createElement('p');
+            p.innerHTML = block.innerHTML;
+            // Preserve intro-text class if present
+            if (block.classList.contains('intro-text')) {
+                p.classList.add('intro-text');
+            }
+            block.parentNode.replaceChild(p, block);
+            // Move cursor into new element
+            const range = document.createRange();
+            range.selectNodeContents(p);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            state.hasUnsavedChanges = true;
+        }
+    }
+
+    /**
+     * Convert current block to blockquote
+     */
+    function convertToBlockquote() {
+        const block = findCurrentBlock();
+        if (block && block.tagName !== 'BLOCKQUOTE') {
+            const bq = document.createElement('blockquote');
+            bq.innerHTML = block.innerHTML;
+            block.parentNode.replaceChild(bq, block);
+            // Move cursor into new element
+            const range = document.createRange();
+            range.selectNodeContents(bq);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            state.hasUnsavedChanges = true;
+        } else if (!block) {
+            // No block found, use execCommand as fallback
+            document.execCommand('formatBlock', false, '<blockquote>');
+            state.hasUnsavedChanges = true;
+        }
     }
 
     /**
@@ -363,8 +515,33 @@
             return;
         }
 
+        if (cmd === 'introText') {
+            const block = findCurrentBlock();
+            if (block) {
+                block.classList.toggle('intro-text');
+                state.hasUnsavedChanges = true;
+            } else {
+                // Try to wrap in paragraph first
+                document.execCommand('formatBlock', false, '<p>');
+                setTimeout(() => {
+                    const newBlock = findCurrentBlock();
+                    if (newBlock) {
+                        newBlock.classList.add('intro-text');
+                        state.hasUnsavedChanges = true;
+                    }
+                }, 10);
+            }
+            return;
+        }
+
         if (cmd === 'formatBlock') {
-            document.execCommand(cmd, false, '<' + value + '>');
+            if (value === 'p') {
+                convertToParagraph();
+            } else if (value === 'blockquote') {
+                convertToBlockquote();
+            } else {
+                document.execCommand(cmd, false, '<' + value + '>');
+            }
             return;
         }
 
@@ -603,6 +780,17 @@
                         <option value="full-width">Full Width</option>
                         <option value="sidebar">With Sidebar</option>
                         <option value="landing">Landing Page</option>
+                        <option value="blank">Blank</option>
+                        <option value="two-column">Two Column</option>
+                        <option value="split-hero">Split Hero</option>
+                        <option value="team">Team/Staff</option>
+                        <option value="contact">Contact Page</option>
+                        <option value="gallery">Gallery</option>
+                        <option value="text-heavy">Text Heavy</option>
+                        <option value="cards">Card Grid</option>
+                        <option value="centered">Centered</option>
+                        <option value="video-hero">Video Hero</option>
+                        <option value="announcement">Announcement</option>
                     </select>
                 </div>
                 <div class="cms-form-actions">

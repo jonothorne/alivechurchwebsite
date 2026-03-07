@@ -44,6 +44,7 @@ $routes = [
     '/serve/apply' => '/serve/apply.php',
     '/next-steps/baptism' => '/next-steps/baptism.php',
     '/404' => '/404.php',
+    '/offline' => '/offline.php',
 
     // User account routes
     '/login' => '/login.php',

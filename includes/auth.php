@@ -41,6 +41,7 @@ if (!function_exists('logout_user')) {
             session_start();
         }
         unset($_SESSION['admin_logged_in']);
+        unset($_SESSION['admin_user_id']);
         unset($_SESSION['admin_user']);
         session_destroy();
     }
@@ -369,6 +370,7 @@ class Auth {
         // Also set admin session if user has admin/editor role
         if (in_array($user['role'], ['admin', 'editor'])) {
             $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_user_id'] = $user['id'];
             $_SESSION['admin_user'] = [
                 'id' => $user['id'],
                 'username' => $user['username'],
@@ -397,6 +399,7 @@ class Auth {
         // Also set admin session if user has admin/editor role
         if ($this->user && in_array($this->user['role'], ['admin', 'editor'])) {
             $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_user_id'] = $this->user['id'];
             $_SESSION['admin_user'] = [
                 'id' => $this->user['id'],
                 'username' => $this->user['username'],
@@ -454,6 +457,7 @@ class Auth {
         // Clear session (both user and admin)
         unset($_SESSION['user_id']);
         unset($_SESSION['admin_logged_in']);
+        unset($_SESSION['admin_user_id']);
         unset($_SESSION['admin_user']);
         $this->user = null;
 

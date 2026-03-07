@@ -160,7 +160,17 @@ switch ($action) {
         }
 
         $userStudies->startPlan($planId);
-        echo json_encode(['success' => true]);
+
+        // Get plan slug for redirect
+        $stmt = $pdo->prepare("SELECT slug FROM reading_plans WHERE id = ?");
+        $stmt->execute([$planId]);
+        $planSlug = $stmt->fetchColumn();
+
+        // Redirect to plan overview page
+        echo json_encode([
+            'success' => true,
+            'redirect' => '/reading-plan/' . $planSlug
+        ]);
         break;
 
     case 'complete_day':

@@ -19,6 +19,9 @@ $crossRefManager = new CrossReferenceManager($pdo);
 $currentUser = $auth->user();
 $userStudies = $currentUser ? new UserStudies($pdo, $currentUser['id']) : null;
 
+// Check if user can edit (editor or admin)
+$canEdit = $auth->isEditor();
+
 // Get book and chapter from URL
 $bookSlug = $_GET['book'] ?? '';
 $chapter = intval($_GET['chapter'] ?? 0);
@@ -326,7 +329,17 @@ $page_title = $book['name'] . ' ' . $chapter . ' Study | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
-<article class="bible-study-article">
+<article class="bible-study-article<?= $canEdit ? ' bible-study-editable' : ''; ?>"<?= $canEdit ? ' data-study-id="' . $study['id'] . '"' : ''; ?>>
+    <?php if ($canEdit): ?>
+    <!-- Editor Status Toggle -->
+    <button class="study-status-toggle <?= $study['status'] === 'published' ? 'published' : ''; ?>"
+            data-status="<?= htmlspecialchars($study['status']); ?>"
+            title="Click to toggle status">
+        <span class="status-indicator"></span>
+        <span class="status-text"><?= $study['status'] === 'published' ? 'Published' : 'Draft'; ?></span>
+    </button>
+    <?php endif; ?>
+
     <!-- Print-only Header (hidden on screen, visible when printing) -->
     <div class="print-header screen-hidden">
         <div class="print-logo">
@@ -356,8 +369,8 @@ include __DIR__ . '/includes/header.php';
                 <a href="/bible-study/<?= htmlspecialchars($book['slug']); ?>" class="back-link">&larr; <?= htmlspecialchars($book['name']); ?></a>
                 <span class="testament-badge"><?= $book['testament'] === 'old' ? 'Old Testament' : 'New Testament'; ?></span>
                 <h1><?= htmlspecialchars($book['name']); ?> <?= $chapter; ?></h1>
-                <?php if ($study['title']): ?>
-                    <p class="study-title"><?= htmlspecialchars($study['title']); ?></p>
+                <?php if ($study['title'] || $canEdit): ?>
+                    <p class="study-title"<?= $canEdit ? ' data-editable="title"' : ''; ?>><?= htmlspecialchars($study['title'] ?: ($canEdit ? 'Click to add title...' : '')); ?></p>
                 <?php endif; ?>
                 <div class="study-meta">
                     <?php if ($study['author_name']): ?>
@@ -452,10 +465,10 @@ include __DIR__ . '/includes/header.php';
         <!-- Main Content -->
         <div class="study-content">
             <div class="container narrow">
-                <?php if ($study['summary']): ?>
+                <?php if ($study['summary'] || $canEdit): ?>
                     <div class="study-summary">
                         <h2>Overview</h2>
-                        <p><?= htmlspecialchars($study['summary']); ?></p>
+                        <p<?= $canEdit ? ' data-editable="summary"' : ''; ?>><?= htmlspecialchars($study['summary'] ?: ($canEdit ? 'Click to add summary...' : '')); ?></p>
                     </div>
                 <?php endif; ?>
 
@@ -511,7 +524,9 @@ include __DIR__ . '/includes/header.php';
                             </svg>
                         </button>
                     </div>
-                    <?= $processedContent; ?>
+                    <div class="study-text"<?= $canEdit ? ' data-editable="content" data-raw-content="' . htmlspecialchars($study['content'], ENT_QUOTES) . '"' : ''; ?>>
+                        <?= $processedContent; ?>
+                    </div>
                 </div>
 
                 <?php if (!empty($crossReferences)): ?>
@@ -804,11 +819,16 @@ const highlightColors = [
 let pendingHighlight = null;
 let colorPickerMenu = null;
 
-function handleTextSelection(e) {
-    // Ignore if clicking on a highlight or color picker
-    if (e.target.closest('.user-highlight') || e.target.closest('.highlight-color-picker')) return;
+let highlightButton = null;
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    // Small delay to ensure selection is complete (helps with touch devices)
+function handleTextSelection(e) {
+    // Ignore if clicking on a highlight, color picker, or highlight button
+    if (e.target.closest('.user-highlight') || e.target.closest('.highlight-color-picker') || e.target.closest('.highlight-btn')) return;
+
+    const isTouch = e.type === 'touchend';
+
+    // Small delay to let selection stabilize
     setTimeout(() => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return;
@@ -817,6 +837,7 @@ function handleTextSelection(e) {
 
         if (selectedText.length < 3 || selectedText.length > 5000) {
             hideColorPicker();
+            hideHighlightButton();
             return;
         }
 
@@ -836,39 +857,91 @@ function handleTextSelection(e) {
             return;
         }
 
-        // Store pending highlight and show color picker
-        pendingHighlight = { text: selectedText, range: range.cloneRange() };
+        // Get position for picker/button
+        const rect = range.getBoundingClientRect();
+        let posX = rect.left + rect.width / 2;
+        let posY = rect.top;
 
-        // Get position for color picker - use focus point (where user released mouse)
-        let pickerX, pickerY;
+        // On touch devices, show a "Highlight" button instead of auto-showing color picker
+        if (isTouchDevice) {
+            showHighlightButton(posX, posY);
+        } else {
+            // Desktop: show color picker immediately
+            pendingHighlight = { text: selectedText, range: range.cloneRange() };
+            showColorPicker(posX, posY);
+        }
+    }, 10);
+}
 
-        // Use focusNode/focusOffset - this is where the user ended their selection
-        // (works correctly regardless of selection direction)
-        const focusRange = document.createRange();
-        try {
-            focusRange.setStart(selection.focusNode, selection.focusOffset);
-            focusRange.setEnd(selection.focusNode, selection.focusOffset);
-            const focusRect = focusRange.getBoundingClientRect();
+function showHighlightButton(x, y) {
+    hideHighlightButton();
+    hideColorPicker(false);
 
-            if (focusRect && focusRect.width === 0 && focusRect.height > 0) {
-                // Collapsed range at focus point
-                pickerX = focusRect.left;
-                pickerY = focusRect.top;
-            } else {
-                // Fallback to range bounds
-                const rect = range.getBoundingClientRect();
-                pickerX = rect.left + rect.width / 2;
-                pickerY = rect.top;
-            }
-        } catch (e) {
-            // Fallback to range bounds
-            const rect = range.getBoundingClientRect();
-            pickerX = rect.left + rect.width / 2;
-            pickerY = rect.top;
+    const btn = document.createElement('button');
+    btn.className = 'highlight-btn';
+    btn.textContent = 'Highlight';
+    btn.type = 'button';
+
+    document.body.appendChild(btn);
+    highlightButton = btn;
+
+    // Position the button
+    const btnRect = btn.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+
+    let left = x - btnRect.width / 2;
+    let top = y - btnRect.height - 10;
+
+    // Keep within viewport
+    if (left < 8) left = 8;
+    if (left + btnRect.width > viewportWidth - 8) left = viewportWidth - btnRect.width - 8;
+    if (top < 8) top = y + 30; // Show below if no room above
+
+    btn.style.left = left + 'px';
+    btn.style.top = top + 'px';
+
+    requestAnimationFrame(() => btn.classList.add('show'));
+
+    // Handle button tap
+    const handleTap = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            hideHighlightButton();
+            return;
         }
 
-        showColorPicker(pickerX, pickerY);
-    }, 10);
+        const selectedText = selection.toString().trim();
+        if (selectedText.length < 3) {
+            hideHighlightButton();
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        // Store the pending highlight
+        pendingHighlight = { text: selectedText, range: range.cloneRange() };
+
+        // Clear selection to dismiss iOS UI
+        window.getSelection().removeAllRanges();
+
+        // Hide button and show color picker
+        hideHighlightButton();
+        showColorPicker(rect.left + rect.width / 2, rect.top);
+    };
+
+    btn.addEventListener('click', handleTap);
+    btn.addEventListener('touchend', handleTap);
+}
+
+function hideHighlightButton() {
+    if (highlightButton) {
+        highlightButton.remove();
+        highlightButton = null;
+    }
 }
 
 let colorPickerJustOpened = false;
@@ -915,9 +988,10 @@ function showColorPicker(x, y) {
     // Animate in
     requestAnimationFrame(() => picker.classList.add('show'));
 
-    // Handle color selection
+    // Handle color selection - use both click and touchend for iOS compatibility
     picker.querySelectorAll('.color-option').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        const handleColorSelect = (e) => {
+            e.preventDefault();
             e.stopPropagation();
             const color = btn.dataset.color;
             if (pendingHighlight) {
@@ -925,7 +999,9 @@ function showColorPicker(x, y) {
                 pendingHighlight = null;
             }
             hideColorPicker(false);
-        });
+        };
+        btn.addEventListener('click', handleColorSelect);
+        btn.addEventListener('touchend', handleColorSelect);
     });
 }
 
@@ -940,10 +1016,29 @@ function hideColorPicker(clearPending = true) {
     }
 }
 
-// Close color picker when clicking outside
-document.addEventListener('click', (e) => {
+// Close color picker and highlight button when clicking/tapping outside
+function handleOutsideClick(e) {
     if (colorPickerMenu && !colorPickerJustOpened && !e.target.closest('.highlight-color-picker')) {
         hideColorPicker();
+    }
+    if (highlightButton && !e.target.closest('.highlight-btn')) {
+        // Check if there's still a selection - if not, hide the button
+        const selection = window.getSelection();
+        if (!selection || selection.toString().trim().length < 3) {
+            hideHighlightButton();
+        }
+    }
+}
+document.addEventListener('click', handleOutsideClick);
+document.addEventListener('touchstart', handleOutsideClick);
+
+// Also hide highlight button when selection changes to nothing
+document.addEventListener('selectionchange', () => {
+    if (highlightButton) {
+        const selection = window.getSelection();
+        if (!selection || selection.toString().trim().length < 3) {
+            hideHighlightButton();
+        }
     }
 });
 
@@ -2224,6 +2319,10 @@ document.addEventListener('DOMContentLoaded', function() {
         </p>
     </div>
 </div>
+<?php endif; ?>
+
+<?php if ($canEdit): ?>
+<script src="/assets/js/bible-study-editor.js"></script>
 <?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

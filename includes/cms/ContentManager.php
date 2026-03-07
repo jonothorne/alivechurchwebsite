@@ -35,7 +35,10 @@ class ContentManager {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->isEditMode = isset($_SESSION['admin_user_id']) &&
+        // Check for admin login - supports both session formats
+        $isLoggedIn = (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
+                      isset($_SESSION['admin_user_id']);
+        $this->isEditMode = $isLoggedIn &&
                            (!isset($_GET['preview']) || $_GET['preview'] !== 'true');
     }
 

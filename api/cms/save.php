@@ -48,8 +48,8 @@ if (!$key) {
     exit;
 }
 
-// Get user ID
-$userId = $_SESSION['admin_user_id'];
+// Get user ID - support both session formats
+$userId = $_SESSION['admin_user_id'] ?? $_SESSION['admin_user']['id'] ?? null;
 
 try {
     if ($isGlobal) {

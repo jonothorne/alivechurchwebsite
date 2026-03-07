@@ -7,7 +7,7 @@
  */
 
 // Available texture patterns
-$HERO_TEXTURES = [
+define('HERO_TEXTURES', [
     'dots',
     'waves',
     'geometric',
@@ -17,7 +17,7 @@ $HERO_TEXTURES = [
     'organic',
     'diamonds',
     'circuit'
-];
+]);
 
 /**
  * Get a texture class based on page slug/path
@@ -28,7 +28,7 @@ $HERO_TEXTURES = [
  * @return string CSS class(es) for the hero texture
  */
 function get_hero_texture($identifier = null, $usePinkGradient = false) {
-    global $HERO_TEXTURES;
+    $textures = HERO_TEXTURES;
 
     // If no identifier provided, use the current URL
     if ($identifier === null) {
@@ -37,9 +37,9 @@ function get_hero_texture($identifier = null, $usePinkGradient = false) {
 
     // Create a deterministic index based on the identifier
     $hash = crc32($identifier);
-    $index = abs($hash) % count($HERO_TEXTURES);
+    $index = abs($hash) % count($textures);
 
-    $textureClass = 'hero-texture-' . $HERO_TEXTURES[$index];
+    $textureClass = 'hero-texture-' . $textures[$index];
 
     if ($usePinkGradient) {
         $textureClass .= ' hero-gradient-pink';
@@ -56,9 +56,7 @@ function get_hero_texture($identifier = null, $usePinkGradient = false) {
  * @return string CSS class(es) for the hero texture
  */
 function get_specific_texture($textureName, $usePinkGradient = false) {
-    global $HERO_TEXTURES;
-
-    if (!in_array($textureName, $HERO_TEXTURES)) {
+    if (!in_array($textureName, HERO_TEXTURES)) {
         $textureName = 'organic'; // Default fallback
     }
 
@@ -78,9 +76,8 @@ function get_specific_texture($textureName, $usePinkGradient = false) {
  * @return string CSS class(es) for the hero texture
  */
 function get_random_texture($usePinkGradient = false) {
-    global $HERO_TEXTURES;
-
-    $textureName = $HERO_TEXTURES[array_rand($HERO_TEXTURES)];
+    $textures = HERO_TEXTURES;
+    $textureName = $textures[array_rand($textures)];
     $textureClass = 'hero-texture-' . $textureName;
 
     if ($usePinkGradient) {

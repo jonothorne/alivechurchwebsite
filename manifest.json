@@ -1,0 +1,58 @@
+{
+  "name": "Alive Church",
+  "short_name": "Alive",
+  "description": "You Belong Here - Alive Church Norwich. Bible studies, reading plans, events, and community.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#eb008b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/assets/imgs/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/imgs/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/imgs/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/imgs/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["lifestyle", "education", "social"],
+  "shortcuts": [
+    {
+      "name": "Bible Study",
+      "short_name": "Study",
+      "description": "Continue your Bible study",
+      "url": "/bible-study"
+    },
+    {
+      "name": "Reading Plans",
+      "short_name": "Plans",
+      "description": "Browse reading plans",
+      "url": "/reading-plans"
+    },
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "Upcoming church events",
+      "url": "/events"
+    }
+  ]
+}

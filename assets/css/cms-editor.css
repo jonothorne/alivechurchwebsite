@@ -4,7 +4,23 @@
  * IMPORTANT: This stylesheet must not override site styles.
  * All CMS-specific elements are prefixed with .cms- or #cms-
  * Editable elements only get outline styles, not typography changes.
+ *
+ * Uses consistent purple theming (#4b2679) across all editors.
  */
+
+/* ============================================
+   CSS Variables for Editor Theme
+   ============================================ */
+
+:root {
+    --cms-purple: #4b2679;
+    --cms-purple-light: #6b3fa0;
+    --cms-purple-dark: #3d1f63;
+    --cms-success: #10b981;
+    --cms-error: #ef4444;
+    --cms-dark-bg: #1a1a2e;
+    --cms-dark-bg-light: #2a2a4a;
+}
 
 /* ============================================
    Edit Mode Body Adjustments
@@ -25,18 +41,15 @@ body.cms-edit-mode .site-header {
     left: 0;
     right: 0;
     height: 50px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, var(--cms-dark-bg) 0%, #16213e 100%);
     color: #fff;
     z-index: 99999;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    /* Contain styles within toolbar only */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
-    /* CSS containment to isolate styles */
     contain: layout style;
 }
 
-/* Ensure all toolbar descendants use toolbar fonts, not site fonts */
 #cms-toolbar * {
     font-family: inherit;
 }
@@ -59,7 +72,7 @@ body.cms-edit-mode .site-header {
 }
 
 .cms-toolbar-logo {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--cms-purple);
     padding: 4px 10px;
     border-radius: 4px;
     font-weight: 700;
@@ -78,7 +91,7 @@ body.cms-edit-mode .site-header {
 }
 
 .cms-toolbar-page strong {
-    color: #667eea;
+    color: #a78bfa;
 }
 
 /* Toolbar Buttons */
@@ -111,79 +124,93 @@ body.cms-edit-mode .site-header {
 }
 
 .cms-btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--cms-purple);
     color: #fff;
 }
 
 .cms-btn-primary:hover {
-    opacity: 0.9;
+    background: var(--cms-purple-dark);
     transform: translateY(-1px);
 }
 
 /* ============================================
    Floating Toolbar (WYSIWYG)
+   Matches Bible study editor toolbar style
    ============================================ */
 
 .cms-floating-toolbar {
-    position: absolute;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     display: none;
     align-items: center;
-    gap: 2px;
-    padding: 6px 8px;
-    background: #1a1a2e;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: var(--color-card-bg, #fff);
+    border: 1px solid var(--color-border, #e5e7eb);
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    z-index: 99998;
-    /* Isolate toolbar styles */
+    box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.15));
+    z-index: 10001;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
-    contain: layout style;
+}
+
+.cms-floating-toolbar.visible {
+    display: flex;
 }
 
 .cms-floating-toolbar button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    background: var(--color-bg-subtle, #f3f4f6);
+    border: 1px solid var(--color-border, #e5e7eb);
     border-radius: 4px;
-    font-size: 14px;
+    color: var(--color-text, #1f2937);
+    cursor: pointer;
+    font-size: 0.85rem;
     transition: all 0.15s ease;
 }
 
 .cms-floating-toolbar button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: var(--cms-purple);
+    color: white;
+    border-color: var(--cms-purple);
 }
 
-.cms-floating-toolbar .cms-toolbar-divider {
+.cms-floating-toolbar button.active {
+    background: var(--cms-purple);
+    color: white;
+    border-color: var(--cms-purple);
+}
+
+.cms-toolbar-divider {
     width: 1px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0 4px;
+    height: 24px;
+    background: var(--color-border, #e5e7eb);
+    margin: 0 0.25rem;
 }
 
 .cms-floating-toolbar .cms-save-btn {
-    width: auto;
-    padding: 0 12px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--cms-purple);
     color: #fff;
-    font-weight: 500;
+    border-color: var(--cms-purple);
+    font-weight: 600;
 }
 
 .cms-floating-toolbar .cms-save-btn:hover {
-    opacity: 0.9;
+    background: var(--cms-purple-dark);
+    border-color: var(--cms-purple-dark);
 }
 
 .cms-floating-toolbar .cms-cancel-btn {
-    width: auto;
-    padding: 0 12px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--color-bg-subtle, #f3f4f6);
+    color: var(--color-text, #1f2937);
+    border: 1px solid var(--color-border, #e5e7eb);
+}
+
+.cms-floating-toolbar .cms-cancel-btn:hover {
+    background: var(--color-border, #e5e7eb);
 }
 
 /* ============================================
@@ -198,27 +225,64 @@ body.cms-edit-mode .site-header {
 /* Hover state - outline only, zero specificity */
 :where([data-cms-editable]):hover,
 :where([data-cms-global]):hover {
-    outline: 2px dashed rgba(102, 126, 234, 0.6);
+    outline: 2px dashed var(--cms-purple);
     outline-offset: 4px;
+    cursor: pointer;
+}
+
+/* Show edit hint on hover */
+:where([data-cms-editable]):hover::after,
+:where([data-cms-global]):hover::after {
+    content: 'Click to edit';
+    position: absolute;
+    top: -24px;
+    right: 0;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: var(--cms-purple);
+    color: white;
+    border-radius: 3px;
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Ensure editable elements can show the hint */
+:where([data-cms-editable]),
+:where([data-cms-global]) {
+    position: relative;
 }
 
 /* Active editing state */
 :where([data-cms-editable]).cms-editing,
 :where([data-cms-global]).cms-editing {
-    outline: 2px solid #667eea;
+    outline: 2px solid var(--cms-purple);
     outline-offset: 4px;
+}
+
+/* Hide hint while editing */
+:where([data-cms-editable]).cms-editing::after,
+:where([data-cms-global]).cms-editing::after {
+    display: none;
 }
 
 /* Saved flash */
 :where([data-cms-editable]).cms-saved,
 :where([data-cms-global]).cms-saved {
-    outline: 2px solid #10b981;
+    outline: 2px solid var(--cms-success);
     outline-offset: 4px;
 }
 
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-    50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+/* Editable images inside content areas */
+.cms-editing img.cms-editable-image {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cms-editing img.cms-editable-image:hover {
+    outline: 3px solid var(--cms-purple);
+    outline-offset: 3px;
+    opacity: 0.85;
+    transform: scale(1.02);
 }
 
 /* ============================================
@@ -246,16 +310,15 @@ body.cms-edit-mode .site-header {
     width: 90%;
     max-width: 800px;
     max-height: 80vh;
-    background: #fff;
+    background: var(--color-card-bg, #fff);
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    /* Isolate modal styles from site */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
-    color: #1e293b;
+    color: var(--color-text, #1e293b);
     line-height: 1.5;
 }
 
@@ -264,14 +327,14 @@ body.cms-edit-mode .site-header {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--color-bg-subtle, #f8fafc);
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
 }
 
 .cms-modal-header h3 {
     margin: 0;
     font-size: 18px;
-    color: #1a1a2e;
+    color: var(--color-text, #1a1a2e);
 }
 
 .cms-modal-close {
@@ -283,15 +346,15 @@ body.cms-edit-mode .site-header {
     background: transparent;
     border: none;
     font-size: 24px;
-    color: #64748b;
+    color: var(--color-text-muted, #64748b);
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s ease;
 }
 
 .cms-modal-close:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: var(--color-border, #e2e8f0);
+    color: var(--color-text, #1e293b);
 }
 
 .cms-modal-body {
@@ -327,24 +390,24 @@ body.cms-edit-mode .site-header {
     align-items: center;
     justify-content: center;
     padding: 40px;
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--color-border, #cbd5e1);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .cms-media-upload label:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
+    border-color: var(--cms-purple);
+    background: rgba(75, 38, 121, 0.05);
 }
 
 .cms-media-upload label svg {
-    color: #94a3b8;
+    color: var(--color-text-muted, #94a3b8);
     margin-bottom: 10px;
 }
 
 .cms-media-upload label span {
-    color: #64748b;
+    color: var(--color-text-muted, #64748b);
     font-size: 14px;
 }
 
@@ -365,7 +428,7 @@ body.cms-edit-mode .site-header {
 }
 
 .cms-media-item:hover {
-    border-color: #667eea;
+    border-color: var(--cms-purple);
     transform: scale(1.02);
 }
 
@@ -408,16 +471,18 @@ body.cms-edit-mode .site-header {
 .cms-form-group label {
     font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: var(--color-text, #374151);
 }
 
 .cms-form-group input,
 .cms-form-group select,
 .cms-form-group textarea {
     padding: 10px 14px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--color-border, #d1d5db);
     border-radius: 8px;
     font-size: 14px;
+    background: var(--color-card-bg, #fff);
+    color: var(--color-text, #1f2937);
     transition: all 0.2s ease;
 }
 
@@ -425,8 +490,8 @@ body.cms-edit-mode .site-header {
 .cms-form-group select:focus,
 .cms-form-group textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--cms-purple);
+    box-shadow: 0 0 0 3px rgba(75, 38, 121, 0.1);
 }
 
 .cms-form-actions {
@@ -434,6 +499,44 @@ body.cms-edit-mode .site-header {
     justify-content: flex-end;
     gap: 10px;
     padding-top: 10px;
+}
+
+/* ============================================
+   Notification Toast (shared style)
+   ============================================ */
+
+.cms-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 0.75rem 1.5rem;
+    background: var(--cms-dark-bg);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    z-index: 100001;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.cms-notification.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.cms-notification.success {
+    background: var(--cms-success);
+}
+
+.cms-notification.error {
+    background: var(--cms-error);
+}
+
+.cms-notification.info {
+    background: #0891b2;
 }
 
 /* ============================================
@@ -455,18 +558,74 @@ body.cms-edit-mode .site-header {
     }
 
     .cms-floating-toolbar {
-        flex-wrap: wrap;
-        max-width: calc(100vw - 20px);
+        max-width: calc(100vw - 40px);
+    }
+
+    /* Hide edit hint on mobile */
+    :where([data-cms-editable]):hover::after,
+    :where([data-cms-global]):hover::after {
+        display: none;
     }
 }
 
 /* ============================================
-   Dark mode support (if site has dark mode)
+   Dark mode support
    ============================================ */
 
+[data-theme="dark"] .cms-floating-toolbar {
+    background: var(--cms-dark-bg);
+    border-color: #333;
+}
+
+[data-theme="dark"] .cms-floating-toolbar button {
+    background: var(--cms-dark-bg-light);
+    border-color: #444;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .cms-floating-toolbar button:hover,
+[data-theme="dark"] .cms-floating-toolbar button.active {
+    background: var(--cms-purple);
+    color: white;
+    border-color: var(--cms-purple);
+}
+
+[data-theme="dark"] .cms-floating-toolbar .cms-cancel-btn {
+    background: var(--cms-dark-bg-light);
+    border-color: #444;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .cms-modal-content {
+    background: var(--cms-dark-bg);
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .cms-modal-header {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+[data-theme="dark"] .cms-modal-header h3 {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .cms-form-group label {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .cms-form-group input,
+[data-theme="dark"] .cms-form-group select,
+[data-theme="dark"] .cms-form-group textarea {
+    background: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+/* Also support prefers-color-scheme for system dark mode */
 @media (prefers-color-scheme: dark) {
     .cms-modal-content {
-        background: #1e293b;
+        background: var(--cms-dark-bg);
         color: #f1f5f9;
     }
 

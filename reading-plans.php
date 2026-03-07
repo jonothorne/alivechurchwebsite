@@ -23,13 +23,18 @@ $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get user's plan statuses if logged in
 $userPlanStatus = [];
+$userPlanProgress = [];
 if ($user) {
     $userStudies = new UserStudies($pdo, $user['id']);
     $activePlans = $userStudies->getActivePlans();
     $completedPlans = $userStudies->getCompletedPlans();
-    
+
     foreach ($activePlans as $p) {
         $userPlanStatus[$p['id']] = 'active';
+        $userPlanProgress[$p['id']] = [
+            'slug' => $p['slug'],
+            'current_day' => $p['current_day']
+        ];
     }
     foreach ($completedPlans as $p) {
         $userPlanStatus[$p['id']] = 'completed';
@@ -72,40 +77,48 @@ include __DIR__ . '/includes/header.php';
 
         <div class="plans-grid">
             <?php foreach ($plans as $plan): ?>
-                <div class="plan-card <?= ($userPlanStatus[$plan['id']] ?? '') === 'active' ? 'plan-active' : ''; ?> <?= ($userPlanStatus[$plan['id']] ?? '') === 'completed' ? 'plan-completed' : ''; ?>">
-                    <div class="plan-icon"><?= $plan['icon'] ?: '📖'; ?></div>
-                    <h2><?= htmlspecialchars($plan['title']); ?></h2>
-                    <p class="plan-description"><?= htmlspecialchars($plan['description']); ?></p>
-                    <div class="plan-meta">
-                        <span class="plan-duration"><?= $plan['duration_days']; ?> days</span>
-                        <?php if ($plan['total_users'] > 0): ?>
-                            <span class="plan-users"><?= number_format($plan['total_users']); ?> readers</span>
+                <article class="plan-card <?= ($userPlanStatus[$plan['id']] ?? '') === 'active' ? 'plan-active' : ''; ?> <?= ($userPlanStatus[$plan['id']] ?? '') === 'completed' ? 'plan-completed' : ''; ?>">
+                    <div class="plan-thumbnail">
+                        <?php if ($plan['cover_image']): ?>
+                            <img src="<?= htmlspecialchars($plan['cover_image']); ?>" alt="<?= htmlspecialchars($plan['title']); ?>">
+                        <?php else: ?>
+                            <div class="plan-thumbnail-placeholder">
+                                <span class="plan-icon"><?= $plan['icon'] ?: '📖'; ?></span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($plan['is_featured']): ?>
+                            <span class="featured-badge">Featured</span>
+                        <?php endif; ?>
+                        <?php if (($userPlanStatus[$plan['id']] ?? '') === 'active'): ?>
+                            <span class="plan-status-badge active">In Progress</span>
+                        <?php elseif (($userPlanStatus[$plan['id']] ?? '') === 'completed'): ?>
+                            <span class="plan-status-badge completed">✓ Completed</span>
                         <?php endif; ?>
                     </div>
-                    
-                    <?php if (!$user): ?>
-                        <a href="/login?redirect=/reading-plans" class="btn btn-outline">Login to Start</a>
-                    <?php elseif (($userPlanStatus[$plan['id']] ?? '') === 'active'): ?>
-                        <a href="/my-studies" class="btn btn-primary">Continue Reading</a>
-                    <?php elseif (($userPlanStatus[$plan['id']] ?? '') === 'completed'): ?>
-                        <span class="completed-badge">✓ Completed</span>
-                        <form method="post" action="/api/user-studies.php" class="restart-form">
-                            <input type="hidden" name="action" value="start_plan">
-                            <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
-                            <button type="submit" class="btn btn-outline btn-sm">Start Again</button>
-                        </form>
-                    <?php else: ?>
-                        <form method="post" action="/api/user-studies.php" class="start-form">
-                            <input type="hidden" name="action" value="start_plan">
-                            <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
-                            <button type="submit" class="btn btn-primary">Start Plan</button>
-                        </form>
-                    <?php endif; ?>
-                    
-                    <?php if ($plan['is_featured']): ?>
-                        <span class="featured-badge">Featured</span>
-                    <?php endif; ?>
-                </div>
+                    <div class="plan-content">
+                        <h2><?= htmlspecialchars($plan['title']); ?></h2>
+                        <p class="plan-description"><?= htmlspecialchars($plan['description']); ?></p>
+                        <div class="plan-meta">
+                            <span class="plan-duration"><?= $plan['duration_days']; ?> days</span>
+                            <?php if ($plan['total_users'] > 0): ?>
+                                <span class="plan-users"><?= number_format($plan['total_users']); ?> readers</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="plan-actions">
+                            <?php if (!$user): ?>
+                                <a href="/reading-plan/<?= htmlspecialchars($plan['slug']); ?>" class="btn btn-outline">View Plan</a>
+                            <?php elseif (($userPlanStatus[$plan['id']] ?? '') === 'active'):
+                                $progress = $userPlanProgress[$plan['id']];
+                            ?>
+                                <a href="/reading-plan/<?= htmlspecialchars($progress['slug']); ?>/day/<?= $progress['current_day']; ?>" class="btn btn-primary">Continue Reading</a>
+                            <?php elseif (($userPlanStatus[$plan['id']] ?? '') === 'completed'): ?>
+                                <a href="/reading-plan/<?= htmlspecialchars($plan['slug']); ?>" class="btn btn-outline">Start Again</a>
+                            <?php else: ?>
+                                <a href="/reading-plan/<?= htmlspecialchars($plan['slug']); ?>" class="btn btn-outline">Start Plan</a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </article>
             <?php endforeach; ?>
         </div>
     </div>
@@ -162,31 +175,6 @@ if (clearSearchBtn) {
         searchInput.focus();
     });
 }
-
-// Start/restart plan functionality
-document.querySelectorAll('.start-form, .restart-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        
-        try {
-            const response = await fetch('/api/user-studies.php', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                window.location.href = '/my-studies';
-            } else {
-                alert(result.error || 'Failed to start plan');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to start plan');
-        }
-    });
-});
 </script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

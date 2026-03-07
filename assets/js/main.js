@@ -43,7 +43,12 @@
     }
 
     if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
+        // Hide theme toggle in PWA mode (follows system settings)
+        if (window.isPWA) {
+            themeToggle.style.display = 'none';
+        } else {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
     }
 
     // ==================== NAV TOGGLE ====================

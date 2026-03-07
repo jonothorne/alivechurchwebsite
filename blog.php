@@ -153,7 +153,7 @@ if (!isset($cms)) {
                         <p>
                             <?php if ($search): ?>
                                 Showing results for "<?= htmlspecialchars($search); ?>"
-                            <?php elseif ($categorySlug && isset($currentCategory)): ?>
+                            <?php elseif ($categorySlug && !empty($currentCategory)): ?>
                                 Browsing: <?= htmlspecialchars($currentCategory['name']); ?>
                             <?php elseif ($tagSlug): ?>
                                 Tagged: <?= htmlspecialchars($tagSlug); ?>

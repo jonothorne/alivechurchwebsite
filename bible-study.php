@@ -55,7 +55,7 @@ if (!isset($cms)) {
 
         <!-- Search Bar -->
         <form action="/bible-study/search" method="GET" class="study-search-form hero-search">
-            <input type="text" name="q" placeholder="Search studies or enter a verse (e.g., John 3:16)..." aria-label="Search Bible studies">
+            <input type="text" name="q" placeholder="Search studies or enter a verse (e.g., John 3:16)..." aria-label="Search Bible studies" style="background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.3) !important; color: #fff !important; -webkit-appearance: none !important;">
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
         <div class="hero-topics-link">
