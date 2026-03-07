@@ -67,6 +67,40 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
 <?php if ($is_cms_edit_mode): ?>
 <script src="/assets/js/cms-editor.js"></script>
 <?php endif; ?>
+<?php if ($is_cms_edit_mode && !empty($is_block_builder_page)): ?>
+<script src="/assets/js/block-builder.js"></script>
+<?php endif; ?>
+<?php
+// Show "Use Block Builder" button for admins on dynamic pages
+$show_blocks_btn = $is_cms_edit_mode
+    && empty($is_block_builder_page)
+    && !isset($_GET['blocks'])
+    && !isset($_GET['preview']);
+if ($show_blocks_btn): ?>
+<a href="?blocks=true" class="switch-to-blocks-btn" title="Switch to Block Builder">Use Block Builder</a>
+<style>
+.switch-to-blocks-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #4B2679;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(75, 38, 121, 0.3);
+    z-index: 9999;
+    transition: transform 0.2s, background 0.2s;
+}
+.switch-to-blocks-btn:hover {
+    background: #6B3FA0;
+    transform: translateY(-2px);
+    color: white;
+}
+</style>
+<?php endif; ?>
 
 <!-- Service Worker Registration -->
 <script>

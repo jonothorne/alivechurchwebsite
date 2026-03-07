@@ -125,6 +125,9 @@ if ($current_user && $is_bible_study_page) {
     <?php if ($is_cms_edit_mode): ?>
     <link rel="stylesheet" href="/assets/css/cms-editor.css">
     <?php endif; ?>
+    <?php if ($is_cms_edit_mode && !empty($is_block_builder_page)): ?>
+    <link rel="stylesheet" href="/assets/css/block-builder.css">
+    <?php endif; ?>
     <script>
     // Apply theme immediately to prevent flash of wrong theme
     (function() {

@@ -389,3 +389,20 @@ CREATE TABLE IF NOT EXISTS profanity_words (
     UNIQUE KEY unique_word (word),
     INDEX idx_active (active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Page blocks for block-based page builder
+CREATE TABLE IF NOT EXISTS page_blocks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_slug VARCHAR(100) NOT NULL,
+    block_uuid VARCHAR(36) NOT NULL,
+    block_type VARCHAR(50) NOT NULL,
+    block_data JSON NOT NULL,
+    display_order INT DEFAULT 0,
+    visible BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by INT,
+    UNIQUE KEY unique_block (page_slug, block_uuid),
+    INDEX idx_page_order (page_slug, display_order),
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
