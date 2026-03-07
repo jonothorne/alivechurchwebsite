@@ -68,6 +68,7 @@ $routes = [
     '/admin/blog/comments' => '/admin/blog/comments.php',
     '/admin/bible-study' => '/admin/bible-study.php',
     '/admin/bible-study/edit' => '/admin/bible-study/edit.php',
+    '/admin/profanity-filter' => '/admin/profanity-filter.php',
 ];
 
 // Check if route exists
@@ -97,6 +98,13 @@ if (preg_match('#^/events/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
 if (preg_match('#^/blog/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
     $_GET['slug'] = $matches[1];
     require __DIR__ . '/blog-post.php';
+    return true;
+}
+
+// User profile pages: /user/username -> user-profile.php?username=username
+if (preg_match('#^/user/([a-zA-Z0-9_-]+)$#', $uri, $matches)) {
+    $_GET['username'] = $matches[1];
+    require __DIR__ . '/user-profile.php';
     return true;
 }
 

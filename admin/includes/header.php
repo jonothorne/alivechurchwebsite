@@ -73,6 +73,10 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="icon">👤</span>
                     <span>Users</span>
                 </a>
+                <a href="/admin/profanity-filter" class="nav-item <?= $current_page === 'profanity-filter' ? 'active' : ''; ?>">
+                    <span class="icon">🚫</span>
+                    <span>Profanity Filter</span>
+                </a>
                 <a href="/admin/settings" class="nav-item <?= $current_page === 'settings' ? 'active' : ''; ?>">
                     <span class="icon">⚙️</span>
                     <span>Site Settings</span>

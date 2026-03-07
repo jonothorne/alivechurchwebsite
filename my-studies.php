@@ -31,7 +31,7 @@ $page_title = 'My Studies | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="dashboard-hero">
+<section class="dashboard-hero <?= $hero_texture_class; ?>">
     <div class="container">
         <div class="dashboard-welcome">
             <div class="welcome-text">

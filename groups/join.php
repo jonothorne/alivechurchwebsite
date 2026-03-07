@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light">Groups</p>
         <h1><?= $selected_group ? 'Join: ' . htmlspecialchars($selected_group['title']) : 'Life change happens in circles, not rows.'; ?></h1>

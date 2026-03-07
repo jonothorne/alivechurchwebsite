@@ -1,8 +1,12 @@
 <?php
 require __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/profanity-filter.php';
 
 $pdo = getDbConnection();
+$auth = new Auth($pdo);
+$currentUser = $auth->user();
 
 // Get post slug from URL
 $slug = $_GET['slug'] ?? '';
@@ -18,8 +22,7 @@ $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_s
                        LEFT JOIN users u ON p.author_id = u.id
                        WHERE p.slug = ? AND (p.status = 'published' OR ? = 1)");
 
-// Allow preview for logged-in admins
-session_start();
+// Allow preview for logged-in admins (session already started by Auth)
 $isAdmin = isset($_SESSION['admin_user_id']) ? 1 : 0;
 $stmt->execute([$slug, $isAdmin]);
 $post = $stmt->fetch();
@@ -48,17 +51,21 @@ $tagStmt = $pdo->prepare("SELECT t.* FROM blog_tags t
 $tagStmt->execute([$post['id']]);
 $postTags = $tagStmt->fetchAll();
 
-// Get approved comments
-$commentStmt = $pdo->prepare("SELECT * FROM blog_comments
-                              WHERE post_id = ? AND status = 'approved' AND parent_id IS NULL
-                              ORDER BY created_at ASC");
+// Get approved comments with user data
+$commentStmt = $pdo->prepare("SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.avatar as user_avatar, u.avatar_color as user_avatar_color
+                              FROM blog_comments c
+                              LEFT JOIN users u ON c.user_id = u.id
+                              WHERE c.post_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
+                              ORDER BY c.created_at ASC");
 $commentStmt->execute([$post['id']]);
 $comments = $commentStmt->fetchAll();
 
-// Get comment replies
-$replyStmt = $pdo->prepare("SELECT * FROM blog_comments
-                            WHERE post_id = ? AND status = 'approved' AND parent_id IS NOT NULL
-                            ORDER BY created_at ASC");
+// Get comment replies with user data
+$replyStmt = $pdo->prepare("SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.avatar as user_avatar, u.avatar_color as user_avatar_color
+                            FROM blog_comments c
+                            LEFT JOIN users u ON c.user_id = u.id
+                            WHERE c.post_id = ? AND c.status = 'approved' AND c.parent_id IS NOT NULL
+                            ORDER BY c.created_at ASC");
 $replyStmt->execute([$post['id']]);
 $replies = $replyStmt->fetchAll();
 
@@ -69,24 +76,56 @@ foreach ($replies as $reply) {
 }
 
 // Handle comment submission
-$commentSuccess = false;
-$commentError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
-    $authorName = trim($_POST['author_name'] ?? '');
-    $authorEmail = trim($_POST['author_email'] ?? '');
     $commentContent = trim($_POST['content'] ?? '');
     $parentId = !empty($_POST['parent_id']) ? intval($_POST['parent_id']) : null;
 
-    if (empty($authorName) || empty($authorEmail) || empty($commentContent)) {
-        $commentError = 'Please fill in all required fields.';
-    } elseif (!filter_var($authorEmail, FILTER_VALIDATE_EMAIL)) {
-        $commentError = 'Please enter a valid email address.';
+    if (empty($commentContent)) {
+        $_SESSION['comment_error'] = 'Please enter a comment.';
     } else {
-        $insertStmt = $pdo->prepare("INSERT INTO blog_comments (post_id, parent_id, author_name, author_email, content) VALUES (?, ?, ?, ?, ?)");
-        $insertStmt->execute([$post['id'], $parentId, $authorName, $authorEmail, $commentContent]);
-        $commentSuccess = true;
+        // Check profanity
+        $profanityCheck = checkProfanity($commentContent);
+
+        if ($currentUser) {
+            // Logged-in user: use their data
+            $userId = $currentUser['id'];
+            $authorName = $currentUser['full_name'] ?? $currentUser['username'];
+            $authorEmail = $currentUser['email'];
+
+            // Auto-approve if no profanity, otherwise send for review
+            $status = $profanityCheck['has_profanity'] ? 'pending' : 'approved';
+
+            $insertStmt = $pdo->prepare("INSERT INTO blog_comments (post_id, user_id, parent_id, author_name, author_email, content, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $insertStmt->execute([$post['id'], $userId, $parentId, $authorName, $authorEmail, $commentContent, $status]);
+
+            $_SESSION['comment_success'] = ($status === 'approved') ? 'auto' : 'pending';
+        } else {
+            // Anonymous user: require name and email
+            $authorName = trim($_POST['author_name'] ?? '');
+            $authorEmail = trim($_POST['author_email'] ?? '');
+
+            if (empty($authorName) || empty($authorEmail)) {
+                $_SESSION['comment_error'] = 'Please fill in all required fields.';
+            } elseif (!filter_var($authorEmail, FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['comment_error'] = 'Please enter a valid email address.';
+            } else {
+                $insertStmt = $pdo->prepare("INSERT INTO blog_comments (post_id, parent_id, author_name, author_email, content, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+                $insertStmt->execute([$post['id'], $parentId, $authorName, $authorEmail, $commentContent]);
+                $_SESSION['comment_success'] = 'pending';
+            }
+        }
     }
+
+    // Redirect to prevent form resubmission and scroll to comments
+    header('Location: /blog/' . $slug . '#comments');
+    exit;
 }
+
+// Get flash messages from session
+$commentSuccess = $_SESSION['comment_success'] ?? false;
+$commentError = $_SESSION['comment_error'] ?? '';
+$commentAutoApproved = ($commentSuccess === 'auto');
+unset($_SESSION['comment_success'], $_SESSION['comment_error']);
 
 // Get related posts
 $relatedStmt = $pdo->prepare("SELECT p.*, c.name as category_name
@@ -160,12 +199,16 @@ if (!isset($cms)) {
     </div>
 
     <!-- Comments Section -->
-    <section class="blog-comments">
+    <section id="comments" class="blog-comments">
         <div class="container narrow">
             <h2>Comments (<?= count($comments); ?>)</h2>
 
             <?php if ($commentSuccess): ?>
-                <div class="alert alert-success">Thank you for your comment! It will appear after moderation.</div>
+                <?php if ($commentAutoApproved): ?>
+                    <div class="alert alert-success">Your comment has been posted!</div>
+                <?php else: ?>
+                    <div class="alert alert-success">Thank you for your comment! It will appear after moderation.</div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($commentError): ?>
@@ -181,10 +224,22 @@ if (!isset($cms)) {
                         <?php
                         $commentText = htmlspecialchars($comment['content']);
                         $isLong = strlen($comment['content']) > $maxLength;
+                        $displayName = $comment['user_id'] ? ($comment['user_full_name'] ?? $comment['author_name']) : $comment['author_name'];
                         ?>
                         <div class="comment" id="comment-<?= $comment['id']; ?>">
                             <div class="comment-header">
-                                <strong class="comment-author"><?= htmlspecialchars($comment['author_name']); ?></strong>
+                                <?php if ($comment['user_id'] && $comment['user_avatar']): ?>
+                                    <img src="<?= htmlspecialchars($comment['user_avatar']); ?>" alt="" class="comment-avatar">
+                                <?php elseif ($comment['user_id']): ?>
+                                    <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($comment['user_avatar_color'] ?? '#4b2679'); ?>">
+                                        <?= strtoupper(substr($displayName, 0, 1)); ?>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($comment['user_id'] && $comment['user_username']): ?>
+                                    <a href="/user/<?= htmlspecialchars($comment['user_username']); ?>" class="comment-author-link"><?= htmlspecialchars($displayName); ?></a>
+                                <?php else: ?>
+                                    <strong class="comment-author"><?= htmlspecialchars($displayName); ?></strong>
+                                <?php endif; ?>
                                 <span class="comment-date"><?= date('M j, Y \a\t g:ia', strtotime($comment['created_at'])); ?></span>
                             </div>
                             <div class="comment-content <?= $isLong ? 'truncated' : ''; ?>" id="comment-content-<?= $comment['id']; ?>">
@@ -199,10 +254,23 @@ if (!isset($cms)) {
                             <div class="reply-form-container" id="reply-form-<?= $comment['id']; ?>" style="display: none;">
                                 <form method="POST" class="comment-form">
                                     <input type="hidden" name="parent_id" value="<?= $comment['id']; ?>">
-                                    <div class="form-row">
-                                        <input type="text" name="author_name" placeholder="Your Name *" required>
-                                        <input type="email" name="author_email" placeholder="Your Email *" required>
-                                    </div>
+                                    <?php if ($currentUser): ?>
+                                        <div class="comment-form-user">
+                                            <?php if ($currentUser['avatar']): ?>
+                                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                                            <?php else: ?>
+                                                <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
+                                                    <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <span class="comment-form-username"><?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="form-row">
+                                            <input type="text" name="author_name" placeholder="Your Name *" required>
+                                            <input type="email" name="author_email" placeholder="Your Email *" required>
+                                        </div>
+                                    <?php endif; ?>
                                     <textarea name="content" placeholder="Your reply..." required></textarea>
                                     <button type="submit" name="submit_comment" class="btn btn-primary">Post Reply</button>
                                     <button type="button" class="btn btn-outline" onclick="hideReplyForm(<?= $comment['id']; ?>)">Cancel</button>
@@ -216,10 +284,22 @@ if (!isset($cms)) {
                                         <?php
                                         $replyText = htmlspecialchars($reply['content']);
                                         $isReplyLong = strlen($reply['content']) > $maxLength;
+                                        $replyDisplayName = $reply['user_id'] ? ($reply['user_full_name'] ?? $reply['author_name']) : $reply['author_name'];
                                         ?>
                                         <div class="comment reply">
                                             <div class="comment-header">
-                                                <strong class="comment-author"><?= htmlspecialchars($reply['author_name']); ?></strong>
+                                                <?php if ($reply['user_id'] && $reply['user_avatar']): ?>
+                                                    <img src="<?= htmlspecialchars($reply['user_avatar']); ?>" alt="" class="comment-avatar">
+                                                <?php elseif ($reply['user_id']): ?>
+                                                    <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($reply['user_avatar_color'] ?? '#4b2679'); ?>">
+                                                        <?= strtoupper(substr($replyDisplayName, 0, 1)); ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($reply['user_id'] && $reply['user_username']): ?>
+                                                    <a href="/user/<?= htmlspecialchars($reply['user_username']); ?>" class="comment-author-link"><?= htmlspecialchars($replyDisplayName); ?></a>
+                                                <?php else: ?>
+                                                    <strong class="comment-author"><?= htmlspecialchars($replyDisplayName); ?></strong>
+                                                <?php endif; ?>
                                                 <span class="comment-date"><?= date('M j, Y \a\t g:ia', strtotime($reply['created_at'])); ?></span>
                                             </div>
                                             <div class="comment-content <?= $isReplyLong ? 'truncated' : ''; ?>" id="comment-content-<?= $reply['id']; ?>">
@@ -240,14 +320,32 @@ if (!isset($cms)) {
             <!-- Comment Form -->
             <div class="comment-form-section">
                 <h3>Leave a Comment</h3>
-                <form method="POST" class="comment-form">
-                    <div class="form-row">
-                        <input type="text" name="author_name" placeholder="Your Name *" required>
-                        <input type="email" name="author_email" placeholder="Your Email *" required>
-                    </div>
-                    <textarea name="content" placeholder="Share your thoughts..." rows="5" required></textarea>
-                    <button type="submit" name="submit_comment" class="btn btn-primary">Post Comment</button>
-                </form>
+                <?php if ($currentUser): ?>
+                    <form method="POST" class="comment-form">
+                        <div class="comment-form-user">
+                            <?php if ($currentUser['avatar']): ?>
+                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                            <?php else: ?>
+                                <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
+                                    <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>
+                                </div>
+                            <?php endif; ?>
+                            <span class="comment-form-username"><?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?></span>
+                        </div>
+                        <textarea name="content" placeholder="Share your thoughts..." rows="5" required></textarea>
+                        <button type="submit" name="submit_comment" class="btn btn-primary">Post Comment</button>
+                    </form>
+                <?php else: ?>
+                    <form method="POST" class="comment-form">
+                        <div class="form-row">
+                            <input type="text" name="author_name" placeholder="Your Name *" required>
+                            <input type="email" name="author_email" placeholder="Your Email *" required>
+                        </div>
+                        <textarea name="content" placeholder="Share your thoughts..." rows="5" required></textarea>
+                        <button type="submit" name="submit_comment" class="btn btn-primary">Post Comment</button>
+                    </form>
+                    <p class="comment-login-prompt">Have an account? <a href="/login?redirect=<?= urlencode('/blog/' . $post['slug']); ?>">Log in</a> to post instantly.</p>
+                <?php endif; ?>
             </div>
         </div>
     </section>

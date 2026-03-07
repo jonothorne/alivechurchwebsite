@@ -163,7 +163,7 @@ class Auth {
         $stmt = $this->pdo->prepare("
             SELECT id, username, email, full_name, avatar, avatar_color, bio, role,
                    email_verified, reading_streak, longest_streak, last_reading_date,
-                   preferences, created_at, last_login
+                   preferences, social_links, created_at, last_login
             FROM users WHERE id = ? AND active = TRUE
         ");
         $stmt->execute([$id]);
@@ -546,7 +546,7 @@ class Auth {
             return ['success' => false, 'error' => 'Not authenticated'];
         }
 
-        $allowedFields = ['full_name', 'bio', 'avatar', 'preferences'];
+        $allowedFields = ['full_name', 'bio', 'avatar', 'preferences', 'social_links'];
         $updates = [];
         $params = [];
 

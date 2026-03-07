@@ -311,3 +311,81 @@ CREATE TABLE IF NOT EXISTS page_visits (
     INDEX idx_session_id (session_id),
     INDEX idx_device_type (device_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog posts
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    excerpt TEXT,
+    content LONGTEXT,
+    featured_image VARCHAR(500),
+    category_id INT,
+    author_id INT,
+    status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
+    published_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_slug (slug),
+    INDEX idx_status (status),
+    INDEX idx_published (published_at),
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog categories
+CREATE TABLE IF NOT EXISTS blog_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_slug (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog tags
+CREATE TABLE IF NOT EXISTS blog_tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    INDEX idx_slug (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog post tags junction table
+CREATE TABLE IF NOT EXISTS blog_post_tags (
+    post_id INT NOT NULL,
+    tag_id INT NOT NULL,
+    PRIMARY KEY (post_id, tag_id),
+    FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES blog_tags(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog comments
+CREATE TABLE IF NOT EXISTS blog_comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    post_id INT NOT NULL,
+    user_id INT NULL,
+    parent_id INT NULL,
+    author_name VARCHAR(100) NULL,
+    author_email VARCHAR(255) NULL,
+    content TEXT NOT NULL,
+    status ENUM('pending', 'approved', 'spam') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_post (post_id),
+    INDEX idx_user (user_id),
+    INDEX idx_parent (parent_id),
+    INDEX idx_status (status),
+    FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (parent_id) REFERENCES blog_comments(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Profanity filter words
+CREATE TABLE IF NOT EXISTS profanity_words (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    word VARCHAR(100) NOT NULL,
+    category ENUM('profanity', 'slur', 'sexual', 'threat', 'other') DEFAULT 'profanity',
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_word (word),
+    INDEX idx_active (active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

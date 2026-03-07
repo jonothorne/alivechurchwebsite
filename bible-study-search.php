@@ -127,7 +127,7 @@ $page_title = 'Search Bible Studies | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow">Bible Study Library</p>
         <h1>Search Studies</h1>

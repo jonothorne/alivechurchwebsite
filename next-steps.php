@@ -27,7 +27,7 @@ if (!isset($cms)) {
     $cms = new ContentManager('next-steps');
 }
 ?>
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light" data-cms-editable="hero_eyebrow" data-cms-page="next-steps" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Next Steps'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="next-steps" data-cms-type="text"><?= $cms->text('hero_headline', 'Let\'s take the journey together.'); ?></h1>

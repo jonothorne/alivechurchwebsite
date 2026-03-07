@@ -34,7 +34,7 @@ if (!$event && !$localDetails) {
     $page_title = 'Event Not Found | ' . $site['name'];
     include __DIR__ . '/../includes/header.php';
     ?>
-    <section class="page-hero">
+    <section class="page-hero <?= $hero_texture_class; ?>">
         <div class="container narrow">
             <h1>Event Not Found</h1>
             <p>Sorry, we couldn't find that event. It may have ended or been removed.</p>

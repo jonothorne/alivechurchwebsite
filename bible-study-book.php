@@ -25,7 +25,7 @@ if (!$book) {
     $page_title = 'Book Not Found | ' . $site['name'];
     include __DIR__ . '/includes/header.php';
     ?>
-    <section class="page-hero">
+    <section class="page-hero <?= $hero_texture_class; ?>">
         <div class="container narrow">
             <h1>Book Not Found</h1>
             <p>Sorry, we couldn't find that book of the Bible.</p>

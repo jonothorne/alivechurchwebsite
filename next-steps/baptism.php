@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light">Next Steps</p>
         <h1>Baptism: Declare Your Faith</h1>

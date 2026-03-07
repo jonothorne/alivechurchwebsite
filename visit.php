@@ -32,7 +32,7 @@ if (!isset($cms)) {
     $cms = new ContentManager('visit');
 }
 ?>
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Plan a Visit'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_headline', 'You belong before you believe.'); ?></h1>

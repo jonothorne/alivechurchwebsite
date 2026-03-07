@@ -9,7 +9,7 @@ if (!isset($cms)) {
     $cms = new ContentManager('watch');
 }
 ?>
-<section class="page-hero watch-hero">
+<section class="page-hero watch-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <?php if ($is_live): ?>
             <div class="live-indicator">

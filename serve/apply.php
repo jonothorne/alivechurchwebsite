@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light">Serve With Us</p>
         <h1>Apply to Serve<?= $selected_team ? ': ' . htmlspecialchars($selected_team['title']) : ''; ?></h1>

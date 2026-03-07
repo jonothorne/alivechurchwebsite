@@ -12,6 +12,10 @@ if (!isset($page_title)) {
 }
 $current_url = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
 
+// Load hero texture helper
+require_once __DIR__ . '/hero-textures.php';
+$hero_texture_class = get_page_texture($current_url);
+
 // Check if admin is logged in for CMS edit mode
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/db-config.php';
@@ -209,6 +213,10 @@ if ($current_user && $show_study_subnav) {
                         <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
                     </button>
                     <div class="user-dropdown">
+                        <a href="/user/<?= htmlspecialchars($current_user['username']); ?>" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            My Profile
+                        </a>
                         <a href="/my-studies" class="dropdown-item">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                             My Studies

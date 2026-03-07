@@ -28,7 +28,7 @@ if (!isset($cms)) {
 }
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light" data-cms-editable="hero_eyebrow" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Prayer'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('hero_headline', 'We\'re praying for you.'); ?></h1>

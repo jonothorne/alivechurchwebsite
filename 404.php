@@ -5,7 +5,7 @@ http_response_code(404);
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow center-text">
         <p class="eyebrow light">Error 404</p>
         <h1>Page not found</h1>

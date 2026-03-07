@@ -40,7 +40,7 @@ if (!isset($cms)) {
 }
 ?>
 
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow light" data-cms-editable="hero_eyebrow" data-cms-page="contact-us" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Get In Touch'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="contact-us" data-cms-type="text"><?= $cms->text('hero_headline', 'We\'d love to hear from you'); ?></h1>

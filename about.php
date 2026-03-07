@@ -9,7 +9,7 @@ if (!isset($cms)) {
     $cms = new ContentManager('about');
 }
 ?>
-<section class="page-hero">
+<section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <?= $cms->text('hero_eyebrow', 'About Alive', ['tag' => 'p', 'class' => 'eyebrow']); ?>
         <?= $cms->text('hero_headline', 'Our story & values.', ['tag' => 'h1']); ?>
