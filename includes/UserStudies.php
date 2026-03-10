@@ -222,6 +222,17 @@ class UserStudies {
         $stmt->execute([$this->userId]);
         $stats['saved'] = $stmt->fetchColumn();
 
+        // Reading plans completed (where user finished final day)
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(DISTINCT plan_id) FROM user_reading_plan_completions
+            WHERE user_id = ?
+            AND (plan_id, day_number) IN (
+                SELECT plan_id, MAX(day_number) FROM reading_plan_days GROUP BY plan_id
+            )
+        ");
+        $stmt->execute([$this->userId]);
+        $stats['plans_completed'] = $stmt->fetchColumn();
+
         return $stats;
     }
 

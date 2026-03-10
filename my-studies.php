@@ -65,8 +65,8 @@ include __DIR__ . '/includes/header.php';
                 <span class="stat-label">Studies Read</span>
             </div>
             <div class="stat-card">
-                <span class="stat-number"><?= $stats['completed']; ?></span>
-                <span class="stat-label">Completed</span>
+                <span class="stat-number"><?= $stats['plans_completed']; ?></span>
+                <span class="stat-label">Plans Completed</span>
             </div>
             <div class="stat-card">
                 <span class="stat-number"><?= $stats['total_time']; ?></span>
