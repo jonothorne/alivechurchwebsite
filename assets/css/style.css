@@ -485,7 +485,8 @@ img {
 /* Dark mode - white version for dark backgrounds */
 [data-theme="dark"] .btn-secondary,
 .hero .btn-secondary,
-.watch .btn-secondary {
+.watch .btn-secondary,
+.site-footer .btn-secondary {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.4);
