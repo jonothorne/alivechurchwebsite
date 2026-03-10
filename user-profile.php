@@ -169,11 +169,13 @@ if ($lastReadingDate) {
             </div>
             <div class="profile-info">
                 <h1><?= htmlspecialchars($displayName); ?></h1>
-                <?php if ($user['role'] !== 'member'): ?>
-                    <span class="profile-role"><?= ucfirst($user['role']); ?></span>
-                <?php endif; ?>
+                <div class="profile-badges">
+                    <?php if ($user['role'] !== 'member'): ?>
+                        <span class="profile-role"><?= ucfirst($user['role']); ?></span>
+                    <?php endif; ?>
+                    <span class="profile-streak-badge"><?= $effectiveStreak > 0 ? '🔥' : '📖'; ?> <?= $effectiveStreak; ?> day streak</span>
+                </div>
                 <p class="profile-joined">Member since <?= date('F Y', strtotime($user['created_at'])); ?></p>
-                <span class="profile-streak-badge"><?= $effectiveStreak > 0 ? '🔥' : '📖'; ?> <?= $effectiveStreak; ?> day streak</span>
 
                 <?php if (!empty($socialLinks)): ?>
                     <div class="profile-social">

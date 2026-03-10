@@ -3956,6 +3956,13 @@ body.cms-edit-mode [data-cms-editable]:hover {
     font-size: 2.5rem;
 }
 
+.profile-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .profile-role {
     display: inline-block;
     background: var(--color-magenta);
@@ -3966,23 +3973,21 @@ body.cms-edit-mode [data-cms-editable]:hover {
     border-radius: var(--radius-full);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-}
-
-.profile-joined {
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0.5rem 0 0;
-    font-size: 0.875rem;
 }
 
 .profile-streak-badge {
     display: inline-block;
     background: rgba(255, 255, 255, 0.15);
     padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.8rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.9);
-    margin-top: 0.75rem;
+}
+
+.profile-joined {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
 }
 
 .profile-social {
