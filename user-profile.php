@@ -137,6 +137,24 @@ $page_title = $displayName . ' | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
+<?php
+// Calculate effective streak for this user (check if streak is still valid)
+$lastReadingDate = null;
+$lastReadingStmt = $pdo->prepare("SELECT MAX(DATE(last_read_at)) FROM user_reading_history WHERE user_id = ?");
+$lastReadingStmt->execute([$user['id']]);
+$lastReadingDate = $lastReadingStmt->fetchColumn();
+
+$currentStreak = $user['reading_streak'] ?? 0;
+$effectiveStreak = 0;
+if ($lastReadingDate) {
+    $today = date('Y-m-d');
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    if ($lastReadingDate === $today || $lastReadingDate === $yesterday) {
+        $effectiveStreak = $currentStreak;
+    }
+}
+?>
+
 <section class="user-profile-hero">
     <div class="container narrow">
         <div class="profile-header">
@@ -150,6 +168,15 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </div>
             <div class="profile-info">
+                <div class="streak-display">
+                    <div class="streak-flame">
+                        <?= $effectiveStreak > 0 ? '🔥' : '📖'; ?>
+                    </div>
+                    <div class="streak-info">
+                        <span class="streak-number"><?= $effectiveStreak; ?></span>
+                        <span class="streak-label">day streak</span>
+                    </div>
+                </div>
                 <h1><?= htmlspecialchars($displayName); ?></h1>
                 <?php if ($user['role'] !== 'member'): ?>
                     <span class="profile-role"><?= ucfirst($user['role']); ?></span>
@@ -211,7 +238,7 @@ $readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinut
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($user['longest_streak']); ?></div>
-                <div class="stat-label">Day Streak Record</div>
+                <div class="stat-label">Best Streak</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($totalDaysRead); ?></div>
