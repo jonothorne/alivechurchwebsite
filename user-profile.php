@@ -14,7 +14,7 @@ if (empty($username)) {
 // Get user
 $stmt = $pdo->prepare("
     SELECT id, username, full_name, avatar, avatar_color, bio, social_links, role,
-           reading_streak, longest_streak, created_at
+           reading_streak, longest_streak, total_reading_minutes, created_at
     FROM users
     WHERE username = ? AND active = TRUE
 ");
@@ -189,9 +189,19 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <!-- Stats Section -->
+<?php
+$readingMinutes = $user['total_reading_minutes'] ?? 0;
+$readingHours = floor($readingMinutes / 60);
+$remainingMinutes = $readingMinutes % 60;
+$readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinutes . 'm' : $readingMinutes . 'm';
+?>
 <section class="profile-stats">
     <div class="container narrow">
         <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><?= $readingTimeDisplay; ?></div>
+                <div class="stat-label">Time Reading</div>
+            </div>
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($user['longest_streak']); ?></div>
                 <div class="stat-label">Day Streak Record</div>
@@ -199,10 +209,6 @@ include __DIR__ . '/includes/header.php';
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($totalDaysRead); ?></div>
                 <div class="stat-label">Days of Reading</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= number_format($plansCompleted); ?></div>
-                <div class="stat-label">Plans Completed</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($studiesCompleted); ?></div>

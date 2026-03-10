@@ -147,6 +147,12 @@ switch ($action) {
             $auth->updateReadingStreak();
         }
 
+        // Track reading minutes (convert seconds to minutes)
+        if ($timeSpent > 0) {
+            $minutes = ceil($timeSpent / 60);
+            $auth->addReadingMinutes($minutes);
+        }
+
         echo json_encode(['success' => true]);
         break;
 

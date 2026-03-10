@@ -164,7 +164,7 @@ class Auth {
         $stmt = $this->pdo->prepare("
             SELECT id, username, email, full_name, avatar, avatar_color, bio, role,
                    email_verified, reading_streak, longest_streak, last_reading_date,
-                   preferences, social_links, created_at, last_login
+                   total_reading_minutes, preferences, social_links, created_at, last_login
             FROM users WHERE id = ? AND active = TRUE
         ");
         $stmt->execute([$id]);
@@ -643,6 +643,21 @@ class Auth {
         $this->user['reading_streak'] = $currentStreak;
         $this->user['longest_streak'] = $longestStreak;
         $this->user['last_reading_date'] = $today;
+    }
+
+    /**
+     * Add reading minutes to user's total
+     */
+    public function addReadingMinutes($minutes) {
+        if (!$this->check() || $minutes <= 0) return;
+
+        $this->pdo->prepare("
+            UPDATE users
+            SET total_reading_minutes = total_reading_minutes + ?
+            WHERE id = ?
+        ")->execute([$minutes, $this->user['id']]);
+
+        $this->user['total_reading_minutes'] = ($this->user['total_reading_minutes'] ?? 0) + $minutes;
     }
 
     /**
