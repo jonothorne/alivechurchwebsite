@@ -178,11 +178,11 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success">✅ <?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success">✅ <?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
 <?php
@@ -191,9 +191,17 @@ if ($edit_user && !empty($edit_user['social_links'])) {
     $editSocialLinks = json_decode($edit_user['social_links'], true) ?: [];
 }
 ?>
-<div class="card">
-    <div class="card-header">
-        <h2><?= $edit_user ? 'Edit' : 'Add New'; ?> User</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3><?= $edit_user ? 'Edit' : 'Add'; ?> User</h3>
+        <?php if ($edit_user): ?>
+            <div class="admin-card-actions">
+                <a href="/admin/users.php" class="btn btn-sm btn-outline">Cancel</a>
+                <?php if ($edit_user['role'] !== 'member'): ?>
+                    <a href="/author/<?= htmlspecialchars($edit_user['username']); ?>" target="_blank" class="btn btn-sm btn-outline">View Profile</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <form method="post" enctype="multipart/form-data">
@@ -202,205 +210,150 @@ if ($edit_user && !empty($edit_user['social_links'])) {
             <input type="hidden" name="id" value="<?= $edit_user['id']; ?>">
         <?php endif; ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label>Username *</label>
-                <input type="text" name="username" value="<?= htmlspecialchars($edit_user['username'] ?? ''); ?>" required>
-                <div class="form-help">Used for logging in and author URLs (no spaces)</div>
-            </div>
-
-            <div class="form-group">
-                <label>Email Address *</label>
-                <input type="email" name="email" value="<?= htmlspecialchars($edit_user['email'] ?? ''); ?>" required>
-            </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" name="full_name" value="<?= htmlspecialchars($edit_user['full_name'] ?? ''); ?>">
-            </div>
-
-            <div class="form-group">
-                <label>Role *</label>
-                <select name="role" required>
-                    <option value="member" <?= ($edit_user['role'] ?? 'member') === 'member' ? 'selected' : ''; ?>>Member</option>
-                    <option value="editor" <?= ($edit_user['role'] ?? '') === 'editor' ? 'selected' : ''; ?>>Editor</option>
-                    <option value="admin" <?= ($edit_user['role'] ?? '') === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Profile Picture -->
-        <div class="form-group">
-            <label>Profile Picture</label>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <?php if ($edit_user && !empty($edit_user['avatar'])): ?>
-                    <img src="<?= htmlspecialchars($edit_user['avatar']); ?>" alt="Current avatar" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
-                <?php elseif ($edit_user): ?>
-                    <div style="width: 64px; height: 64px; border-radius: 50%; background: <?= htmlspecialchars($edit_user['avatar_color'] ?? '#4b2679'); ?>; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600;">
+        <!-- Row 1: Avatar + Core Info -->
+        <div style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.75rem;">
+            <?php if ($edit_user): ?>
+            <div style="flex-shrink: 0;">
+                <?php if (!empty($edit_user['avatar'])): ?>
+                    <img src="<?= htmlspecialchars($edit_user['avatar']); ?>" alt="" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                <?php else: ?>
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: <?= htmlspecialchars($edit_user['avatar_color'] ?? '#4b2679'); ?>; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
                         <?= strtoupper(substr($edit_user['full_name'] ?? $edit_user['username'], 0, 1)); ?>
                     </div>
                 <?php endif; ?>
-                <div style="flex: 1;">
-                    <input type="file" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp">
-                    <div class="form-help">JPG, PNG, GIF, or WebP. Max 2MB. Square images work best.</div>
-                </div>
             </div>
-        </div>
-
-        <!-- Bio -->
-        <div class="form-group">
-            <label>Bio</label>
-            <textarea name="bio" rows="3" placeholder="A short biography about this person..."><?= htmlspecialchars($edit_user['bio'] ?? ''); ?></textarea>
-            <div class="form-help">Displayed on the author page. A few sentences about their role or background.</div>
-        </div>
-
-        <!-- Social Links -->
-        <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-            <h4 style="margin: 0 0 1rem; font-size: 0.9rem; color: #475569;">Social Media & Links</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">Website</label>
-                    <input type="url" name="social_website" value="<?= htmlspecialchars($editSocialLinks['website'] ?? ''); ?>" placeholder="https://example.com">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">Twitter / X</label>
-                    <input type="text" name="social_twitter" value="<?= htmlspecialchars($editSocialLinks['twitter'] ?? ''); ?>" placeholder="@username or full URL">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">Facebook</label>
-                    <input type="text" name="social_facebook" value="<?= htmlspecialchars($editSocialLinks['facebook'] ?? ''); ?>" placeholder="Username or full URL">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">Instagram</label>
-                    <input type="text" name="social_instagram" value="<?= htmlspecialchars($editSocialLinks['instagram'] ?? ''); ?>" placeholder="@username or full URL">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">LinkedIn</label>
-                    <input type="text" name="social_linkedin" value="<?= htmlspecialchars($editSocialLinks['linkedin'] ?? ''); ?>" placeholder="Username or full URL">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem;">YouTube</label>
-                    <input type="text" name="social_youtube" value="<?= htmlspecialchars($editSocialLinks['youtube'] ?? ''); ?>" placeholder="Channel URL">
-                </div>
-            </div>
-        </div>
-
-        <!-- Password & Status -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label>Password <?= $edit_user ? '(leave blank to keep current)' : '*'; ?></label>
-                <input type="password" name="password" <?= $edit_user ? '' : 'required'; ?> minlength="8">
-                <div class="form-help">Minimum 8 characters</div>
-            </div>
-
-            <div class="form-group">
-                <label>&nbsp;</label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;">
-                    <input type="checkbox" name="active" value="1" <?= ($edit_user['active'] ?? 1) ? 'checked' : ''; ?> style="width: auto;">
-                    <span>Account Active</span>
-                </label>
-                <div class="form-help">Inactive users cannot log in</div>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="submit" class="btn btn-primary">Save User</button>
-            <?php if ($edit_user): ?>
-                <a href="/admin/users.php" class="btn btn-outline">Cancel</a>
-                <?php if ($edit_user['role'] !== 'member'): ?>
-                    <a href="/author/<?= htmlspecialchars($edit_user['username']); ?>" target="_blank" class="btn btn-outline">View Author Page</a>
-                <?php endif; ?>
             <?php endif; ?>
+            <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="username" value="<?= htmlspecialchars($edit_user['username'] ?? ''); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" value="<?= htmlspecialchars($edit_user['full_name'] ?? ''); ?>">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" value="<?= htmlspecialchars($edit_user['email'] ?? ''); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select name="role" required>
+                        <option value="member" <?= ($edit_user['role'] ?? 'member') === 'member' ? 'selected' : ''; ?>>Member</option>
+                        <option value="editor" <?= ($edit_user['role'] ?? '') === 'editor' ? 'selected' : ''; ?>>Editor</option>
+                        <option value="admin" <?= ($edit_user['role'] ?? '') === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                    </select>
+                </div>
+            </div>
         </div>
+
+        <!-- Row 2: Password + Avatar Upload + Active -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <div class="form-group">
+                <label>Password <?= $edit_user ? '(blank = keep)' : '*'; ?></label>
+                <input type="password" name="password" <?= $edit_user ? '' : 'required'; ?> minlength="8" placeholder="Min 8 characters">
+            </div>
+            <div class="form-group">
+                <label>Profile Picture</label>
+                <input type="file" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 0.375rem;">
+                <label style="display: flex; align-items: center; gap: 0.375rem; font-weight: 400; cursor: pointer;">
+                    <input type="checkbox" name="active" value="1" <?= ($edit_user['active'] ?? 1) ? 'checked' : ''; ?> style="width: auto;">
+                    Active
+                </label>
+            </div>
+        </div>
+
+        <!-- Row 3: Bio -->
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label>Bio</label>
+            <textarea name="bio" rows="2" placeholder="Short biography for author page..."><?= htmlspecialchars($edit_user['bio'] ?? ''); ?></textarea>
+        </div>
+
+        <!-- Row 4: Social Links (collapsed by default) -->
+        <details style="margin-bottom: 0.75rem;">
+            <summary style="cursor: pointer; font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); padding: 0.375rem 0;">Social Links (optional)</summary>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                <input type="url" name="social_website" value="<?= htmlspecialchars($editSocialLinks['website'] ?? ''); ?>" placeholder="Website URL">
+                <input type="text" name="social_twitter" value="<?= htmlspecialchars($editSocialLinks['twitter'] ?? ''); ?>" placeholder="Twitter / X">
+                <input type="text" name="social_facebook" value="<?= htmlspecialchars($editSocialLinks['facebook'] ?? ''); ?>" placeholder="Facebook">
+                <input type="text" name="social_instagram" value="<?= htmlspecialchars($editSocialLinks['instagram'] ?? ''); ?>" placeholder="Instagram">
+                <input type="text" name="social_linkedin" value="<?= htmlspecialchars($editSocialLinks['linkedin'] ?? ''); ?>" placeholder="LinkedIn">
+                <input type="text" name="social_youtube" value="<?= htmlspecialchars($editSocialLinks['youtube'] ?? ''); ?>" placeholder="YouTube">
+            </div>
+        </details>
+
+        <button type="submit" class="btn btn-primary btn-sm">Save User</button>
     </form>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <h2>All Users</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Users</h3>
+        <span class="admin-muted-text"><?= count($users); ?> total</span>
     </div>
 
     <?php if (empty($users)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">👤</div>
-            <h3>No users yet</h3>
-            <p>This shouldn't happen - at least one user should exist!</p>
-        </div>
+        <p class="admin-muted-text">No users found.</p>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Last Login</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                        <tr <?= $user['id'] === ($_SESSION['admin_user_id'] ?? null) ? 'style="background: #f0f9ff;"' : ''; ?>>
-                            <td>
-                                <strong><?= htmlspecialchars($user['username']); ?></strong>
-                                <?php if ($user['id'] === ($_SESSION['admin_user_id'] ?? null)): ?>
-                                    <span class="badge badge-success" style="margin-left: 0.5rem;">You</span>
-                                <?php endif; ?>
-                                <?php if ($user['full_name']): ?>
-                                    <br><small style="color: #64748b;"><?= htmlspecialchars($user['full_name']); ?></small>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= htmlspecialchars($user['email']); ?></td>
-                            <td>
-                                <?php if ($user['role'] === 'admin'): ?>
-                                    <span class="badge badge-primary">Admin</span>
-                                <?php elseif ($user['role'] === 'editor'): ?>
-                                    <span class="badge" style="background: #3b82f6; color: white;">Editor</span>
-                                <?php else: ?>
-                                    <span class="badge" style="background: #64748b; color: white;">Member</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($user['last_login']): ?>
-                                    <?= date('M j, Y g:i A', strtotime($user['last_login'])); ?>
-                                <?php else: ?>
-                                    <span style="color: #94a3b8;">Never</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($user['active']): ?>
-                                    <span class="badge badge-success">Active</span>
-                                <?php else: ?>
-                                    <span class="badge badge-danger">Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="table-actions">
-                                <a href="?edit=<?= $user['id']; ?>" class="btn btn-sm btn-outline">Edit</a>
-                                <?php if ($user['id'] !== ($_SESSION['admin_user_id'] ?? null)): ?>
-                                    <a href="?delete=<?= $user['id']; ?>" class="btn btn-sm btn-danger" data-confirm-delete>Delete</a>
-                                <?php else: ?>
-                                    <button class="btn btn-sm btn-danger" disabled style="opacity: 0.5; cursor: not-allowed;">Delete</button>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php foreach ($users as $user): ?>
+                <div class="admin-user-row <?= $user['id'] === ($_SESSION['admin_user_id'] ?? null) ? 'admin-user-row-current' : ''; ?>">
+                    <!-- Avatar -->
+                    <div class="admin-user-avatar">
+                        <?php if (!empty($user['avatar'])): ?>
+                            <img src="<?= htmlspecialchars($user['avatar']); ?>" alt="">
+                        <?php else: ?>
+                            <span style="background: <?= htmlspecialchars($user['avatar_color'] ?? '#4b2679'); ?>">
+                                <?= strtoupper(substr($user['full_name'] ?? $user['username'], 0, 1)); ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <!-- User Info -->
+                    <div class="admin-user-info">
+                        <div class="admin-user-name">
+                            <?= htmlspecialchars($user['full_name'] ?: $user['username']); ?>
+                            <?php if ($user['id'] === ($_SESSION['admin_user_id'] ?? null)): ?>
+                                <span class="admin-badge admin-badge-success">You</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-user-meta">
+                            @<?= htmlspecialchars($user['username']); ?> · <?= htmlspecialchars($user['email']); ?>
+                        </div>
+                    </div>
+                    <!-- Role/Status -->
+                    <div class="admin-user-badges">
+                        <?php if ($user['role'] === 'admin'): ?>
+                            <span class="admin-badge admin-badge-primary">Admin</span>
+                        <?php elseif ($user['role'] === 'editor'): ?>
+                            <span class="admin-badge admin-badge-info">Editor</span>
+                        <?php else: ?>
+                            <span class="admin-badge admin-badge-secondary">Member</span>
+                        <?php endif; ?>
+                        <?php if (!$user['active']): ?>
+                            <span class="admin-badge admin-badge-danger">Inactive</span>
+                        <?php endif; ?>
+                    </div>
+                    <!-- Last Login -->
+                    <div class="admin-user-login">
+                        <?php if ($user['last_login']): ?>
+                            <?= date('M j', strtotime($user['last_login'])); ?>
+                        <?php else: ?>
+                            <span class="admin-muted">Never</span>
+                        <?php endif; ?>
+                    </div>
+                    <!-- Actions -->
+                    <div class="admin-user-actions">
+                        <a href="?edit=<?= $user['id']; ?>" class="btn btn-xs btn-outline">Edit</a>
+                        <?php if ($user['id'] !== ($_SESSION['admin_user_id'] ?? null)): ?>
+                            <a href="?delete=<?= $user['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
-</div>
-
-<div class="card" style="background: #fef3c7; border: 1px solid #fbbf24;">
-    <div style="padding: 1.5rem;">
-        <h3 style="color: #92400e; margin-bottom: 0.5rem; font-size: 1rem;">🔒 Security Note</h3>
-        <p style="color: #92400e; margin: 0; font-size: 0.875rem;">
-            Only create user accounts for trusted team members. Admin users have full access to all content and settings.
-            Consider using the Editor role for content creators who don't need access to user management or site settings.
-        </p>
-    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

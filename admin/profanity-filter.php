@@ -102,193 +102,113 @@ $categories = [
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error"><?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<div class="admin-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
-    <!-- Add Word Form -->
-    <div>
-        <div class="card">
-            <div class="card-header">
-                <h2>Add Word</h2>
-            </div>
-            <form method="POST">
-                <?= csrf_field(); ?>
-                <div class="form-group">
-                    <label>Word/Phrase</label>
-                    <input type="text" name="word" placeholder="Enter word or phrase" required>
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="category">
-                        <?php foreach ($categories as $value => $label): ?>
-                            <option value="<?= $value; ?>"><?= $label; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <button type="submit" name="add_word" class="btn btn-primary">Add Word</button>
-            </form>
+<!-- Header with Stats -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Profanity Filter</span>
+    </div>
+    <div class="admin-inline-stats">
+        <span class="admin-inline-stat"><strong><?= $totalCount; ?></strong> Words</span>
+        <?php foreach ($categoryCounts as $cat => $count): ?>
+            <span class="admin-inline-stat"><strong><?= $count; ?></strong> <?= ucfirst($cat); ?></span>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<div class="admin-profanity-grid">
+    <!-- Add Forms -->
+    <div class="admin-profanity-sidebar">
+        <div class="admin-card">
+            <details open>
+                <summary class="admin-card-header" style="cursor: pointer;">
+                    <h3>+ Add Word</h3>
+                </summary>
+                <form method="POST" class="admin-compact-form">
+                    <?= csrf_field(); ?>
+                    <div class="admin-form-group">
+                        <label>Word/Phrase</label>
+                        <input type="text" name="word" placeholder="Enter word" required>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Category</label>
+                        <select name="category">
+                            <?php foreach ($categories as $value => $label): ?>
+                                <option value="<?= $value; ?>"><?= $label; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="add_word" class="btn btn-sm btn-primary" style="width: 100%;">Add</button>
+                </form>
+            </details>
         </div>
 
-        <div class="card" style="margin-top: 1.5rem;">
-            <div class="card-header">
-                <h2>Bulk Add</h2>
-            </div>
-            <form method="POST">
-                <?= csrf_field(); ?>
-                <div class="form-group">
-                    <label>Words (one per line or comma-separated)</label>
-                    <textarea name="words" rows="6" placeholder="word1&#10;word2&#10;word3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select name="bulk_category">
-                        <?php foreach ($categories as $value => $label): ?>
-                            <option value="<?= $value; ?>"><?= $label; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <button type="submit" name="bulk_add" class="btn btn-primary">Add All</button>
-            </form>
+        <div class="admin-card">
+            <details>
+                <summary class="admin-card-header" style="cursor: pointer;">
+                    <h3>+ Bulk Add</h3>
+                </summary>
+                <form method="POST" class="admin-compact-form">
+                    <?= csrf_field(); ?>
+                    <div class="admin-form-group">
+                        <label>Words (one per line)</label>
+                        <textarea name="words" rows="4" placeholder="word1&#10;word2&#10;word3"></textarea>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Category</label>
+                        <select name="bulk_category">
+                            <?php foreach ($categories as $value => $label): ?>
+                                <option value="<?= $value; ?>"><?= $label; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="bulk_add" class="btn btn-sm btn-primary" style="width: 100%;">Add All</button>
+                </form>
+            </details>
         </div>
     </div>
 
     <!-- Word List -->
-    <div class="card">
-        <div class="card-header">
-            <h2>Filtered Words (<?= $totalCount; ?>)</h2>
-        </div>
-
-        <!-- Category Filter -->
-        <div class="filter-tabs" style="margin-bottom: 1.5rem;">
-            <a href="/admin/profanity-filter" class="filter-tab <?= !$categoryFilter ? 'active' : ''; ?>">
-                All (<?= $totalCount; ?>)
-            </a>
-            <?php foreach ($categories as $value => $label): ?>
-                <a href="/admin/profanity-filter?category=<?= $value; ?>" class="filter-tab <?= $categoryFilter === $value ? 'active' : ''; ?>">
-                    <?= $label; ?> (<?= $categoryCounts[$value] ?? 0; ?>)
-                </a>
-            <?php endforeach; ?>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-filter-tabs" style="margin: 0; flex-wrap: wrap;">
+                <a href="/admin/profanity-filter" class="admin-filter-tab <?= !$categoryFilter ? 'active' : ''; ?>">All</a>
+                <?php foreach ($categories as $value => $label): ?>
+                    <a href="/admin/profanity-filter?category=<?= $value; ?>" class="admin-filter-tab <?= $categoryFilter === $value ? 'active' : ''; ?>">
+                        <?= $label; ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <?php if (empty($words)): ?>
-            <div class="empty-state" style="padding: 2rem;">
-                <p style="color: #64748b;">No words in filter.</p>
+            <div class="admin-empty-state">
+                <span class="admin-empty-icon">🔇</span>
+                <p>No words in filter.</p>
             </div>
         <?php else: ?>
-            <div class="word-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0 1.5rem 1.5rem;">
+            <div class="admin-word-cloud">
                 <?php foreach ($words as $word): ?>
-                    <div class="word-tag <?= !$word['active'] ? 'inactive' : ''; ?>" data-category="<?= htmlspecialchars($word['category']); ?>">
-                        <span class="word-text"><?= htmlspecialchars($word['word']); ?></span>
-                        <span class="word-category"><?= htmlspecialchars($categories[$word['category']] ?? $word['category']); ?></span>
-                        <div class="word-actions">
-                            <a href="?toggle=<?= $word['id']; ?><?= $categoryFilter ? '&category=' . urlencode($categoryFilter) : ''; ?>"
-                               class="word-action" title="<?= $word['active'] ? 'Disable' : 'Enable'; ?>">
-                                <?= $word['active'] ? '👁️' : '👁️‍🗨️'; ?>
-                            </a>
-                            <a href="?delete=<?= $word['id']; ?><?= $categoryFilter ? '&category=' . urlencode($categoryFilter) : ''; ?>"
-                               class="word-action" title="Delete" onclick="return confirm('Remove this word from the filter?');">
-                                ✕
-                            </a>
-                        </div>
+                    <div class="admin-word-tag <?= !$word['active'] ? 'inactive' : ''; ?>" data-category="<?= htmlspecialchars($word['category']); ?>">
+                        <span class="admin-word-text"><?= htmlspecialchars($word['word']); ?></span>
+                        <span class="admin-word-cat"><?= htmlspecialchars($categories[$word['category']] ?? $word['category']); ?></span>
+                        <a href="?toggle=<?= $word['id']; ?><?= $categoryFilter ? '&category=' . urlencode($categoryFilter) : ''; ?>"
+                           class="admin-word-action" title="<?= $word['active'] ? 'Disable' : 'Enable'; ?>">
+                            <?= $word['active'] ? '👁️' : '👁️‍🗨️'; ?>
+                        </a>
+                        <a href="?delete=<?= $word['id']; ?><?= $categoryFilter ? '&category=' . urlencode($categoryFilter) : ''; ?>"
+                           class="admin-word-action" title="Delete" onclick="return confirm('Remove this word?');">×</a>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
 </div>
-
-<style>
-.filter-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    background: #f1f5f9;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-}
-.filter-tab {
-    padding: 0.5rem 0.75rem;
-    text-decoration: none;
-    color: #64748b;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
-.filter-tab:hover {
-    color: #1e293b;
-}
-.filter-tab.active {
-    background: #fff;
-    color: #1e293b;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.word-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
-    padding: 0.375rem 0.5rem;
-    font-size: 0.875rem;
-}
-.word-tag.inactive {
-    opacity: 0.5;
-    background: #fef2f2;
-    border-color: #fecaca;
-}
-.word-tag[data-category="slur"] {
-    border-left: 3px solid #dc2626;
-}
-.word-tag[data-category="profanity"] {
-    border-left: 3px solid #f59e0b;
-}
-.word-tag[data-category="sexual"] {
-    border-left: 3px solid #ec4899;
-}
-.word-tag[data-category="threat"] {
-    border-left: 3px solid #7c3aed;
-}
-.word-tag[data-category="other"] {
-    border-left: 3px solid #6b7280;
-}
-
-.word-text {
-    font-family: monospace;
-    color: #1e293b;
-}
-.word-category {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-}
-.word-actions {
-    display: flex;
-    gap: 0.25rem;
-    margin-left: 0.25rem;
-}
-.word-action {
-    text-decoration: none;
-    opacity: 0.5;
-    font-size: 0.75rem;
-    padding: 0.125rem;
-}
-.word-action:hover {
-    opacity: 1;
-}
-
-@media (max-width: 768px) {
-    .admin-grid {
-        grid-template-columns: 1fr !important;
-    }
-}
-</style>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

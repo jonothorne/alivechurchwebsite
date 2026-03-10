@@ -72,15 +72,28 @@ $tags = $pdo->query("SELECT t.*, COUNT(pt.post_id) as post_count
                      LIMIT 15")->fetchAll();
 
 // Get featured/recent post for hero
+// First try to get explicitly featured post, then fall back to most recent
 $featuredPost = null;
 if ($page === 1 && !$categorySlug && !$tagSlug && !$search) {
+    // Try explicitly featured post first
     $featuredPost = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug, u.full_name as author_name
                                   FROM blog_posts p
                                   LEFT JOIN blog_categories c ON p.category_id = c.id
                                   LEFT JOIN users u ON p.author_id = u.id
-                                  WHERE p.status = 'published' AND p.published_at <= NOW()
-                                  ORDER BY p.published_at DESC
+                                  WHERE p.status = 'published' AND p.published_at <= NOW() AND p.is_featured = 1
                                   LIMIT 1")->fetch();
+
+    // Fall back to most recent if no featured post
+    if (!$featuredPost) {
+        $featuredPost = $pdo->query("SELECT p.*, c.name as category_name, c.slug as category_slug, u.full_name as author_name
+                                      FROM blog_posts p
+                                      LEFT JOIN blog_categories c ON p.category_id = c.id
+                                      LEFT JOIN users u ON p.author_id = u.id
+                                      WHERE p.status = 'published' AND p.published_at <= NOW()
+                                      ORDER BY p.published_at DESC
+                                      LIMIT 1")->fetch();
+    }
+
     // Remove featured from main list to avoid duplication
     if ($featuredPost) {
         $posts = array_filter($posts, fn($p) => $p['id'] !== $featuredPost['id']);
@@ -176,9 +189,10 @@ if (!isset($cms)) {
                         <?php foreach ($posts as $post): ?>
                             <article class="blog-card">
                                 <a href="/blog/<?= htmlspecialchars($post['slug']); ?>">
-                                    <?php if ($post['featured_image']): ?>
+                                    <?php $cardImage = $post['thumbnail'] ?? $post['featured_image'] ?? null;
+                                    if ($cardImage): ?>
                                         <div class="blog-card-image">
-                                            <img src="<?= htmlspecialchars($post['featured_image']); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
+                                            <img src="<?= htmlspecialchars($cardImage); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
                                         </div>
                                     <?php endif; ?>
                                     <div class="blog-card-content">

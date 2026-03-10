@@ -8,130 +8,94 @@ $pdo = getDbConnection();
 // Get quick stats
 $stats = [
     'pages' => $pdo->query("SELECT COUNT(*) FROM pages")->fetchColumn() ?: 0,
-    'content_blocks' => $pdo->query("SELECT COUNT(*) FROM content_blocks")->fetchColumn() ?: 0,
+    'blog_posts' => $pdo->query("SELECT COUNT(*) FROM blog_posts WHERE status = 'published'")->fetchColumn() ?: 0,
     'media' => $pdo->query("SELECT COUNT(*) FROM media")->fetchColumn() ?: 0,
     'submissions' => $pdo->query("SELECT COUNT(*) FROM form_submissions WHERE processed = 0")->fetchColumn() ?: 0,
 ];
 
-// Get recently edited content
-$recent_edits = $pdo->query("
-    SELECT cb.page_slug, cb.block_key, cb.updated_at, u.username
-    FROM content_blocks cb
-    LEFT JOIN users u ON cb.updated_by = u.id
-    ORDER BY cb.updated_at DESC
-    LIMIT 8
+// Get combined recent activity (edits + submissions)
+$recent_activity = $pdo->query("
+    (SELECT 'edit' as type, page_slug as title, block_key as detail, updated_at as activity_time, u.username
+     FROM content_blocks cb
+     LEFT JOIN users u ON cb.updated_by = u.id
+     ORDER BY updated_at DESC LIMIT 5)
+    UNION ALL
+    (SELECT 'submission' as type, form_type as title, '' as detail, submitted_at as activity_time, '' as username
+     FROM form_submissions WHERE processed = 0
+     ORDER BY submitted_at DESC LIMIT 3)
+    ORDER BY activity_time DESC LIMIT 6
 ")->fetchAll();
 
-// Get recent form submissions
-$recent_submissions = $pdo->query("
-    SELECT form_type, submitted_at, processed
-    FROM form_submissions
-    ORDER BY submitted_at DESC
-    LIMIT 5
-")->fetchAll();
+// Get pages for quick edit
+$pages = $pdo->query("SELECT slug, title FROM pages WHERE published = 1 ORDER BY title LIMIT 8")->fetchAll();
 ?>
 
-<!-- Welcome Banner -->
-<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; margin-bottom: 2rem;">
-    <h2 style="color: #fff; margin: 0 0 0.5rem;">Welcome, <?= htmlspecialchars($current_user['full_name'] ?? $current_user['username']); ?>!</h2>
-    <p style="opacity: 0.9; margin-bottom: 1.5rem;">
-        Edit your website content directly on the live pages. Navigate to any page and click on text to start editing.
-    </p>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="/" class="btn" style="background: #fff; color: #667eea;">Start Editing Website</a>
-        <a href="/admin/media" class="btn" style="background: rgba(255,255,255,0.2); color: #fff;">Media Library</a>
+<!-- Compact Dashboard Header with Stats -->
+<div class="admin-dashboard-header">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Hi, <?= htmlspecialchars($current_user['full_name'] ?? $current_user['username']); ?></span>
+        <a href="/" class="btn btn-sm btn-primary" target="_blank">Edit Site</a>
     </div>
-</div>
-
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-label">Pages</div>
-        <div class="stat-value"><?= $stats['pages']; ?></div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Content Edits</div>
-        <div class="stat-value"><?= $stats['content_blocks']; ?></div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Media Files</div>
-        <div class="stat-value"><?= $stats['media']; ?></div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">New Submissions</div>
-        <div class="stat-value"><?= $stats['submissions']; ?></div>
+    <div class="admin-inline-stats">
+        <a href="/admin/pages" class="admin-inline-stat">
+            <strong><?= $stats['pages']; ?></strong> Pages
+        </a>
+        <a href="/admin/blog" class="admin-inline-stat">
+            <strong><?= $stats['blog_posts']; ?></strong> Posts
+        </a>
+        <a href="/admin/media" class="admin-inline-stat">
+            <strong><?= $stats['media']; ?></strong> Media
+        </a>
         <?php if ($stats['submissions'] > 0): ?>
-            <a href="/admin/forms" style="font-size: 0.75rem; color: #667eea;">View →</a>
+        <a href="/admin/forms" class="admin-inline-stat admin-inline-stat-alert">
+            <strong><?= $stats['submissions']; ?></strong> New Forms
+        </a>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- Quick Edit Links -->
-<div class="card">
-    <div class="card-header">
-        <h2>Quick Edit Pages</h2>
-    </div>
-    <p style="color: #64748b; margin-bottom: 1rem;">Click a page to start editing its content directly:</p>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
-        <a href="/" class="btn btn-outline" style="justify-content: flex-start;">Home</a>
-        <a href="/visit" class="btn btn-outline" style="justify-content: flex-start;">Visit</a>
-        <a href="/watch" class="btn btn-outline" style="justify-content: flex-start;">Watch</a>
-        <a href="/connect" class="btn btn-outline" style="justify-content: flex-start;">Connect</a>
-        <a href="/events" class="btn btn-outline" style="justify-content: flex-start;">Events</a>
-        <a href="/give" class="btn btn-outline" style="justify-content: flex-start;">Give</a>
-    </div>
-</div>
-
-<div class="card-grid" style="grid-template-columns: 1fr 1fr;">
-    <!-- Recent Edits -->
-    <div class="card">
-        <div class="card-header">
-            <h2>Recent Content Edits</h2>
+<!-- Two Column Layout: Quick Edit + Activity -->
+<div class="admin-dashboard-grid">
+    <!-- Quick Edit Pages -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3>Quick Edit</h3>
+            <a href="/admin/pages" class="admin-link-muted">All pages</a>
         </div>
-        <?php if (empty($recent_edits)): ?>
-            <p style="color: #64748b;">No content edits yet. Start editing pages to see activity here.</p>
-        <?php else: ?>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <?php foreach ($recent_edits as $edit): ?>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;">
-                        <div>
-                            <a href="/<?= $edit['page_slug'] === 'home' ? '' : htmlspecialchars($edit['page_slug']); ?>" style="font-weight: 500; color: #1e293b;">
-                                <?= htmlspecialchars($edit['page_slug']); ?>
-                            </a>
-                            <span style="color: #94a3b8; font-size: 0.875rem;">/ <?= htmlspecialchars($edit['block_key']); ?></span>
-                        </div>
-                        <span style="color: #64748b; font-size: 0.75rem;">
-                            <?= date('M j, g:ia', strtotime($edit['updated_at'])); ?>
-                        </span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+        <div class="admin-page-links">
+            <a href="/" class="admin-page-link" target="_blank">
+                <span class="admin-page-link-icon">🏠</span>
+                <span>Home</span>
+            </a>
+            <?php foreach ($pages as $page): ?>
+            <a href="/<?= htmlspecialchars($page['slug']); ?>" class="admin-page-link" target="_blank">
+                <span class="admin-page-link-icon">📄</span>
+                <span><?= htmlspecialchars($page['title']); ?></span>
+            </a>
+            <?php endforeach; ?>
+        </div>
     </div>
 
-    <!-- Recent Submissions -->
-    <div class="card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Recent Submissions</h2>
-            <a href="/admin/forms" style="color: #667eea; font-size: 0.875rem;">View all →</a>
+    <!-- Recent Activity Stream -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3>Recent Activity</h3>
         </div>
-        <?php if (empty($recent_submissions)): ?>
-            <p style="color: #64748b;">No form submissions yet.</p>
+        <?php if (empty($recent_activity)): ?>
+            <p class="admin-muted-text">No recent activity</p>
         <?php else: ?>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <?php foreach ($recent_submissions as $sub): ?>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span class="badge <?= $sub['processed'] ? '' : 'badge-primary'; ?>">
-                                <?= htmlspecialchars($sub['form_type']); ?>
-                            </span>
-                            <?php if (!$sub['processed']): ?>
-                                <span style="color: #f59e0b; font-size: 0.75rem;">New</span>
+            <div class="admin-compact-activity">
+                <?php foreach ($recent_activity as $item): ?>
+                    <div class="admin-activity-row">
+                        <span class="admin-activity-icon-sm"><?= $item['type'] === 'edit' ? '✏️' : '📩'; ?></span>
+                        <span class="admin-activity-main">
+                            <?php if ($item['type'] === 'edit'): ?>
+                                <a href="/<?= $item['title'] === 'home' ? '' : htmlspecialchars($item['title']); ?>" target="_blank"><?= htmlspecialchars($item['title']); ?></a><?php if ($item['detail']): ?><span class="admin-muted"> / <?= htmlspecialchars($item['detail']); ?></span><?php endif; ?>
+                            <?php else: ?>
+                                <span class="admin-badge admin-badge-warning"><?= htmlspecialchars($item['title']); ?></span>
                             <?php endif; ?>
-                        </div>
-                        <span style="color: #64748b; font-size: 0.75rem;">
-                            <?= date('M j, g:ia', strtotime($sub['submitted_at'])); ?>
                         </span>
+                        <span class="admin-activity-time-inline"><?= date('M j, g:ia', strtotime($item['activity_time'])); ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -139,26 +103,9 @@ $recent_submissions = $pdo->query("
     </div>
 </div>
 
-<!-- How It Works -->
-<div class="card" style="background: #f0fdf4; border: 1px solid #86efac;">
-    <h3 style="color: #166534; margin-bottom: 1rem;">How Inline Editing Works</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;">
-        <div>
-            <div style="font-size: 1.5rem; color: #166534; font-weight: 700;">1</div>
-            <h4 style="margin: 0.25rem 0; color: #166534;">Go to any page</h4>
-            <p style="color: #166534; font-size: 0.875rem; margin: 0;">Navigate to your website while logged in.</p>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; color: #166534; font-weight: 700;">2</div>
-            <h4 style="margin: 0.25rem 0; color: #166534;">Click to edit</h4>
-            <p style="color: #166534; font-size: 0.875rem; margin: 0;">Click any text with a dashed outline to edit it.</p>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; color: #166534; font-weight: 700;">3</div>
-            <h4 style="margin: 0.25rem 0; color: #166534;">Save changes</h4>
-            <p style="color: #166534; font-size: 0.875rem; margin: 0;">Press Ctrl+S or click Save. Changes are instant!</p>
-        </div>
-    </div>
+<!-- Compact Tip -->
+<div class="admin-tip">
+    <strong>Tip:</strong> Click any page above to edit content directly on the live site. Press <kbd>Ctrl+S</kbd> to save.
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

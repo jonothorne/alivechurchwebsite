@@ -67,184 +67,135 @@ $stats = $stmt->fetch();
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success">✅ <?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Total Submissions</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #1e293b;"><?= $stats['total']; ?></div>
+<!-- Header with Stats -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Form Submissions</span>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Unread</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #ff1493;">
-            <?= $stats['unread']; ?>
-            <?php if ($stats['unread'] > 0): ?>
-                <span style="font-size: 1rem; color: #94a3b8;"> new</span>
-            <?php endif; ?>
-        </div>
+    <div class="admin-inline-stats">
+        <span class="admin-inline-stat"><strong><?= $stats['total']; ?></strong> Total</span>
+        <span class="admin-inline-stat <?= $stats['unread'] > 0 ? 'admin-stat-alert' : ''; ?>"><strong><?= $stats['unread']; ?></strong> Unread</span>
+        <span class="admin-inline-stat"><strong><?= $stats['total'] - $stats['unread']; ?></strong> Read</span>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Read</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #10b981;"><?= $stats['total'] - $stats['unread']; ?></div>
-    </div>
-</div>
-
-<!-- Filter Tabs -->
-<div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
-    <a href="?filter=all" class="<?= $filter === 'all' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'all' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">All (<?= $stats['total']; ?>)</a>
-    <a href="?filter=unread" class="<?= $filter === 'unread' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'unread' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Unread<?= $stats['unread'] > 0 ? ' (' . $stats['unread'] . ')' : ''; ?></a>
-    <a href="?filter=read" class="<?= $filter === 'read' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'read' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Read</a>
 </div>
 
 <!-- Detail View Modal (if viewing a submission) -->
 <?php if ($detail_submission): ?>
-<div class="card">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Submission Details</h2>
-        <a href="/admin/forms.php?filter=<?= $filter; ?>" class="btn btn-outline">← Back to List</a>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Submission Details</h3>
+        <a href="/admin/forms.php?filter=<?= $filter; ?>" class="btn btn-xs btn-outline">Back</a>
     </div>
 
-    <div style="padding: 1.5rem;">
-        <!-- Header Info -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-            <div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">Form Name</div>
-                <div style="font-weight: 600;"><?= htmlspecialchars($detail_submission['form_type']); ?></div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">Submitted</div>
-                <div style="font-weight: 600;"><?= date('F j, Y g:i A', strtotime($detail_submission['submitted_at'])); ?></div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">Status</div>
-                <div>
-                    <?php if (!$detail_submission['processed']): ?>
-                        <span class="badge badge-danger">Unread</span>
-                    <?php else: ?>
-                        <span class="badge badge-success">Read</span>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">IP Address</div>
-                <div style="font-family: monospace; font-size: 0.875rem;"><?= htmlspecialchars($detail_submission['ip_address'] ?? 'N/A'); ?></div>
-            </div>
+    <div class="admin-detail-grid">
+        <div class="admin-detail-item">
+            <span class="admin-detail-label">Form</span>
+            <span class="admin-detail-value"><?= htmlspecialchars($detail_submission['form_type']); ?></span>
         </div>
+        <div class="admin-detail-item">
+            <span class="admin-detail-label">Submitted</span>
+            <span class="admin-detail-value"><?= date('M j, Y g:i A', strtotime($detail_submission['submitted_at'])); ?></span>
+        </div>
+        <div class="admin-detail-item">
+            <span class="admin-detail-label">Status</span>
+            <span class="admin-detail-value">
+                <?php if (!$detail_submission['processed']): ?>
+                    <span class="admin-badge admin-badge-danger">Unread</span>
+                <?php else: ?>
+                    <span class="admin-badge admin-badge-success">Read</span>
+                <?php endif; ?>
+            </span>
+        </div>
+        <div class="admin-detail-item">
+            <span class="admin-detail-label">IP</span>
+            <span class="admin-detail-value"><code><?= htmlspecialchars($detail_submission['ip_address'] ?? 'N/A'); ?></code></span>
+        </div>
+    </div>
 
-        <!-- Form Data -->
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1.5rem;">
-            <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Submitted Data</h3>
-            <?php
-            $form_data = json_decode($detail_submission['form_data'], true);
-            if ($form_data):
-                foreach ($form_data as $key => $value):
-                    if ($key === 'csrf_token') continue; // Skip CSRF token
-            ?>
-                    <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9;">
-                        <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem; text-transform: capitalize;">
-                            <?= htmlspecialchars(str_replace('_', ' ', $key)); ?>
-                        </div>
-                        <div style="font-size: 1rem; color: #1e293b;">
-                            <?= nl2br(htmlspecialchars($value)); ?>
-                        </div>
-                    </div>
-            <?php
-                endforeach;
-            else:
-            ?>
-                <p style="color: #94a3b8;">No data available</p>
-            <?php endif; ?>
-        </div>
+    <div class="admin-submission-data">
+        <?php
+        $form_data = json_decode($detail_submission['form_data'], true);
+        if ($form_data):
+            foreach ($form_data as $key => $value):
+                if ($key === 'csrf_token') continue;
+        ?>
+            <div class="admin-data-row">
+                <span class="admin-data-label"><?= htmlspecialchars(str_replace('_', ' ', ucfirst($key))); ?></span>
+                <span class="admin-data-value"><?= nl2br(htmlspecialchars($value)); ?></span>
+            </div>
+        <?php
+            endforeach;
+        else:
+        ?>
+            <p class="admin-muted-text">No data available</p>
+        <?php endif; ?>
+    </div>
 
-        <!-- Actions -->
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
-            <?php if (!$detail_submission['processed']): ?>
-                <a href="?mark=<?= $detail_submission['id']; ?>&status=read&filter=<?= $filter; ?>" class="btn btn-outline">Mark as Read</a>
-            <?php else: ?>
-                <a href="?mark=<?= $detail_submission['id']; ?>&status=unread&filter=<?= $filter; ?>" class="btn btn-outline">Mark as Unread</a>
-            <?php endif; ?>
-            <a href="?delete=<?= $detail_submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-danger" data-confirm-delete>Delete Submission</a>
-        </div>
+    <div class="admin-detail-actions">
+        <?php if (!$detail_submission['processed']): ?>
+            <a href="?mark=<?= $detail_submission['id']; ?>&status=read&filter=<?= $filter; ?>" class="btn btn-xs btn-outline">Mark Read</a>
+        <?php else: ?>
+            <a href="?mark=<?= $detail_submission['id']; ?>&status=unread&filter=<?= $filter; ?>" class="btn btn-xs btn-outline">Mark Unread</a>
+        <?php endif; ?>
+        <a href="?delete=<?= $detail_submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-danger" data-confirm-delete>Delete</a>
     </div>
 </div>
 <?php endif; ?>
 
 <!-- Submissions List -->
-<div class="card">
-    <div class="card-header">
-        <h2>Form Submissions</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-filter-tabs" style="margin: 0;">
+            <a href="?filter=all" class="admin-filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">All</a>
+            <a href="?filter=unread" class="admin-filter-tab <?= $filter === 'unread' ? 'active' : ''; ?>">Unread<?= $stats['unread'] > 0 ? ' (' . $stats['unread'] . ')' : ''; ?></a>
+            <a href="?filter=read" class="admin-filter-tab <?= $filter === 'read' ? 'active' : ''; ?>">Read</a>
+        </div>
     </div>
 
     <?php if (empty($submissions)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">📝</div>
-            <h3>No submissions yet</h3>
-            <p>Form submissions will appear here</p>
+        <div class="admin-empty-state">
+            <span class="admin-empty-icon">📝</span>
+            <p>No submissions yet.</p>
         </div>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Form</th>
-                        <th>Preview</th>
-                        <th>Submitted</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($submissions as $submission): ?>
-                        <?php
-                        $data = json_decode($submission['form_data'], true);
-                        $preview_fields = ['name', 'email', 'subject', 'message'];
-                        $preview = '';
-
-                        foreach ($preview_fields as $field) {
-                            if (isset($data[$field])) {
-                                $preview .= ($preview ? ' • ' : '') . htmlspecialchars(substr($data[$field], 0, 40));
-                                break;
-                            }
-                        }
-
-                        if (!$preview) {
-                            $preview = 'No preview available';
-                        }
-                        ?>
-                        <tr style="<?= !$submission['processed'] ? 'background: #fef2f2;' : ''; ?>">
-                            <td>
-                                <strong><?= htmlspecialchars($submission['form_type']); ?></strong>
-                                <?php if (!$submission['processed']): ?>
-                                    <span class="badge badge-danger" style="margin-left: 0.5rem;">New</span>
-                                <?php endif; ?>
-                            </td>
-                            <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                <?= $preview; ?>
-                            </td>
-                            <td><?= date('M j, Y g:i A', strtotime($submission['submitted_at'])); ?></td>
-                            <td>
-                                <?php if (!$submission['processed']): ?>
-                                    <span class="badge badge-danger">Unread</span>
-                                <?php else: ?>
-                                    <span class="badge badge-success">Read</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="table-actions">
-                                <a href="?view=<?= $submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-sm btn-primary">View</a>
-                                <a href="?delete=<?= $submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-sm btn-danger" data-confirm-delete>Delete</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php foreach ($submissions as $submission): ?>
+                <?php
+                $data = json_decode($submission['form_data'], true);
+                $preview_fields = ['name', 'email', 'subject', 'message'];
+                $preview = '';
+                foreach ($preview_fields as $field) {
+                    if (isset($data[$field])) {
+                        $preview .= ($preview ? ' · ' : '') . htmlspecialchars(substr($data[$field], 0, 40));
+                    }
+                }
+                if (!$preview) $preview = 'No preview';
+                ?>
+                <div class="admin-post-row <?= !$submission['processed'] ? 'admin-row-unread' : ''; ?>">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?= htmlspecialchars($submission['form_type']); ?>
+                            <?php if (!$submission['processed']): ?>
+                                <span class="admin-badge admin-badge-danger">New</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-post-meta">
+                            <?= date('M j, Y g:i A', strtotime($submission['submitted_at'])); ?> · <?= $preview; ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-actions">
+                        <a href="?view=<?= $submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-primary">View</a>
+                        <a href="?delete=<?= $submission['id']; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>

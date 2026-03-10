@@ -132,139 +132,87 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success">✅ <?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success">✅ <?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<!-- Upload Card -->
-<div class="card">
-    <div class="card-header">
-        <h2>Upload New Media</h2>
+<!-- Compact Upload -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Upload</h3>
     </div>
-
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" style="display: flex; gap: 0.5rem; align-items: center;">
         <?= csrf_field(); ?>
-
-        <div class="form-group">
-            <label>Choose File</label>
-            <input type="file" name="file" required accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
-            <div class="form-help">
-                Allowed: Images (JPG, PNG, GIF), Videos (MP4, MOV, AVI), Audio (MP3), Documents (PDF, DOC, XLS) - Max 50MB
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Upload File</button>
+        <input type="file" name="file" required accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx" style="flex: 1;">
+        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
     </form>
 </div>
 
-<!-- Edit Metadata Modal (only if editing) -->
+<!-- Compact Edit Form -->
 <?php if ($edit_media): ?>
-<div class="card">
-    <div class="card-header">
-        <h2>Edit Media Information</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Edit: <?= htmlspecialchars($edit_media['original_filename']); ?></h3>
+        <a href="/admin/media.php" class="btn btn-xs btn-outline">Cancel</a>
     </div>
-
-    <form method="post">
+    <form method="post" style="display: flex; gap: 0.5rem; align-items: end;">
         <?= csrf_field(); ?>
         <input type="hidden" name="edit_meta" value="1">
         <input type="hidden" name="id" value="<?= $edit_media['id']; ?>">
-
-        <div class="form-group">
-            <label>File</label>
-            <div style="padding: 0.75rem; background: #f1f5f9; border-radius: 0.5rem;">
-                <strong><?= htmlspecialchars($edit_media['original_filename']); ?></strong>
-                <br><small style="color: #64748b;"><?= strtoupper($edit_media['file_type']); ?> • <?= number_format($edit_media['file_size'] / 1024, 1); ?> KB</small>
-            </div>
+        <div class="form-group" style="flex: 1;">
+            <label>Alt Text</label>
+            <input type="text" name="alt_text" value="<?= htmlspecialchars($edit_media['alt_text'] ?? ''); ?>" placeholder="Image description">
         </div>
-
-        <div class="form-group">
-            <label>Alt Text (for images)</label>
-            <input type="text" name="alt_text" value="<?= htmlspecialchars($edit_media['alt_text'] ?? ''); ?>" placeholder="Describe the image for accessibility">
-        </div>
-
-        <div class="form-group">
+        <div class="form-group" style="flex: 1;">
             <label>Caption</label>
-            <textarea name="caption" rows="2" placeholder="Optional caption or description"><?= htmlspecialchars($edit_media['caption'] ?? ''); ?></textarea>
+            <input type="text" name="caption" value="<?= htmlspecialchars($edit_media['caption'] ?? ''); ?>" placeholder="Optional caption">
         </div>
-
-        <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="/admin/media.php" class="btn btn-outline">Cancel</a>
-        </div>
+        <button type="submit" class="btn btn-sm btn-primary">Save</button>
     </form>
 </div>
 <?php endif; ?>
 
-<!-- Filter Tabs -->
-<div style="display: flex; gap: 1rem; margin: 2rem 0 1rem 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
-    <a href="?filter=all" class="<?= $filter === 'all' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'all' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">All Files</a>
-    <a href="?filter=image" class="<?= $filter === 'image' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'image' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Images</a>
-    <a href="?filter=video" class="<?= $filter === 'video' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'video' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Videos</a>
-    <a href="?filter=audio" class="<?= $filter === 'audio' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'audio' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Audio</a>
-    <a href="?filter=document" class="<?= $filter === 'document' ? 'btn btn-primary' : ''; ?>" style="<?= $filter === 'document' ? '' : 'text-decoration: none; color: #64748b; font-weight: 500;'; ?>">Documents</a>
-</div>
-
-<!-- Media Grid -->
-<div class="card">
-    <div class="card-header">
-        <h2>Media Library</h2>
+<!-- Filter + Grid -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Library</h3>
+        <div class="admin-filter-tabs" style="margin: 0;">
+            <a href="?filter=all" class="admin-filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">All</a>
+            <a href="?filter=image" class="admin-filter-tab <?= $filter === 'image' ? 'active' : ''; ?>">Images</a>
+            <a href="?filter=video" class="admin-filter-tab <?= $filter === 'video' ? 'active' : ''; ?>">Video</a>
+            <a href="?filter=audio" class="admin-filter-tab <?= $filter === 'audio' ? 'active' : ''; ?>">Audio</a>
+            <a href="?filter=document" class="admin-filter-tab <?= $filter === 'document' ? 'active' : ''; ?>">Docs</a>
+        </div>
     </div>
 
     <?php if (empty($media_files)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">🖼️</div>
-            <h3>No media files yet</h3>
-            <p>Upload your first file above</p>
-        </div>
+        <p class="admin-muted-text">No files yet. Upload one above.</p>
     <?php else: ?>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
+        <div class="admin-media-grid">
             <?php foreach ($media_files as $media): ?>
-                <div style="border: 1px solid #e2e8f0; border-radius: 0.5rem; overflow: hidden; background: white;">
-                    <!-- Preview -->
-                    <div style="height: 150px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div class="admin-media-card">
+                    <!-- Preview with hover overlay -->
+                    <div class="admin-media-preview">
                         <?php if ($media['file_type'] === 'image'): ?>
-                            <img src="/<?= htmlspecialchars($media['file_path']); ?>"
-                                 alt="<?= htmlspecialchars($media['alt_text'] ?? $media['original_filename'] ?? ''); ?>"
-                                 style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                        <?php elseif ($media['file_type'] === 'video'): ?>
-                            <span style="font-size: 3rem;">🎥</span>
-                        <?php elseif ($media['file_type'] === 'audio'): ?>
-                            <span style="font-size: 3rem;">🎵</span>
+                            <img src="/<?= htmlspecialchars($media['file_path']); ?>" alt="">
                         <?php else: ?>
-                            <span style="font-size: 3rem;">📄</span>
+                            <span class="admin-media-icon">
+                                <?= $media['file_type'] === 'video' ? '🎥' : ($media['file_type'] === 'audio' ? '🎵' : '📄'); ?>
+                            </span>
                         <?php endif; ?>
+                        <div class="admin-media-overlay">
+                            <button onclick="navigator.clipboard.writeText('/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy URL', 1000);" class="btn btn-xs">Copy URL</button>
+                            <a href="?edit=<?= $media['id']; ?>" class="btn btn-xs">Edit</a>
+                            <a href="?delete=<?= $media['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
+                        </div>
                     </div>
-
-                    <!-- Info -->
-                    <div style="padding: 1rem;">
-                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            <?= htmlspecialchars($media['original_filename']); ?>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
-                            <?= strtoupper($media['file_type']); ?> • <?= number_format($media['file_size'] / 1024, 1); ?> KB
-                        </div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 1rem;">
-                            By <?= htmlspecialchars($media['username'] ?? 'Unknown'); ?><br>
-                            <?= date('M j, Y', strtotime($media['created_at'])); ?>
-                        </div>
-
-                        <!-- URL Copy -->
-                        <div style="margin-bottom: 0.75rem;">
-                            <input type="text"
-                                   value="/<?= htmlspecialchars($media['file_path']); ?>"
-                                   readonly
-                                   onclick="this.select(); document.execCommand('copy'); alert('URL copied!');"
-                                   style="width: 100%; padding: 0.5rem; font-size: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.25rem; cursor: pointer; font-family: monospace;">
-                        </div>
-
-                        <!-- Actions -->
-                        <div style="display: flex; gap: 0.5rem;">
-                            <a href="?edit=<?= $media['id']; ?>" class="btn btn-sm btn-outline" style="flex: 1; text-align: center; padding: 0.5rem;">Edit</a>
-                            <a href="?delete=<?= $media['id']; ?>" class="btn btn-sm btn-danger" style="flex: 1; text-align: center; padding: 0.5rem;" data-confirm-delete>Delete</a>
-                        </div>
+                    <!-- Compact info -->
+                    <div class="admin-media-info">
+                        <span class="admin-media-name" title="<?= htmlspecialchars($media['original_filename']); ?>"><?= htmlspecialchars($media['original_filename']); ?></span>
+                        <span class="admin-media-meta"><?= number_format($media['file_size'] / 1024, 0); ?>KB</span>
                     </div>
                 </div>
             <?php endforeach; ?>

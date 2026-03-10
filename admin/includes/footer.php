@@ -1,7 +1,7 @@
-            </div>
-        </div>
-    </div>
+    </div><!-- /.container -->
+</main><!-- /.admin-page -->
 
-    <script src="/admin/assets/js/admin.js"></script>
-</body>
-</html>
+<!-- Admin-specific JavaScript -->
+<script src="/admin/assets/js/admin.js"></script>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

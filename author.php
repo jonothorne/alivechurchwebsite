@@ -267,9 +267,10 @@ include __DIR__ . '/includes/header.php';
             <?php foreach ($blogPosts as $post): ?>
                 <article class="blog-card">
                     <a href="/blog/<?= htmlspecialchars($post['slug']); ?>">
-                        <?php if ($post['featured_image']): ?>
+                        <?php $cardImage = $post['thumbnail'] ?? $post['featured_image'] ?? null;
+                        if ($cardImage): ?>
                             <div class="blog-card-image">
-                                <img src="<?= htmlspecialchars($post['featured_image']); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
+                                <img src="<?= htmlspecialchars($cardImage); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
                             </div>
                         <?php endif; ?>
                         <div class="blog-card-content">

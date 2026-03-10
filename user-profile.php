@@ -108,7 +108,7 @@ $studiesCompleted = $studiesCompletedStmt->fetchColumn();
 $authoredPosts = [];
 if (in_array($user['role'], ['admin', 'editor'])) {
     $postsStmt = $pdo->prepare("
-        SELECT id, title, slug, excerpt, featured_image, published_at
+        SELECT id, title, slug, excerpt, featured_image, thumbnail, published_at
         FROM blog_posts
         WHERE author_id = ? AND status = 'published'
         ORDER BY published_at DESC
@@ -226,9 +226,10 @@ include __DIR__ . '/includes/header.php';
             <?php foreach ($authoredPosts as $post): ?>
                 <article class="blog-card">
                     <a href="/blog/<?= htmlspecialchars($post['slug']); ?>">
-                        <?php if ($post['featured_image']): ?>
+                        <?php $cardImage = $post['thumbnail'] ?? $post['featured_image'] ?? null;
+                        if ($cardImage): ?>
                             <div class="blog-card-image">
-                                <img src="<?= htmlspecialchars($post['featured_image']); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
+                                <img src="<?= htmlspecialchars($cardImage); ?>" alt="<?= htmlspecialchars($post['title']); ?>">
                             </div>
                         <?php endif; ?>
                         <div class="blog-card-content">

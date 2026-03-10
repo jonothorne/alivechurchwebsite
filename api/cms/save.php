@@ -52,10 +52,44 @@ if (!$key) {
 $userId = $_SESSION['admin_user_id'] ?? $_SESSION['admin_user']['id'] ?? null;
 
 try {
-    if ($isGlobal) {
+    // Check if this is a blog post edit
+    if ($page && preg_match('/^blog-post-(\d+)$/', $page, $matches)) {
+        $postId = $matches[1];
+
+        // Save directly to blog_posts table
+        require_once __DIR__ . '/../../includes/db-config.php';
+        $pdo = getDbConnection();
+
+        $stmt = $pdo->prepare("UPDATE blog_posts SET content = ?, updated_at = NOW() WHERE id = ?");
+        $success = $stmt->execute([$content, $postId]);
+
+        if ($success) {
+            log_activity($userId, 'edit_blog_post', 'blog_post', $postId,
+                "Updated blog post content (ID: {$postId})");
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Blog post saved successfully'
+            ]);
+        } else {
+            throw new Exception('Failed to save blog post');
+        }
+    } elseif ($isGlobal) {
         // Save global content
         $cms = new ContentManager();
         $success = $cms->saveGlobal($key, $content, $userId);
+
+        if ($success) {
+            log_activity($userId, 'edit_content', 'content_block', null,
+                "Updated global content block '{$key}'");
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Content saved successfully'
+            ]);
+        } else {
+            throw new Exception('Failed to save content');
+        }
     } else {
         // Save page-specific content
         if (!$page) {
@@ -66,19 +100,18 @@ try {
 
         $cms = new ContentManager($page);
         $success = $cms->saveBlock($key, $content, $type, $userId);
-    }
 
-    if ($success) {
-        // Log activity
-        log_activity($userId, 'edit_content', 'content_block', null,
-            "Updated content block '{$key}' on page '{$page}'");
+        if ($success) {
+            log_activity($userId, 'edit_content', 'content_block', null,
+                "Updated content block '{$key}' on page '{$page}'");
 
-        echo json_encode([
-            'success' => true,
-            'message' => 'Content saved successfully'
-        ]);
-    } else {
-        throw new Exception('Failed to save content');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Content saved successfully'
+            ]);
+        } else {
+            throw new Exception('Failed to save content');
+        }
     }
 } catch (Exception $e) {
     error_log('CMS save error: ' . $e->getMessage());

@@ -475,6 +475,15 @@ img {
     color: #fff;
 }
 .btn-secondary {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--color-dark);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode - white version for dark backgrounds */
+[data-theme="dark"] .btn-secondary,
+.hero .btn-secondary,
+.watch .btn-secondary {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.4);
@@ -12233,4 +12242,32 @@ textarea {
     [data-editable].can-edit:hover::after {
         display: none;
     }
+}
+
+/* =====================
+   Bible Verse Links
+   ===================== */
+.bible-verse-link {
+    color: var(--color-magenta);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--color-magenta);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.bible-verse-link:hover {
+    color: var(--color-purple);
+    border-bottom-style: solid;
+    border-bottom-color: var(--color-purple);
+}
+
+/* Dark mode */
+[data-theme="dark"] .bible-verse-link {
+    color: var(--color-teal);
+    border-bottom-color: var(--color-teal);
+}
+
+[data-theme="dark"] .bible-verse-link:hover {
+    color: var(--color-magenta);
+    border-bottom-color: var(--color-magenta);
 }

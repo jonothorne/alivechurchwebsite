@@ -97,10 +97,12 @@ if (!isset($cms)) {
                     <?= htmlspecialchars($site['service_times']); ?><br>
                     <small><?= htmlspecialchars($site['service_details']); ?></small></p>
 
+                    <?php if (!empty($site['phone'])): ?>
                     <p><strong>Phone:</strong><br>
                     <a href="tel:<?= preg_replace('/\s+/', '', $site['phone']); ?>">
                         <?= htmlspecialchars($site['phone']); ?>
                     </a></p>
+                    <?php endif; ?>
                 </div>
                 <a class="btn btn-primary" href="<?= htmlspecialchars($site['maps_url']); ?>"
                    target="_blank" rel="noopener">Get Directions</a>

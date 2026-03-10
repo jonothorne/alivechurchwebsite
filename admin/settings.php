@@ -7,7 +7,7 @@ $pdo = getDbConnection();
 
 // Only admins can access site settings
 if (($current_user['role'] ?? '') !== 'admin') {
-    echo '<div class="alert alert-error">You do not have permission to access this page.</div>';
+    echo '<div class="admin-alert admin-alert-error">You do not have permission to access this page.</div>';
     require_once __DIR__ . '/includes/footer.php';
     exit;
 }
@@ -23,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $pdo->beginTransaction();
 
-            // Update each setting
             $stmt = $pdo->prepare("UPDATE site_settings SET setting_value = ? WHERE setting_key = ?");
 
             foreach ($_POST as $key => $value) {
@@ -53,66 +52,77 @@ while ($row = $stmt->fetch()) {
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success">✅ <?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
+
+<!-- Header -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Site Settings</span>
+    </div>
+</div>
 
 <form method="post">
     <?= csrf_field(); ?>
     <input type="hidden" name="action" value="update_settings">
 
     <?php foreach ($settings as $group => $group_settings): ?>
-        <div class="card">
-            <div class="card-header">
-                <h2><?= ucfirst($group); ?> Settings</h2>
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3><?= ucfirst($group); ?></h3>
             </div>
 
-            <?php foreach ($group_settings as $setting): ?>
-                <div class="form-group">
-                    <label for="<?= htmlspecialchars($setting['setting_key']); ?>">
-                        <?= htmlspecialchars($setting['display_name']); ?>
-                    </label>
+            <div class="admin-settings-form">
+                <?php foreach ($group_settings as $setting): ?>
+                    <div class="admin-setting-row">
+                        <div class="admin-setting-info">
+                            <label for="<?= htmlspecialchars($setting['setting_key']); ?>">
+                                <?= htmlspecialchars($setting['display_name']); ?>
+                            </label>
+                            <?php if ($setting['description']): ?>
+                                <span class="admin-setting-desc"><?= htmlspecialchars($setting['description']); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-setting-input">
+                            <?php if ($setting['setting_type'] === 'textarea'): ?>
+                                <textarea
+                                    id="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                    name="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                    rows="2"
+                                ><?= htmlspecialchars($setting['setting_value'] ?? ''); ?></textarea>
 
-                    <?php if ($setting['setting_type'] === 'textarea'): ?>
-                        <textarea
-                            id="<?= htmlspecialchars($setting['setting_key']); ?>"
-                            name="<?= htmlspecialchars($setting['setting_key']); ?>"
-                            rows="3"
-                        ><?= htmlspecialchars($setting['setting_value'] ?? ''); ?></textarea>
+                            <?php elseif ($setting['setting_type'] === 'boolean'): ?>
+                                <label class="admin-toggle">
+                                    <input
+                                        type="checkbox"
+                                        id="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                        name="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                        value="1"
+                                        <?= $setting['setting_value'] ? 'checked' : ''; ?>
+                                    >
+                                    <span class="admin-toggle-slider"></span>
+                                </label>
 
-                    <?php elseif ($setting['setting_type'] === 'boolean'): ?>
-                        <label class="toggle-switch">
-                            <input
-                                type="checkbox"
-                                id="<?= htmlspecialchars($setting['setting_key']); ?>"
-                                name="<?= htmlspecialchars($setting['setting_key']); ?>"
-                                value="1"
-                                <?= $setting['setting_value'] ? 'checked' : ''; ?>
-                            >
-                            <span class="toggle-slider"></span>
-                        </label>
-
-                    <?php else: ?>
-                        <input
-                            type="<?= $setting['setting_type'] === 'number' ? 'number' : 'text'; ?>"
-                            id="<?= htmlspecialchars($setting['setting_key']); ?>"
-                            name="<?= htmlspecialchars($setting['setting_key']); ?>"
-                            value="<?= htmlspecialchars($setting['setting_value'] ?? ''); ?>"
-                        >
-                    <?php endif; ?>
-
-                    <?php if ($setting['description']): ?>
-                        <div class="form-help"><?= htmlspecialchars($setting['description']); ?></div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
+                            <?php else: ?>
+                                <input
+                                    type="<?= $setting['setting_type'] === 'number' ? 'number' : 'text'; ?>"
+                                    id="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                    name="<?= htmlspecialchars($setting['setting_key']); ?>"
+                                    value="<?= htmlspecialchars($setting['setting_value'] ?? ''); ?>"
+                                >
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     <?php endforeach; ?>
 
-    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+    <div class="admin-form-actions" style="margin-top: 1rem;">
         <button type="submit" class="btn btn-primary">Save Settings</button>
         <a href="/admin" class="btn btn-outline">Cancel</a>
     </div>

@@ -12,18 +12,16 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Disposition: attachment; filename="newsletter-subscribers-' . date('Y-m-d') . '.csv"');
 
     $output = fopen('php://output', 'w');
-
-    // CSV Header
     fputcsv($output, ['Email Address', 'First Name', 'Last Name', 'Subscribed Date', 'Status']);
 
     foreach ($subscribers as $subscriber) {
         if (($subscriber['status'] ?? 'confirmed') !== 'unsubscribed') {
             fputcsv($output, [
                 $subscriber['email'],
-                '', // First Name - not collected
-                '', // Last Name - not collected
+                '',
+                '',
                 $subscriber['subscribed_at'] ?? '',
-                'subscribed' // Mailchimp expects 'subscribed' status
+                'subscribed'
             ]);
         }
     }
@@ -84,139 +82,96 @@ $unsubscribedCount = count(array_filter($subscribers, fn($s) => ($s['status'] ??
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success">✅ <?= htmlspecialchars($success); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success); ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Total Subscribers</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #1e293b;"><?= $totalCount; ?></div>
+<!-- Header with Stats -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Newsletter</span>
+        <a href="?export=csv" class="btn btn-sm btn-primary">Export CSV</a>
     </div>
-
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Active Subscribers</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #10b981;"><?= $confirmedCount; ?></div>
-    </div>
-
-    <div class="card" style="padding: 1.5rem;">
-        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Unsubscribed</div>
-        <div style="font-size: 2rem; font-weight: 700; color: #94a3b8;"><?= $unsubscribedCount; ?></div>
+    <div class="admin-inline-stats">
+        <span class="admin-inline-stat"><strong><?= $totalCount; ?></strong> Total</span>
+        <span class="admin-inline-stat"><strong><?= $confirmedCount; ?></strong> Active</span>
+        <span class="admin-inline-stat"><strong><?= $unsubscribedCount; ?></strong> Unsubscribed</span>
     </div>
 </div>
 
-<!-- Actions Bar -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <!-- Filter Tabs -->
-    <div style="display: flex; gap: 1rem;">
-        <a href="?filter=all" class="<?= $filter === 'all' ? 'btn btn-primary' : 'btn btn-outline'; ?>">
-            All (<?= $totalCount; ?>)
-        </a>
-        <a href="?filter=confirmed" class="<?= $filter === 'confirmed' ? 'btn btn-primary' : 'btn btn-outline'; ?>">
-            Active (<?= $confirmedCount; ?>)
-        </a>
-        <a href="?filter=unsubscribed" class="<?= $filter === 'unsubscribed' ? 'btn btn-primary' : 'btn btn-outline'; ?>">
-            Unsubscribed (<?= $unsubscribedCount; ?>)
-        </a>
-    </div>
-
-    <!-- Export Button -->
-    <a href="?export=csv" class="btn btn-primary">📥 Export to CSV (Mailchimp)</a>
-</div>
-
-<!-- Subscribers Table -->
-<div class="card">
-    <div class="card-header">
-        <h2>Newsletter Subscribers</h2>
+<!-- Subscribers List -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-filter-tabs" style="margin: 0;">
+            <a href="?filter=all" class="admin-filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">All</a>
+            <a href="?filter=confirmed" class="admin-filter-tab <?= $filter === 'confirmed' ? 'active' : ''; ?>">Active</a>
+            <a href="?filter=unsubscribed" class="admin-filter-tab <?= $filter === 'unsubscribed' ? 'active' : ''; ?>">Unsubscribed</a>
+        </div>
     </div>
 
     <?php if (empty($filteredSubscribers)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">📧</div>
-            <h3>No subscribers yet</h3>
-            <p>Newsletter subscribers will appear here when someone signs up from your website footer.</p>
+        <div class="admin-empty-state">
+            <span class="admin-empty-icon">📧</span>
+            <p>No subscribers yet.</p>
         </div>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Email Address</th>
-                        <th>Subscribed Date</th>
-                        <th>Status</th>
-                        <th>IP Address</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $index = 0;
-                    foreach ($subscribers as $originalIndex => $subscriber):
-                        if ($filter !== 'all' && ($subscriber['status'] ?? 'pending') !== $filter) {
-                            continue;
-                        }
-                    ?>
-                        <tr>
-                            <td>
-                                <strong><?= htmlspecialchars($subscriber['email']); ?></strong>
-                            </td>
-                            <td><?= date('M j, Y g:i A', strtotime($subscriber['subscribed_at'] ?? 'now')); ?></td>
-                            <td>
-                                <?php
-                                $status = $subscriber['status'] ?? 'confirmed';
-
-                                if ($status === 'unsubscribed') {
-                                    $badgeClass = 'badge-danger';
-                                    $displayStatus = 'Unsubscribed';
-                                } else {
-                                    // Default to active for confirmed or any other status
-                                    $badgeClass = 'badge-success';
-                                    $displayStatus = 'Active';
-                                }
-                                ?>
-                                <span class="badge <?= $badgeClass; ?>"><?= $displayStatus; ?></span>
-                            </td>
-                            <td style="font-family: monospace; font-size: 0.875rem;">
-                                <?= htmlspecialchars($subscriber['ip_address'] ?? 'N/A'); ?>
-                            </td>
-                            <td class="table-actions">
-                                <?php if ($status !== 'unsubscribed'): ?>
-                                    <a href="?status=unsubscribed&id=<?= $originalIndex; ?>&filter=<?= $filter; ?>"
-                                       class="btn btn-sm btn-outline">Unsubscribe</a>
-                                <?php else: ?>
-                                    <a href="?status=confirmed&id=<?= $originalIndex; ?>&filter=<?= $filter; ?>"
-                                       class="btn btn-sm btn-outline">Reactivate</a>
-                                <?php endif; ?>
-
-                                <a href="?delete=<?= $originalIndex; ?>&filter=<?= $filter; ?>"
-                                   class="btn btn-sm btn-danger"
-                                   data-confirm-delete>Delete</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php
+            foreach ($subscribers as $originalIndex => $subscriber):
+                if ($filter !== 'all' && ($subscriber['status'] ?? 'confirmed') !== $filter) continue;
+                $status = $subscriber['status'] ?? 'confirmed';
+            ?>
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?= htmlspecialchars($subscriber['email']); ?>
+                            <?php if ($status === 'unsubscribed'): ?>
+                                <span class="admin-badge admin-badge-secondary">Unsubscribed</span>
+                            <?php else: ?>
+                                <span class="admin-badge admin-badge-success">Active</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-post-meta">
+                            <?= date('M j, Y g:i A', strtotime($subscriber['subscribed_at'] ?? 'now')); ?>
+                            <?php if ($subscriber['ip_address'] ?? false): ?>
+                                · <code><?= htmlspecialchars($subscriber['ip_address']); ?></code>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-actions">
+                        <?php if ($status !== 'unsubscribed'): ?>
+                            <a href="?status=unsubscribed&id=<?= $originalIndex; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-outline">Unsubscribe</a>
+                        <?php else: ?>
+                            <a href="?status=confirmed&id=<?= $originalIndex; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-outline">Reactivate</a>
+                        <?php endif; ?>
+                        <a href="?delete=<?= $originalIndex; ?>&filter=<?= $filter; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
 
-<div style="margin-top: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 0.5rem; border-left: 4px solid #3b82f6;">
-    <h3 style="margin-bottom: 0.75rem;">💡 Importing to Mailchimp</h3>
-    <ol style="margin-left: 1.5rem; line-height: 1.8;">
-        <li>Click the "Export to CSV" button above</li>
-        <li>Log in to your Mailchimp account</li>
-        <li>Go to <strong>Audience → Manage Audience → Import Contacts</strong></li>
-        <li>Choose "Upload a file" and select the CSV file you just downloaded</li>
-        <li>Map the columns: Email Address → Email, Status → Status</li>
-        <li>Complete the import process</li>
-    </ol>
-    <p style="margin-top: 1rem; color: #64748b; font-size: 0.875rem;">
-        Note: The CSV export only includes active subscribers (status is automatically set to "subscribed" for Mailchimp). Unsubscribed contacts are excluded from the export.
-    </p>
+<!-- Mailchimp Instructions -->
+<div class="admin-card">
+    <details>
+        <summary class="admin-card-header" style="cursor: pointer;">
+            <h3>Importing to Mailchimp</h3>
+        </summary>
+        <div class="admin-info-box">
+            <ol>
+                <li>Click "Export CSV" above</li>
+                <li>Log in to Mailchimp</li>
+                <li>Go to Audience → Manage Audience → Import Contacts</li>
+                <li>Upload the CSV file</li>
+                <li>Map columns and complete import</li>
+            </ol>
+            <p class="admin-muted-text">CSV export only includes active subscribers.</p>
+        </div>
+    </details>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

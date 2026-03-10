@@ -97,9 +97,11 @@ if (!isset($cms)) {
             <a href="mailto:<?= htmlspecialchars($site['email']); ?>" class="btn btn-outline">
                 Email Our Team
             </a>
+            <?php if (!empty($site['phone'])): ?>
             <a href="tel:<?= preg_replace('/\s+/', '', $site['phone']); ?>" class="btn btn-outline">
                 Call Us
             </a>
+            <?php endif; ?>
             <a href="/visit" class="btn btn-primary">
                 Visit Us This Sunday
             </a>

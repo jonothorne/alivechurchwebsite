@@ -25,6 +25,22 @@ if (isset($_POST['unpublish']) && isset($_POST['id'])) {
     $success_message = 'Post unpublished.';
 }
 
+// Handle feature toggle
+if (isset($_POST['feature']) && isset($_POST['id'])) {
+    // First, unfeature all posts
+    $pdo->exec("UPDATE blog_posts SET is_featured = 0");
+    // Then feature the selected one
+    $stmt = $pdo->prepare("UPDATE blog_posts SET is_featured = 1 WHERE id = ?");
+    $stmt->execute([$_POST['id']]);
+    $success_message = 'Post set as featured.';
+}
+
+if (isset($_POST['unfeature']) && isset($_POST['id'])) {
+    $stmt = $pdo->prepare("UPDATE blog_posts SET is_featured = 0 WHERE id = ?");
+    $stmt->execute([$_POST['id']]);
+    $success_message = 'Post unfeatured.';
+}
+
 // Get filter
 $statusFilter = $_GET['status'] ?? '';
 $categoryFilter = $_GET['category'] ?? '';
@@ -67,27 +83,27 @@ $counts = [
 ?>
 
 <?php if (isset($success_message)): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success_message); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success_message); ?></div>
 <?php endif; ?>
 
-<div class="card">
-    <div class="card-header">
-        <h2>Manage Blog Posts</h2>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="/admin/blog/categories" class="btn btn-outline">Categories</a>
-            <a href="/admin/blog/comments" class="btn btn-outline">Comments</a>
-            <a href="/admin/blog/edit" class="btn btn-primary">+ New Post</a>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Manage Blog Posts</h3>
+        <div class="admin-card-actions">
+            <a href="/admin/blog/categories" class="btn btn-outline btn-sm">Categories</a>
+            <a href="/admin/blog/comments" class="btn btn-outline btn-sm">Comments</a>
+            <a href="/admin/blog/edit" class="btn btn-primary btn-sm">+ New Post</a>
         </div>
     </div>
 
     <!-- Filters -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <div class="filter-tabs">
-            <a href="/admin/blog" class="filter-tab <?= !$statusFilter ? 'active' : ''; ?>">All (<?= $counts['all']; ?>)</a>
-            <a href="/admin/blog?status=published" class="filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published (<?= $counts['published']; ?>)</a>
-            <a href="/admin/blog?status=draft" class="filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts (<?= $counts['draft']; ?>)</a>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+        <div class="admin-filter-tabs">
+            <a href="/admin/blog" class="admin-filter-tab <?= !$statusFilter ? 'active' : ''; ?>">All (<?= $counts['all']; ?>)</a>
+            <a href="/admin/blog?status=published" class="admin-filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published (<?= $counts['published']; ?>)</a>
+            <a href="/admin/blog?status=draft" class="admin-filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts (<?= $counts['draft']; ?>)</a>
         </div>
-        <select onchange="window.location.href='/admin/blog?category=' + this.value" style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
+        <select onchange="window.location.href='/admin/blog?category=' + this.value" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-strong); background: var(--color-bg-elevated); color: var(--color-text);">
             <option value="">All Categories</option>
             <?php foreach ($categories as $cat): ?>
                 <option value="<?= $cat['id']; ?>" <?= $categoryFilter == $cat['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
@@ -96,77 +112,76 @@ $counts = [
     </div>
 
     <?php if (empty($posts)): ?>
-        <div class="empty-state">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-            <h3>No Blog Posts Yet</h3>
-            <p style="color: #64748b; margin-bottom: 1.5rem;">Start sharing your church's story with the world.</p>
-            <a href="/admin/blog/edit" class="btn btn-primary">Create First Post</a>
+        <div class="admin-empty-state">
+            <p>No posts yet. <a href="/admin/blog/edit">Create your first post</a></p>
         </div>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>Author</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($posts as $post): ?>
-                        <tr>
-                            <td>
-                                <strong><?= htmlspecialchars($post['title']); ?></strong>
-                                <?php if ($post['pending_comments'] > 0): ?>
-                                    <span class="badge badge-warning" style="margin-left: 0.5rem;"><?= $post['pending_comments']; ?> pending</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= $post['category_name'] ? htmlspecialchars($post['category_name']) : '<span style="color: #94a3b8;">—</span>'; ?></td>
-                            <td><?= $post['author_name'] ? htmlspecialchars($post['author_name']) : '<span style="color: #94a3b8;">—</span>'; ?></td>
-                            <td>
-                                <?php if ($post['status'] === 'published'): ?>
-                                    <span class="badge badge-success">Published</span>
-                                <?php elseif ($post['status'] === 'draft'): ?>
-                                    <span class="badge badge-secondary">Draft</span>
-                                <?php else: ?>
-                                    <span class="badge"><?= ucfirst($post['status']); ?></span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($post['published_at']): ?>
-                                    <?= date('M j, Y', strtotime($post['published_at'])); ?>
-                                <?php else: ?>
-                                    <span style="color: #94a3b8;">Not published</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <a href="/blog/<?= htmlspecialchars($post['slug']); ?>" target="_blank" class="btn btn-sm btn-outline">View</a>
-                                    <a href="/admin/blog/edit?id=<?= $post['id']; ?>" class="btn btn-sm btn-secondary">Edit</a>
-                                    <?php if ($post['status'] === 'draft'): ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="id" value="<?= $post['id']; ?>">
-                                            <button type="submit" name="publish" class="btn btn-sm btn-success">Publish</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="id" value="<?= $post['id']; ?>">
-                                            <button type="submit" name="unpublish" class="btn btn-sm btn-outline">Unpublish</button>
-                                        </form>
-                                    <?php endif; ?>
-                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this post?');">
-                                        <input type="hidden" name="id" value="<?= $post['id']; ?>">
-                                        <button type="submit" name="delete" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php foreach ($posts as $post): ?>
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?php if ($post['is_featured']): ?>
+                                <span class="admin-featured-star" title="Featured Post">&#9733;</span>
+                            <?php endif; ?>
+                            <?= htmlspecialchars($post['title']); ?>
+                            <?php if ($post['pending_comments'] > 0): ?>
+                                <span class="admin-badge admin-badge-warning"><?= $post['pending_comments']; ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-post-meta">
+                            <?php if ($post['category_name']): ?>
+                                <span><?= htmlspecialchars($post['category_name']); ?></span> ·
+                            <?php endif; ?>
+                            <?php if ($post['author_name']): ?>
+                                <?= htmlspecialchars($post['author_name']); ?> ·
+                            <?php endif; ?>
+                            <?php if ($post['published_at']): ?>
+                                <?= date('M j, Y', strtotime($post['published_at'])); ?>
+                            <?php else: ?>
+                                <span class="admin-muted">Not published</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-status">
+                        <?php if ($post['status'] === 'published'): ?>
+                            <span class="admin-badge admin-badge-success">Live</span>
+                        <?php else: ?>
+                            <span class="admin-badge admin-badge-secondary">Draft</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="admin-post-actions">
+                        <?php if ($post['is_featured']): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $post['id']; ?>">
+                                <button type="submit" name="unfeature" class="btn btn-xs btn-featured" title="Remove from featured">&#9733;</button>
+                            </form>
+                        <?php else: ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $post['id']; ?>">
+                                <button type="submit" name="feature" class="btn btn-xs btn-outline" title="Set as featured">&#9734;</button>
+                            </form>
+                        <?php endif; ?>
+                        <a href="/admin/blog/edit?id=<?= $post['id']; ?>" class="btn btn-xs btn-outline">Edit</a>
+                        <a href="/blog/<?= htmlspecialchars($post['slug']); ?>" target="_blank" class="btn btn-xs btn-outline">View</a>
+                        <?php if ($post['status'] === 'draft'): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $post['id']; ?>">
+                                <button type="submit" name="publish" class="btn btn-xs btn-success">Publish</button>
+                            </form>
+                        <?php else: ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $post['id']; ?>">
+                                <button type="submit" name="unpublish" class="btn btn-xs btn-outline">Unpub</button>
+                            </form>
+                        <?php endif; ?>
+                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete?');">
+                            <input type="hidden" name="id" value="<?= $post['id']; ?>">
+                            <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>

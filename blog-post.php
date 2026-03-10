@@ -3,6 +3,7 @@ require __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db-config.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/profanity-filter.php';
+require_once __DIR__ . '/includes/BibleVerseLinker.php';
 
 $pdo = getDbConnection();
 $auth = new Auth($pdo);
@@ -176,7 +177,7 @@ if (!isset($cms)) {
     <div class="blog-post-content">
         <div class="container narrow">
             <div class="post-body" data-cms-editable="post_content_<?= $post['id']; ?>" data-cms-page="blog-post-<?= $post['id']; ?>" data-cms-type="html">
-                <?= $post['content']; ?>
+                <?= linkBibleVerses($post['content']); ?>
             </div>
 
             <?php if (!empty($postTags)): ?>

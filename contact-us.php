@@ -83,6 +83,7 @@ if (!isset($cms)) {
                         </div>
                     </div>
 
+                    <?php if (!empty($site['phone'])): ?>
                     <div class="contact-info-card">
                         <div class="contact-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -95,6 +96,7 @@ if (!isset($cms)) {
                             <p class="contact-note">Office hours: Mon-Fri, 9am-5pm</p>
                         </div>
                     </div>
+                    <?php endif; ?>
 
                     <div class="contact-info-card">
                         <div class="contact-icon">

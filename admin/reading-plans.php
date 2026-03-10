@@ -89,150 +89,108 @@ $counts = [
 ?>
 
 <?php if ($success_message): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success_message); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success_message); ?></div>
 <?php endif; ?>
 
 <?php if ($error_message): ?>
-    <div class="alert alert-error"><?= htmlspecialchars($error_message); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error_message); ?></div>
 <?php endif; ?>
 
-<div class="card">
-    <div class="card-header">
-        <h2>Reading Plans</h2>
-        <a href="/admin/reading-plans/edit" class="btn btn-primary">+ New Reading Plan</a>
+<!-- Header with Stats -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Reading Plans</span>
+        <a href="/admin/reading-plans/edit" class="btn btn-sm btn-primary">+ New Plan</a>
     </div>
-
-    <!-- Stats -->
-    <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;"><?= $counts['published']; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Published</div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #64748b;"><?= $counts['draft']; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Drafts</div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;"><?= $counts['featured']; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Featured</div>
-        </div>
+    <div class="admin-inline-stats">
+        <span class="admin-inline-stat"><strong><?= $counts['published']; ?></strong> Published</span>
+        <span class="admin-inline-stat"><strong><?= $counts['draft']; ?></strong> Drafts</span>
+        <span class="admin-inline-stat"><strong><?= $counts['featured']; ?></strong> Featured</span>
     </div>
+</div>
 
-    <!-- Filters -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <a href="/admin/reading-plans" class="btn <?= !$statusFilter ? 'btn-primary' : 'btn-outline'; ?> btn-sm">
-            All (<?= $counts['all']; ?>)
-        </a>
-        <a href="/admin/reading-plans?status=published" class="btn <?= $statusFilter === 'published' ? 'btn-primary' : 'btn-outline'; ?> btn-sm">
-            Published (<?= $counts['published']; ?>)
-        </a>
-        <a href="/admin/reading-plans?status=draft" class="btn <?= $statusFilter === 'draft' ? 'btn-primary' : 'btn-outline'; ?> btn-sm">
-            Drafts (<?= $counts['draft']; ?>)
-        </a>
-
+<!-- Filters -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-filter-tabs" style="margin: 0;">
+            <a href="/admin/reading-plans" class="admin-filter-tab <?= !$statusFilter ? 'active' : ''; ?>">All</a>
+            <a href="/admin/reading-plans?status=published" class="admin-filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published</a>
+            <a href="/admin/reading-plans?status=draft" class="admin-filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts</a>
+        </div>
         <?php if (!empty($categories)): ?>
-        <select onchange="window.location.href='/admin/reading-plans?category='+this.value" style="padding: 0.5rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
-            <option value="">All Categories</option>
-            <?php foreach ($categories as $cat): ?>
-                <option value="<?= htmlspecialchars($cat); ?>" <?= $categoryFilter === $cat ? 'selected' : ''; ?>>
-                    <?= htmlspecialchars(ucfirst($cat)); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+        <div class="admin-filter-selects">
+            <select onchange="window.location.href='/admin/reading-plans?category='+this.value" class="admin-select-sm">
+                <option value="">All Categories</option>
+                <?php foreach ($categories as $cat): ?>
+                    <option value="<?= htmlspecialchars($cat); ?>" <?= $categoryFilter === $cat ? 'selected' : ''; ?>>
+                        <?= htmlspecialchars(ucfirst($cat)); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <?php endif; ?>
     </div>
 
     <?php if (empty($plans)): ?>
-        <p style="color: #64748b; padding: 2rem; text-align: center;">
-            No reading plans found. <a href="/admin/reading-plans/edit">Create your first reading plan</a>
-        </p>
+        <div class="admin-empty-state">
+            <span class="admin-empty-icon">📖</span>
+            <p>No reading plans yet. <a href="/admin/reading-plans/edit">Create one</a></p>
+        </div>
     <?php else: ?>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Days</th>
-                    <th>Users</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($plans as $plan): ?>
-                    <tr>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <?php if ($plan['icon']): ?>
-                                    <span style="font-size: 1.5rem;"><?= $plan['icon']; ?></span>
-                                <?php endif; ?>
-                                <div>
-                                    <strong><?= htmlspecialchars($plan['title']); ?></strong>
-                                    <?php if ($plan['is_featured']): ?>
-                                        <span style="background: #fef3c7; color: #92400e; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; margin-left: 0.5rem;">Featured</span>
-                                    <?php endif; ?>
-                                    <?php if ($plan['description']): ?>
-                                        <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">
-                                            <?= htmlspecialchars(substr($plan['description'], 0, 80)); ?><?= strlen($plan['description']) > 80 ? '...' : ''; ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <?php if ($plan['category']): ?>
-                                <span style="background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                                    <?= htmlspecialchars(ucfirst($plan['category'])); ?>
-                                </span>
-                            <?php else: ?>
-                                <span style="color: #94a3b8;">—</span>
+        <div class="admin-compact-list">
+            <?php foreach ($plans as $plan): ?>
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?php if ($plan['icon']): ?>
+                                <span class="admin-plan-icon"><?= $plan['icon']; ?></span>
                             <?php endif; ?>
-                        </td>
-                        <td>
-                            <span style="font-weight: 600;"><?= $plan['day_count']; ?></span>
-                            <span style="color: #64748b;">/ <?= $plan['duration_days']; ?></span>
-                        </td>
-                        <td>
-                            <?= $plan['user_count']; ?>
-                        </td>
-                        <td>
+                            <?= htmlspecialchars($plan['title']); ?>
+                            <?php if ($plan['is_featured']): ?>
+                                <span class="admin-badge admin-badge-warning">Featured</span>
+                            <?php endif; ?>
                             <?php if ($plan['published']): ?>
-                                <span class="badge badge-success">Published</span>
+                                <span class="admin-badge admin-badge-success">Published</span>
                             <?php else: ?>
-                                <span class="badge badge-secondary">Draft</span>
+                                <span class="admin-badge admin-badge-secondary">Draft</span>
                             <?php endif; ?>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <a href="/admin/reading-plans/edit?id=<?= $plan['id']; ?>" class="btn btn-sm btn-outline">Edit</a>
-
-                                <form method="post" style="display: inline;">
-                                    <?= csrf_field(); ?>
-                                    <input type="hidden" name="id" value="<?= $plan['id']; ?>">
-                                    <button type="submit" name="toggle_publish" class="btn btn-sm btn-outline">
-                                        <?= $plan['published'] ? 'Unpublish' : 'Publish'; ?>
-                                    </button>
-                                </form>
-
-                                <form method="post" style="display: inline;">
-                                    <?= csrf_field(); ?>
-                                    <input type="hidden" name="id" value="<?= $plan['id']; ?>">
-                                    <button type="submit" name="toggle_featured" class="btn btn-sm btn-outline" title="<?= $plan['is_featured'] ? 'Remove from featured' : 'Add to featured'; ?>">
-                                        <?= $plan['is_featured'] ? '★' : '☆'; ?>
-                                    </button>
-                                </form>
-
-                                <form method="post" style="display: inline;" onsubmit="return confirm('Delete this reading plan? This cannot be undone.');">
-                                    <?= csrf_field(); ?>
-                                    <input type="hidden" name="id" value="<?= $plan['id']; ?>">
-                                    <button type="submit" name="delete" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                        </div>
+                        <div class="admin-post-meta">
+                            <?php if ($plan['category']): ?>
+                                <span class="admin-badge admin-badge-info"><?= htmlspecialchars(ucfirst($plan['category'])); ?></span>
+                            <?php endif; ?>
+                            · <strong><?= $plan['day_count']; ?></strong>/<?= $plan['duration_days']; ?> days
+                            · <strong><?= $plan['user_count']; ?></strong> users
+                            <?php if ($plan['description']): ?>
+                                · <?= htmlspecialchars(substr($plan['description'], 0, 50)); ?><?= strlen($plan['description']) > 50 ? '...' : ''; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-actions">
+                        <a href="/admin/reading-plans/edit?id=<?= $plan['id']; ?>" class="btn btn-xs btn-outline">Edit</a>
+                        <form method="post" style="display: inline;">
+                            <?= csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?= $plan['id']; ?>">
+                            <button type="submit" name="toggle_publish" class="btn btn-xs btn-outline">
+                                <?= $plan['published'] ? 'Unpublish' : 'Publish'; ?>
+                            </button>
+                        </form>
+                        <form method="post" style="display: inline;">
+                            <?= csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?= $plan['id']; ?>">
+                            <button type="submit" name="toggle_featured" class="btn btn-xs btn-outline" title="<?= $plan['is_featured'] ? 'Unfeature' : 'Feature'; ?>">
+                                <?= $plan['is_featured'] ? '★' : '☆'; ?>
+                            </button>
+                        </form>
+                        <form method="post" style="display: inline;" onsubmit="return confirm('Delete this reading plan?');">
+                            <?= csrf_field(); ?>
+                            <input type="hidden" name="id" value="<?= $plan['id']; ?>">
+                            <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 </div>
 

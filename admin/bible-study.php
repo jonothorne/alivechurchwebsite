@@ -74,151 +74,101 @@ $booksWithStudies = $pdo->query("SELECT COUNT(DISTINCT book_id) FROM bible_studi
 ?>
 
 <?php if (isset($success_message)): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success_message); ?></div>
+    <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success_message); ?></div>
 <?php endif; ?>
 
-<div class="card">
-    <div class="card-header">
-        <h2>Manage Bible Studies</h2>
-        <a href="/admin/bible-study/edit" class="btn btn-primary">+ New Study</a>
+<!-- Header with Stats -->
+<div class="admin-dashboard-header" style="margin-bottom: 1rem;">
+    <div class="admin-dashboard-greeting">
+        <span class="admin-greeting-text">Bible Studies</span>
+        <a href="/admin/bible-study/edit" class="btn btn-sm btn-primary">+ New Study</a>
     </div>
-
-    <!-- Stats -->
-    <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;"><?= $counts['published']; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Published Studies</div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #64748b;"><?= $counts['draft']; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Drafts</div>
-        </div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;"><?= $booksWithStudies; ?></div>
-            <div style="font-size: 0.875rem; color: #64748b;">Books Covered</div>
-        </div>
+    <div class="admin-inline-stats">
+        <span class="admin-inline-stat"><strong><?= $counts['published']; ?></strong> Published</span>
+        <span class="admin-inline-stat"><strong><?= $counts['draft']; ?></strong> Drafts</span>
+        <span class="admin-inline-stat"><strong><?= $booksWithStudies; ?></strong> Books</span>
     </div>
+</div>
 
-    <!-- Filters -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        <div class="filter-tabs">
-            <a href="/admin/bible-study" class="filter-tab <?= !$statusFilter ? 'active' : ''; ?>">All (<?= $counts['all']; ?>)</a>
-            <a href="/admin/bible-study?status=published" class="filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published (<?= $counts['published']; ?>)</a>
-            <a href="/admin/bible-study?status=draft" class="filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts (<?= $counts['draft']; ?>)</a>
+<!-- Filters -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-filter-tabs" style="margin: 0;">
+            <a href="/admin/bible-study" class="admin-filter-tab <?= !$statusFilter ? 'active' : ''; ?>">All</a>
+            <a href="/admin/bible-study?status=published" class="admin-filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published</a>
+            <a href="/admin/bible-study?status=draft" class="admin-filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts</a>
         </div>
-        <select onchange="window.location.href='/admin/bible-study?testament=' + this.value" style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
-            <option value="">All Testaments</option>
-            <option value="old" <?= $testamentFilter === 'old' ? 'selected' : ''; ?>>Old Testament</option>
-            <option value="new" <?= $testamentFilter === 'new' ? 'selected' : ''; ?>>New Testament</option>
-        </select>
-        <select onchange="window.location.href='/admin/bible-study?book=' + this.value" style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #cbd5e1;">
-            <option value="">All Books</option>
-            <?php foreach ($books as $book): ?>
-                <option value="<?= $book['id']; ?>" <?= $bookFilter == $book['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($book['name']); ?></option>
-            <?php endforeach; ?>
-        </select>
+        <div class="admin-filter-selects">
+            <select onchange="window.location.href='/admin/bible-study?testament=' + this.value" class="admin-select-sm">
+                <option value="">All Testaments</option>
+                <option value="old" <?= $testamentFilter === 'old' ? 'selected' : ''; ?>>Old Testament</option>
+                <option value="new" <?= $testamentFilter === 'new' ? 'selected' : ''; ?>>New Testament</option>
+            </select>
+            <select onchange="window.location.href='/admin/bible-study?book=' + this.value" class="admin-select-sm">
+                <option value="">All Books</option>
+                <?php foreach ($books as $book): ?>
+                    <option value="<?= $book['id']; ?>" <?= $bookFilter == $book['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($book['name']); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
 
     <?php if (empty($studies)): ?>
-        <div class="empty-state">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">📖</div>
-            <h3>No Bible Studies Yet</h3>
-            <p style="color: #64748b; margin-bottom: 1.5rem;">Start adding verse-by-verse Bible studies.</p>
-            <a href="/admin/bible-study/edit" class="btn btn-primary">Create First Study</a>
+        <div class="admin-empty-state">
+            <span class="admin-empty-icon">📖</span>
+            <p>No Bible studies yet. <a href="/admin/bible-study/edit">Create one</a></p>
         </div>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Book & Chapter</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Status</th>
-                        <th>Reading Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($studies as $study): ?>
-                        <tr>
-                            <td>
-                                <strong><?= htmlspecialchars($study['book_name']); ?> <?= $study['chapter']; ?></strong>
-                                <div style="font-size: 0.75rem; color: #94a3b8;">
-                                    <?= $study['testament'] === 'old' ? 'Old Testament' : 'New Testament'; ?>
-                                </div>
-                            </td>
-                            <td><?= $study['title'] ? htmlspecialchars($study['title']) : '<span style="color: #94a3b8;">—</span>'; ?></td>
-                            <td><?= $study['author_name'] ? htmlspecialchars($study['author_name']) : '<span style="color: #94a3b8;">—</span>'; ?></td>
-                            <td>
-                                <?php if ($study['status'] === 'published'): ?>
-                                    <span class="badge badge-success">Published</span>
-                                <?php else: ?>
-                                    <span class="badge badge-secondary">Draft</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($study['reading_time']): ?>
-                                    <?= $study['reading_time']; ?> min
-                                <?php else: ?>
-                                    <span style="color: #94a3b8;">—</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <?php if ($study['status'] === 'published'): ?>
-                                        <a href="/bible-study/<?= htmlspecialchars($study['book_slug']); ?>/<?= $study['chapter']; ?>" target="_blank" class="btn btn-sm btn-outline">View</a>
-                                    <?php endif; ?>
-                                    <a href="/admin/bible-study/edit?id=<?= $study['id']; ?>" class="btn btn-sm btn-secondary">Edit</a>
-                                    <?php if ($study['status'] === 'draft'): ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="id" value="<?= $study['id']; ?>">
-                                            <button type="submit" name="publish" class="btn btn-sm btn-success">Publish</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="id" value="<?= $study['id']; ?>">
-                                            <button type="submit" name="unpublish" class="btn btn-sm btn-outline">Unpublish</button>
-                                        </form>
-                                    <?php endif; ?>
-                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this study?');">
-                                        <input type="hidden" name="id" value="<?= $study['id']; ?>">
-                                        <button type="submit" name="delete" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php foreach ($studies as $study): ?>
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?= htmlspecialchars($study['book_name']); ?> <?= $study['chapter']; ?>
+                            <?php if ($study['title']): ?>
+                                <span class="admin-muted">— <?= htmlspecialchars($study['title']); ?></span>
+                            <?php endif; ?>
+                            <?php if ($study['status'] === 'published'): ?>
+                                <span class="admin-badge admin-badge-success">Published</span>
+                            <?php else: ?>
+                                <span class="admin-badge admin-badge-secondary">Draft</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-post-meta">
+                            <span class="admin-badge admin-badge-outline"><?= $study['testament'] === 'old' ? 'OT' : 'NT'; ?></span>
+                            <?php if ($study['author_name']): ?>
+                                · <?= htmlspecialchars($study['author_name']); ?>
+                            <?php endif; ?>
+                            <?php if ($study['reading_time']): ?>
+                                · <?= $study['reading_time']; ?> min read
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-actions">
+                        <?php if ($study['status'] === 'published'): ?>
+                            <a href="/bible-study/<?= htmlspecialchars($study['book_slug']); ?>/<?= $study['chapter']; ?>" target="_blank" class="btn btn-xs btn-outline">View</a>
+                        <?php endif; ?>
+                        <a href="/admin/bible-study/edit?id=<?= $study['id']; ?>" class="btn btn-xs btn-outline">Edit</a>
+                        <?php if ($study['status'] === 'draft'): ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $study['id']; ?>">
+                                <button type="submit" name="publish" class="btn btn-xs btn-primary">Publish</button>
+                            </form>
+                        <?php else: ?>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="id" value="<?= $study['id']; ?>">
+                                <button type="submit" name="unpublish" class="btn btn-xs btn-outline">Unpublish</button>
+                            </form>
+                        <?php endif; ?>
+                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this study?');">
+                            <input type="hidden" name="id" value="<?= $study['id']; ?>">
+                            <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
-
-<style>
-.filter-tabs {
-    display: flex;
-    gap: 0.25rem;
-    background: #f1f5f9;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-}
-.filter-tab {
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    color: #64748b;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-}
-.filter-tab:hover {
-    color: #1e293b;
-}
-.filter-tab.active {
-    background: #fff;
-    color: #1e293b;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-</style>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -86,27 +86,22 @@ $heroStyles = TemplateEngine::getHeroStyles();
 ?>
 
 <?php if ($success): ?>
-    <div class="alert alert-success"><?= $success; ?></div>
+    <div class="admin-alert admin-alert-success"><?= $success; ?></div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="alert alert-error"><?= htmlspecialchars($error); ?></div>
+    <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 2rem;">
-    <div style="padding: 1.5rem;">
-        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            Inline Page Editing
-        </h3>
-        <p style="margin: 0; opacity: 0.95; font-size: 0.9375rem;">
-            Create pages here, then click <strong>"Edit Content"</strong> to edit the page content directly on the live site. Just click any text to start editing!
-        </p>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h2><?= $edit_page ? 'Edit' : 'Add New'; ?> Page</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3><?= $edit_page ? 'Edit' : 'Add'; ?> Page</h3>
+        <?php if ($edit_page): ?>
+            <div class="admin-card-actions">
+                <a href="/admin/pages" class="btn btn-sm btn-outline">Cancel</a>
+                <a href="/<?= htmlspecialchars($edit_page['slug']); ?>" class="btn btn-sm btn-primary" target="_blank">Edit Content</a>
+            </div>
+        <?php endif; ?>
     </div>
 
     <form method="post">
@@ -115,27 +110,16 @@ $heroStyles = TemplateEngine::getHeroStyles();
             <input type="hidden" name="id" value="<?= $edit_page['id']; ?>">
         <?php endif; ?>
 
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <!-- Row 1: Title, Slug, Template, Status -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 100px; gap: 0.5rem; margin-bottom: 0.75rem;">
             <div class="form-group">
-                <label>Page Title</label>
-                <input type="text" name="title" value="<?= htmlspecialchars($edit_page['title'] ?? ''); ?>" required>
-                <div class="form-help">The title shown in browser tabs and search results</div>
+                <label>Title</label>
+                <input type="text" name="title" value="<?= htmlspecialchars($edit_page['title'] ?? ''); ?>" required placeholder="Page Title">
             </div>
-
             <div class="form-group">
                 <label>URL Slug</label>
-                <input type="text" name="slug" value="<?= htmlspecialchars($edit_page['slug'] ?? ''); ?>" required pattern="[a-z0-9\-]+" placeholder="about-us">
-                <div class="form-help">Example: "about-us" becomes /about-us</div>
+                <input type="text" name="slug" value="<?= htmlspecialchars($edit_page['slug'] ?? ''); ?>" required pattern="[a-z0-9\-]+" placeholder="page-url">
             </div>
-        </div>
-
-        <div class="form-group">
-            <label>Meta Description</label>
-            <textarea name="meta_description" rows="2"><?= htmlspecialchars($edit_page['meta_description'] ?? ''); ?></textarea>
-            <div class="form-help">Brief description for search engines (150-160 characters)</div>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
             <div class="form-group">
                 <label>Template</label>
                 <select name="template">
@@ -145,9 +129,22 @@ $heroStyles = TemplateEngine::getHeroStyles();
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-help">Page layout template</div>
             </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="published">
+                    <option value="1" <?= ($edit_page['published'] ?? 1) ? 'selected' : ''; ?>>Live</option>
+                    <option value="0" <?= !($edit_page['published'] ?? 1) ? 'selected' : ''; ?>>Draft</option>
+                </select>
+            </div>
+        </div>
 
+        <!-- Row 2: Meta + Hero -->
+        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: end; margin-bottom: 0.75rem;">
+            <div class="form-group">
+                <label>Meta Description</label>
+                <input type="text" name="meta_description" value="<?= htmlspecialchars($edit_page['meta_description'] ?? ''); ?>" placeholder="Brief description for search engines (150-160 chars)">
+            </div>
             <div class="form-group">
                 <label>Hero Style</label>
                 <select name="hero_style">
@@ -157,107 +154,50 @@ $heroStyles = TemplateEngine::getHeroStyles();
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-help">Hero section style</div>
             </div>
-
-            <div class="form-group">
-                <label>Status</label>
-                <select name="published">
-                    <option value="1" <?= ($edit_page['published'] ?? 1) ? 'selected' : ''; ?>>Published</option>
-                    <option value="0" <?= !($edit_page['published'] ?? 1) ? 'selected' : ''; ?>>Draft</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="btn btn-primary"><?= $edit_page ? 'Update Page' : 'Create Page'; ?></button>
-            <?php if ($edit_page): ?>
-                <a href="/admin/pages" class="btn btn-outline">Cancel</a>
-                <a href="/<?= htmlspecialchars($edit_page['slug']); ?>" class="btn btn-outline" target="_blank">Edit Content</a>
-            <?php endif; ?>
+            <button type="submit" class="btn btn-primary btn-sm"><?= $edit_page ? 'Update' : 'Create'; ?></button>
         </div>
     </form>
 </div>
 
-<div class="card">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>All Pages</h2>
-        <span style="color: #64748b; font-size: 0.875rem;"><?= count($pages); ?> pages</span>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>All Pages</h3>
+        <span style="color: var(--color-text-muted); font-size: 0.875rem;"><?= count($pages); ?> pages</span>
     </div>
 
     <?php if (empty($pages)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">📄</div>
-            <h3>No pages yet</h3>
-            <p>Create your first page above</p>
-        </div>
+        <p class="admin-muted-text">No pages yet. Create one above.</p>
     <?php else: ?>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>URL</th>
-                        <th>Template</th>
-                        <th>Status</th>
-                        <th>Last Updated</th>
-                        <th style="width: 200px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($pages as $page): ?>
-                        <tr>
-                            <td><strong><?= htmlspecialchars($page['title']); ?></strong></td>
-                            <td><code>/<?= htmlspecialchars($page['slug']); ?></code></td>
-                            <td>
-                                <span class="badge"><?= htmlspecialchars($templates[$page['template']]['name'] ?? $page['template']); ?></span>
-                            </td>
-                            <td>
-                                <?php if ($page['published']): ?>
-                                    <span class="badge badge-success">Published</span>
-                                <?php else: ?>
-                                    <span class="badge badge-danger">Draft</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= date('M j, Y', strtotime($page['updated_at'] ?? $page['created_at'])); ?></td>
-                            <td class="table-actions">
-                                <a href="/<?= htmlspecialchars($page['slug']); ?>" class="btn btn-sm btn-primary" target="_blank">Edit Content</a>
-                                <a href="?edit=<?= $page['id']; ?>" class="btn btn-sm btn-outline">Settings</a>
-                                <a href="?delete=<?= $page['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this page?')">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="admin-compact-list">
+            <?php foreach ($pages as $page): ?>
+                <div class="admin-post-row">
+                    <div class="admin-post-info">
+                        <div class="admin-post-title">
+                            <?= htmlspecialchars($page['title']); ?>
+                            <code style="font-size: 0.65rem; color: var(--color-text-muted);">/<?= htmlspecialchars($page['slug']); ?></code>
+                        </div>
+                        <div class="admin-post-meta">
+                            <?= htmlspecialchars($templates[$page['template']]['name'] ?? $page['template']); ?> ·
+                            <?= date('M j', strtotime($page['updated_at'] ?? $page['created_at'])); ?>
+                        </div>
+                    </div>
+                    <div class="admin-post-status">
+                        <?php if ($page['published']): ?>
+                            <span class="admin-badge admin-badge-success">Live</span>
+                        <?php else: ?>
+                            <span class="admin-badge admin-badge-secondary">Draft</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="admin-post-actions">
+                        <a href="/<?= htmlspecialchars($page['slug']); ?>" class="btn btn-xs btn-primary" target="_blank">Edit</a>
+                        <a href="?edit=<?= $page['id']; ?>" class="btn btn-xs btn-outline">Settings</a>
+                        <a href="?delete=<?= $page['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this page?')">×</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     <?php endif; ?>
-</div>
-
-<div class="card-grid" style="grid-template-columns: 1fr 1fr; margin-top: 2rem;">
-    <div class="card" style="background: #f0fdf4; border: 1px solid #86efac;">
-        <div style="padding: 1.5rem;">
-            <h3 style="color: #166534; margin-bottom: 0.5rem; font-size: 1rem;">Template Guide</h3>
-            <ul style="color: #166534; margin: 0; padding-left: 1.25rem; font-size: 0.875rem;">
-                <li><strong>Default:</strong> Standard page with centered content</li>
-                <li><strong>Full Width:</strong> Full-width hero and content sections</li>
-                <li><strong>Sidebar:</strong> Main content with right sidebar</li>
-                <li><strong>Landing:</strong> Marketing page with features grid</li>
-                <li><strong>Blank:</strong> Empty canvas for custom layouts</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="card" style="background: #eff6ff; border: 1px solid #93c5fd;">
-        <div style="padding: 1.5rem;">
-            <h3 style="color: #1e40af; margin-bottom: 0.5rem; font-size: 1rem;">Keyboard Shortcuts</h3>
-            <ul style="color: #1e40af; margin: 0; padding-left: 1.25rem; font-size: 0.875rem;">
-                <li><strong>Ctrl + S:</strong> Save current edit</li>
-                <li><strong>Ctrl + B:</strong> Bold text</li>
-                <li><strong>Ctrl + I:</strong> Italic text</li>
-                <li><strong>Escape:</strong> Cancel editing</li>
-            </ul>
-        </div>
-    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -26,10 +26,7 @@ $planStats = $analytics->getReadingPlanStats();
 $userStats = $analytics->getUserStats();
 $formStats = $analytics->getFormStats();
 $newsletterStats = $analytics->getNewsletterStats();
-$mostReadStudies = $analytics->getMostReadStudies(10);
-$mostHighlightedStudies = $analytics->getMostHighlightedStudies(10);
-$mostSavedStudies = $analytics->getMostSavedStudies(10);
-$dailyRegistrations = $analytics->getDailyRegistrations(30);
+$mostReadStudies = $analytics->getMostReadStudies(5);
 
 // Prepare chart data
 $chartLabels = [];
@@ -41,13 +38,6 @@ foreach ($dailyVisits as $day) {
     $chartUnique[] = (int)$day['unique_visitors'];
 }
 
-$regLabels = [];
-$regData = [];
-foreach ($dailyRegistrations as $day) {
-    $regLabels[] = date('M j', strtotime($day['date']));
-    $regData[] = (int)$day['registrations'];
-}
-
 $deviceLabels = [];
 $deviceData = [];
 foreach ($deviceBreakdown as $device) {
@@ -56,197 +46,129 @@ foreach ($deviceBreakdown as $device) {
 }
 ?>
 
-<!-- Period Selector -->
+<!-- Header with Period Filter -->
 <div class="analytics-header">
-    <h1>Site Analytics</h1>
-    <div class="period-selector">
-        <a href="?period=today" class="period-btn <?= $period === 'today' ? 'active' : ''; ?>">Today</a>
-        <a href="?period=week" class="period-btn <?= $period === 'week' ? 'active' : ''; ?>">7 Days</a>
-        <a href="?period=month" class="period-btn <?= $period === 'month' ? 'active' : ''; ?>">30 Days</a>
-        <a href="?period=year" class="period-btn <?= $period === 'year' ? 'active' : ''; ?>">Year</a>
-        <a href="?period=all" class="period-btn <?= $period === 'all' ? 'active' : ''; ?>">All Time</a>
+    <div class="analytics-title">Analytics</div>
+    <div class="admin-filter-tabs" style="margin: 0;">
+        <a href="?period=today" class="admin-filter-tab <?= $period === 'today' ? 'active' : ''; ?>">Today</a>
+        <a href="?period=week" class="admin-filter-tab <?= $period === 'week' ? 'active' : ''; ?>">7d</a>
+        <a href="?period=month" class="admin-filter-tab <?= $period === 'month' ? 'active' : ''; ?>">30d</a>
+        <a href="?period=year" class="admin-filter-tab <?= $period === 'year' ? 'active' : ''; ?>">Year</a>
+        <a href="?period=all" class="admin-filter-tab <?= $period === 'all' ? 'active' : ''; ?>">All</a>
     </div>
 </div>
 
-<!-- Overview Stats -->
-<div class="stats-grid stats-grid-5">
-    <div class="stat-card">
-        <div class="stat-label">Page Views</div>
-        <div class="stat-value"><?= number_format($visitCounts[$period]['total_visits']); ?></div>
-        <div class="stat-compare">
-            <span class="stat-sub">Today: <?= number_format($visitCounts['today']['total_visits']); ?></span>
-        </div>
+<!-- Key Metrics Row -->
+<div class="analytics-metrics">
+    <div class="analytics-metric">
+        <div class="analytics-metric-value"><?= number_format($visitCounts[$period]['total_visits']); ?></div>
+        <div class="analytics-metric-label">Page Views</div>
+        <div class="analytics-metric-sub">Today: <?= number_format($visitCounts['today']['total_visits']); ?></div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Unique Visitors</div>
-        <div class="stat-value"><?= number_format($visitCounts[$period]['unique_visitors']); ?></div>
-        <div class="stat-compare">
-            <span class="stat-sub">Today: <?= number_format($visitCounts['today']['unique_visitors']); ?></span>
-        </div>
+    <div class="analytics-metric">
+        <div class="analytics-metric-value"><?= number_format($visitCounts[$period]['unique_visitors']); ?></div>
+        <div class="analytics-metric-label">Unique Visitors</div>
+        <div class="analytics-metric-sub">Today: <?= number_format($visitCounts['today']['unique_visitors']); ?></div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Registered Users</div>
-        <div class="stat-value"><?= number_format($userStats['total_users']); ?></div>
-        <div class="stat-compare">
-            <span class="stat-sub">+<?= $userStats['new_this_month']; ?> this month</span>
-        </div>
+    <div class="analytics-metric">
+        <div class="analytics-metric-value"><?= number_format($userStats['total_users']); ?></div>
+        <div class="analytics-metric-label">Users</div>
+        <div class="analytics-metric-sub">+<?= $userStats['new_this_month']; ?> this month</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Active Plans</div>
-        <div class="stat-value"><?= number_format($planStats['active_plans']); ?></div>
-        <div class="stat-compare">
-            <span class="stat-sub"><?= $planStats['completed_plans']; ?> completed</span>
-        </div>
+    <div class="analytics-metric">
+        <div class="analytics-metric-value"><?= number_format($planStats['active_plans']); ?></div>
+        <div class="analytics-metric-label">Active Plans</div>
+        <div class="analytics-metric-sub"><?= $planStats['completed_plans']; ?> completed</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Form Submissions</div>
-        <div class="stat-value"><?= number_format($formStats['total']); ?></div>
-        <div class="stat-compare">
-            <?php if ($formStats['unprocessed'] > 0): ?>
-                <a href="/admin/forms" class="stat-link"><?= $formStats['unprocessed']; ?> unread</a>
-            <?php else: ?>
-                <span class="stat-sub"><?= $formStats['this_month']; ?> this month</span>
-            <?php endif; ?>
-        </div>
+    <div class="analytics-metric <?= $formStats['unprocessed'] > 0 ? 'analytics-metric-alert' : ''; ?>">
+        <div class="analytics-metric-value"><?= number_format($formStats['total']); ?></div>
+        <div class="analytics-metric-label">Form Submissions</div>
+        <?php if ($formStats['unprocessed'] > 0): ?>
+            <a href="/admin/forms" class="analytics-metric-link"><?= $formStats['unprocessed']; ?> unread</a>
+        <?php else: ?>
+            <div class="analytics-metric-sub"><?= $formStats['this_month']; ?> this month</div>
+        <?php endif; ?>
     </div>
 </div>
 
 <!-- Traffic Chart -->
-<div class="card">
-    <div class="card-header">
-        <h2>Traffic Overview (Last 30 Days)</h2>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3>Traffic (30 days)</h3>
     </div>
-    <div class="chart-container">
-        <canvas id="trafficChart" height="100"></canvas>
+    <div class="analytics-chart">
+        <canvas id="trafficChart" height="180"></canvas>
     </div>
 </div>
 
-<!-- Two Column Layout -->
+<!-- Two Column Grid -->
 <div class="analytics-grid">
     <!-- Left Column -->
-    <div class="analytics-column">
+    <div class="analytics-col">
 
-        <!-- User Engagement -->
-        <div class="card">
-            <div class="card-header">
-                <h2>User Engagement</h2>
+        <!-- Popular Pages -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Popular Pages</h3>
             </div>
-            <div class="engagement-stats">
-                <div class="engagement-stat">
-                    <span class="engagement-icon">✨</span>
-                    <div class="engagement-info">
-                        <div class="engagement-value"><?= number_format($engagementStats['total_highlights']); ?></div>
-                        <div class="engagement-label">Highlights Created</div>
-                    </div>
-                </div>
-                <div class="engagement-stat">
-                    <span class="engagement-icon">🔖</span>
-                    <div class="engagement-info">
-                        <div class="engagement-value"><?= number_format($engagementStats['total_saved']); ?></div>
-                        <div class="engagement-label">Studies Saved</div>
-                    </div>
-                </div>
-                <div class="engagement-stat">
-                    <span class="engagement-icon">⏱️</span>
-                    <div class="engagement-info">
-                        <div class="engagement-value"><?= number_format($engagementStats['total_reading_time']); ?></div>
-                        <div class="engagement-label">Reading Minutes</div>
-                    </div>
-                </div>
-                <div class="engagement-stat">
-                    <span class="engagement-icon">✅</span>
-                    <div class="engagement-info">
-                        <div class="engagement-value"><?= number_format($engagementStats['studies_completed']); ?></div>
-                        <div class="engagement-label">Studies Completed</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Reading Plans -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Reading Plans</h2>
-            </div>
-            <div class="plan-stats-grid">
-                <div class="plan-stat">
-                    <div class="plan-stat-value"><?= $planStats['active_plans']; ?></div>
-                    <div class="plan-stat-label">In Progress</div>
-                </div>
-                <div class="plan-stat">
-                    <div class="plan-stat-value"><?= $planStats['paused_plans']; ?></div>
-                    <div class="plan-stat-label">Paused</div>
-                </div>
-                <div class="plan-stat">
-                    <div class="plan-stat-value"><?= $planStats['completed_plans']; ?></div>
-                    <div class="plan-stat-label">Completed</div>
-                </div>
-                <div class="plan-stat">
-                    <div class="plan-stat-value"><?= $planStats['completion_rate']; ?>%</div>
-                    <div class="plan-stat-label">Completion Rate</div>
-                </div>
-            </div>
-            <?php if (!empty($planStats['popular_plans'])): ?>
-                <h4 style="margin: 1.5rem 0 0.75rem; color: #64748b; font-size: 0.875rem;">Most Popular Plans</h4>
-                <div class="popular-plans-list">
-                    <?php foreach ($planStats['popular_plans'] as $plan): ?>
-                        <div class="popular-plan-item">
-                            <span class="plan-icon"><?= $plan['icon'] ?: '📖'; ?></span>
-                            <span class="plan-title"><?= htmlspecialchars($plan['title']); ?></span>
-                            <span class="plan-users"><?= $plan['user_count']; ?> users</span>
+            <?php if (empty($popularPages)): ?>
+                <p class="admin-muted-text">No data yet</p>
+            <?php else: ?>
+                <div class="analytics-list">
+                    <?php foreach ($popularPages as $page): ?>
+                        <div class="analytics-list-item">
+                            <a href="<?= htmlspecialchars($page['page_url']); ?>" target="_blank" class="analytics-list-title">
+                                <?= htmlspecialchars(strlen($page['page_url']) > 35 ? substr($page['page_url'], 0, 35) . '...' : $page['page_url']); ?>
+                            </a>
+                            <div class="analytics-list-stats">
+                                <span><?= number_format($page['visits']); ?></span>
+                                <span class="admin-muted"><?= number_format($page['unique_visitors']); ?> unique</span>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
 
-        <!-- User Activity -->
-        <div class="card">
-            <div class="card-header">
-                <h2>User Activity</h2>
+        <!-- Traffic Sources -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Traffic Sources</h3>
             </div>
-            <div class="user-stats-grid">
-                <div class="user-stat">
-                    <div class="user-stat-value"><?= $userStats['active_this_week']; ?></div>
-                    <div class="user-stat-label">Active This Week</div>
+            <?php if (empty($trafficSources)): ?>
+                <p class="admin-muted-text">No data yet</p>
+            <?php else: ?>
+                <div class="analytics-bars">
+                    <?php $maxVisits = $trafficSources[0]['visits']; ?>
+                    <?php foreach ($trafficSources as $source): ?>
+                        <div class="analytics-bar-row">
+                            <span class="analytics-bar-label"><?= htmlspecialchars($source['source']); ?></span>
+                            <div class="analytics-bar-track">
+                                <div class="analytics-bar-fill" style="width: <?= ($source['visits'] / $maxVisits) * 100; ?>%;"></div>
+                            </div>
+                            <span class="analytics-bar-value"><?= number_format($source['visits']); ?></span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-                <div class="user-stat">
-                    <div class="user-stat-value"><?= $userStats['with_streaks']; ?></div>
-                    <div class="user-stat-label">Users With Streaks</div>
-                </div>
-                <div class="user-stat">
-                    <div class="user-stat-value"><?= $userStats['longest_streak']; ?></div>
-                    <div class="user-stat-label">Longest Streak (Days)</div>
-                </div>
-                <div class="user-stat">
-                    <div class="user-stat-value"><?= $userStats['new_this_week']; ?></div>
-                    <div class="user-stat-label">New This Week</div>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
 
-        <!-- Device & Browser Breakdown -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Devices & Browsers</h2>
+        <!-- Devices & Browsers -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Devices</h3>
             </div>
-            <div class="device-browser-grid">
-                <div>
-                    <h4 style="margin: 0 0 1rem; color: #64748b; font-size: 0.875rem;">Device Types</h4>
-                    <div class="chart-container-small">
-                        <canvas id="deviceChart"></canvas>
-                    </div>
+            <div class="analytics-split">
+                <div class="analytics-chart-small">
+                    <canvas id="deviceChart"></canvas>
                 </div>
-                <div>
-                    <h4 style="margin: 0 0 1rem; color: #64748b; font-size: 0.875rem;">Browsers</h4>
-                    <div class="browser-list">
-                        <?php foreach ($browserBreakdown as $browser): ?>
-                            <div class="browser-item">
-                                <span class="browser-name"><?= htmlspecialchars($browser['browser']); ?></span>
-                                <span class="browser-count"><?= number_format($browser['count']); ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                <div class="analytics-browser-list">
+                    <?php foreach ($browserBreakdown as $browser): ?>
+                        <div class="analytics-browser-item">
+                            <span><?= htmlspecialchars($browser['browser']); ?></span>
+                            <span class="admin-muted"><?= number_format($browser['count']); ?></span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
@@ -254,142 +176,103 @@ foreach ($deviceBreakdown as $device) {
     </div>
 
     <!-- Right Column -->
-    <div class="analytics-column">
+    <div class="analytics-col">
 
-        <!-- Popular Pages -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Popular Pages</h2>
+        <!-- User Engagement -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Engagement</h3>
             </div>
-            <?php if (empty($popularPages)): ?>
-                <p style="color: #64748b;">No page visit data yet.</p>
-            <?php else: ?>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Page</th>
-                                <th style="text-align: right;">Views</th>
-                                <th style="text-align: right;">Unique</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($popularPages as $page): ?>
-                                <tr>
-                                    <td>
-                                        <a href="<?= htmlspecialchars($page['page_url']); ?>" target="_blank" class="page-link">
-                                            <?= htmlspecialchars(strlen($page['page_url']) > 40 ? substr($page['page_url'], 0, 40) . '...' : $page['page_url']); ?>
-                                        </a>
-                                    </td>
-                                    <td style="text-align: right;"><?= number_format($page['visits']); ?></td>
-                                    <td style="text-align: right;"><?= number_format($page['unique_visitors']); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div class="analytics-engagement">
+                <div class="analytics-engagement-item">
+                    <span class="analytics-engagement-icon">✨</span>
+                    <span class="analytics-engagement-value"><?= number_format($engagementStats['total_highlights']); ?></span>
+                    <span class="analytics-engagement-label">Highlights</span>
                 </div>
-            <?php endif; ?>
+                <div class="analytics-engagement-item">
+                    <span class="analytics-engagement-icon">🔖</span>
+                    <span class="analytics-engagement-value"><?= number_format($engagementStats['total_saved']); ?></span>
+                    <span class="analytics-engagement-label">Saved</span>
+                </div>
+                <div class="analytics-engagement-item">
+                    <span class="analytics-engagement-icon">⏱️</span>
+                    <span class="analytics-engagement-value"><?= number_format($engagementStats['total_reading_time']); ?></span>
+                    <span class="analytics-engagement-label">Min Read</span>
+                </div>
+                <div class="analytics-engagement-item">
+                    <span class="analytics-engagement-icon">✅</span>
+                    <span class="analytics-engagement-value"><?= number_format($engagementStats['studies_completed']); ?></span>
+                    <span class="analytics-engagement-label">Completed</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Traffic Sources -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Traffic Sources</h2>
+        <!-- Reading Plans -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Reading Plans</h3>
             </div>
-            <?php if (empty($trafficSources)): ?>
-                <p style="color: #64748b;">No traffic source data yet.</p>
-            <?php else: ?>
-                <div class="source-list">
-                    <?php foreach ($trafficSources as $source): ?>
-                        <div class="source-item">
-                            <span class="source-name"><?= htmlspecialchars($source['source']); ?></span>
-                            <div class="source-bar-container">
-                                <?php
-                                $maxVisits = $trafficSources[0]['visits'];
-                                $percentage = ($source['visits'] / $maxVisits) * 100;
-                                ?>
-                                <div class="source-bar" style="width: <?= $percentage; ?>%;"></div>
-                            </div>
-                            <span class="source-count"><?= number_format($source['visits']); ?></span>
+            <div class="analytics-plan-stats">
+                <div><strong><?= $planStats['active_plans']; ?></strong> Active</div>
+                <div><strong><?= $planStats['paused_plans']; ?></strong> Paused</div>
+                <div><strong><?= $planStats['completed_plans']; ?></strong> Done</div>
+                <div><strong><?= $planStats['completion_rate']; ?>%</strong> Rate</div>
+            </div>
+            <?php if (!empty($planStats['popular_plans'])): ?>
+                <div class="analytics-list" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border);">
+                    <?php foreach ($planStats['popular_plans'] as $plan): ?>
+                        <div class="analytics-list-item">
+                            <span><?= $plan['icon'] ?: '📖'; ?> <?= htmlspecialchars($plan['title']); ?></span>
+                            <span class="admin-muted"><?= $plan['user_count']; ?> users</span>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- User Stats -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>User Activity</h3>
+            </div>
+            <div class="analytics-user-stats">
+                <div><strong><?= $userStats['active_this_week']; ?></strong> active this week</div>
+                <div><strong><?= $userStats['with_streaks']; ?></strong> with streaks</div>
+                <div><strong><?= $userStats['longest_streak']; ?></strong> day longest streak</div>
+                <div><strong><?= $userStats['new_this_week']; ?></strong> new this week</div>
+            </div>
         </div>
 
         <!-- Most Read Studies -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Most Read Studies</h2>
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Top Studies</h3>
             </div>
             <?php if (empty($mostReadStudies)): ?>
-                <p style="color: #64748b;">No reading data yet.</p>
+                <p class="admin-muted-text">No data yet</p>
             <?php else: ?>
-                <div class="studies-list">
-                    <?php foreach (array_slice($mostReadStudies, 0, 5) as $study): ?>
-                        <div class="study-item">
-                            <div class="study-info">
-                                <span class="study-book"><?= htmlspecialchars($study['book_name']); ?> <?= $study['chapter']; ?></span>
-                                <?php if ($study['title']): ?>
-                                    <span class="study-title"><?= htmlspecialchars($study['title']); ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="study-stats">
-                                <span class="study-reads"><?= number_format($study['read_count']); ?> reads</span>
-                            </div>
+                <div class="analytics-list">
+                    <?php foreach ($mostReadStudies as $study): ?>
+                        <div class="analytics-list-item">
+                            <span><?= htmlspecialchars($study['book_name']); ?> <?= $study['chapter']; ?></span>
+                            <span class="admin-muted"><?= number_format($study['read_count']); ?> reads</span>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
 
-        <!-- Forms & Newsletter -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Forms & Newsletter</h2>
+        <!-- Newsletter -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Newsletter</h3>
             </div>
-            <div class="forms-newsletter-grid">
-                <div>
-                    <h4 style="margin: 0 0 0.75rem; color: #64748b; font-size: 0.875rem;">Form Submissions</h4>
-                    <?php if (empty($formStats['by_type'])): ?>
-                        <p style="color: #94a3b8; font-size: 0.875rem;">No submissions yet</p>
-                    <?php else: ?>
-                        <div class="form-type-list">
-                            <?php foreach ($formStats['by_type'] as $type): ?>
-                                <div class="form-type-item">
-                                    <span class="form-type-name"><?= htmlspecialchars(ucfirst($type['form_type'])); ?></span>
-                                    <span class="form-type-count"><?= number_format($type['count']); ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                <div>
-                    <h4 style="margin: 0 0 0.75rem; color: #64748b; font-size: 0.875rem;">Newsletter</h4>
-                    <div class="newsletter-stats">
-                        <div class="newsletter-stat">
-                            <div class="newsletter-value"><?= number_format($newsletterStats['active']); ?></div>
-                            <div class="newsletter-label">Active</div>
-                        </div>
-                        <div class="newsletter-stat">
-                            <div class="newsletter-value"><?= number_format($newsletterStats['new_this_month']); ?></div>
-                            <div class="newsletter-label">New This Month</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="analytics-newsletter">
+                <div><strong><?= number_format($newsletterStats['active']); ?></strong> subscribers</div>
+                <div><strong>+<?= number_format($newsletterStats['new_this_month']); ?></strong> this month</div>
             </div>
         </div>
 
-    </div>
-</div>
-
-<!-- User Registrations Chart -->
-<div class="card">
-    <div class="card-header">
-        <h2>New User Registrations (Last 30 Days)</h2>
-    </div>
-    <div class="chart-container">
-        <canvas id="registrationsChart" height="80"></canvas>
     </div>
 </div>
 
@@ -406,18 +289,20 @@ new Chart(trafficCtx, {
             {
                 label: 'Page Views',
                 data: <?= json_encode($chartVisits); ?>,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderColor: 'var(--color-purple)',
+                backgroundColor: 'rgba(107, 52, 165, 0.1)',
                 fill: true,
-                tension: 0.3
+                tension: 0.3,
+                borderWidth: 2
             },
             {
-                label: 'Unique Visitors',
+                label: 'Unique',
                 data: <?= json_encode($chartUnique); ?>,
-                borderColor: '#f472b6',
-                backgroundColor: 'rgba(244, 114, 182, 0.1)',
+                borderColor: 'var(--color-magenta)',
+                backgroundColor: 'rgba(205, 0, 119, 0.1)',
                 fill: true,
-                tension: 0.3
+                tension: 0.3,
+                borderWidth: 2
             }
         ]
     },
@@ -425,14 +310,11 @@ new Chart(trafficCtx, {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: 'top',
-            }
+            legend: { position: 'top', labels: { boxWidth: 12, padding: 15 } }
         },
         scales: {
-            y: {
-                beginAtZero: true
-            }
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
         }
     }
 });
@@ -445,49 +327,16 @@ new Chart(deviceCtx, {
         labels: <?= json_encode($deviceLabels); ?>,
         datasets: [{
             data: <?= json_encode($deviceData); ?>,
-            backgroundColor: ['#667eea', '#f472b6', '#34d399'],
+            backgroundColor: ['var(--color-purple)', 'var(--color-magenta)', 'var(--color-cyan)'],
             borderWidth: 0
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: true,
+        cutout: '60%',
         plugins: {
-            legend: {
-                position: 'bottom',
-            }
-        }
-    }
-});
-
-// Registrations Chart
-const regCtx = document.getElementById('registrationsChart').getContext('2d');
-new Chart(regCtx, {
-    type: 'bar',
-    data: {
-        labels: <?= json_encode($regLabels); ?>,
-        datasets: [{
-            label: 'New Users',
-            data: <?= json_encode($regData); ?>,
-            backgroundColor: '#34d399',
-            borderRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
+            legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } }
         }
     }
 });

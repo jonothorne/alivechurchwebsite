@@ -43,19 +43,22 @@ $analytics->recordPageVisit(
     $current_user['id'] ?? null
 );
 
-// Check if on Bible study pages (for sub-nav)
+// Check if this is an admin page (set by admin header before including this)
+$is_admin_page = $is_admin_page ?? false;
+
+// Check if on Bible study pages (for sub-nav) - disabled on admin pages
 $is_bible_study_page = strpos($current_url, '/bible-study') === 0
     || strpos($current_url, '/reading-plan') === 0
     || strpos($current_url, '/reading-plans') === 0
     || strpos($current_url, '/my-studies') === 0;
-$show_study_subnav = $is_bible_study_page;
+$show_study_subnav = $is_bible_study_page && !$is_admin_page;
 
 // Check if on "I'm New" pages (for sub-nav)
 $is_new_visitor_page = $current_url === '/visit'
     || $current_url === '/about'
     || $current_url === '/watch'
     || $current_url === '/contact-us';
-$show_new_visitor_subnav = $is_new_visitor_page;
+$show_new_visitor_subnav = $is_new_visitor_page && !$is_admin_page;
 
 // Check if on "Connect" pages (for sub-nav)
 $is_connect_page = $current_url === '/connect'
@@ -63,7 +66,7 @@ $is_connect_page = $current_url === '/connect'
     || strpos($current_url, '/serve') === 0
     || strpos($current_url, '/next-steps') === 0
     || $current_url === '/prayer';
-$show_connect_subnav = $is_connect_page;
+$show_connect_subnav = $is_connect_page && !$is_admin_page;
 
 // Check if on "Events" pages (for sub-nav)
 $is_events_page = $current_url === '/events'
@@ -71,17 +74,17 @@ $is_events_page = $current_url === '/events'
     || strpos($current_url, '/events') === 0
     || basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'events.php'
     || (isset($_SERVER['SCRIPT_FILENAME']) && strpos($_SERVER['SCRIPT_FILENAME'], '/events/') !== false);
-$show_events_subnav = $is_events_page;
+$show_events_subnav = $is_events_page && !$is_admin_page;
 
 // Check if on "Give" page (for sub-nav)
 $is_give_page = $current_url === '/give';
-$show_give_subnav = $is_give_page;
+$show_give_subnav = $is_give_page && !$is_admin_page;
 
 // Check if on "Blog" pages (for sub-nav)
 $is_blog_page = $current_url === '/blog'
     || strpos($current_url, '/blog/') === 0
     || strpos($current_url, '/author/') === 0;
-$show_blog_subnav = $is_blog_page;
+$show_blog_subnav = $is_blog_page && !$is_admin_page;
 
 // Get last read study for "Read" button in subnav
 $last_read_url = '/bible-study';
@@ -121,12 +124,15 @@ if ($current_user && $is_bible_study_page) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
     <?php if ($is_cms_edit_mode): ?>
-    <link rel="stylesheet" href="/assets/css/cms-editor.css">
+    <link rel="stylesheet" href="/assets/css/cms-editor.css?v=<?= filemtime(__DIR__ . '/../assets/css/cms-editor.css'); ?>">
     <?php endif; ?>
     <?php if ($is_cms_edit_mode && !empty($is_block_builder_page)): ?>
-    <link rel="stylesheet" href="/assets/css/block-builder.css">
+    <link rel="stylesheet" href="/assets/css/block-builder.css?v=<?= filemtime(__DIR__ . '/../assets/css/block-builder.css'); ?>">
+    <?php endif; ?>
+    <?php if ($is_admin_page): ?>
+    <link rel="stylesheet" href="/assets/css/admin.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin.css'); ?>">
     <?php endif; ?>
     <script>
     // Apply theme immediately to prevent flash of wrong theme
@@ -274,6 +280,13 @@ if ($current_user && $is_bible_study_page) {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                             Settings
                         </a>
+                        <?php if (isset($current_user['role']) && in_array($current_user['role'], ['admin', 'editor'])): ?>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            Admin
+                        </a>
+                        <?php endif; ?>
                         <a href="/logout" class="dropdown-item dropdown-item-danger">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             Log Out
