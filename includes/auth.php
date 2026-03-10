@@ -646,6 +646,32 @@ class Auth {
     }
 
     /**
+     * Get effective reading streak (accounts for missed days)
+     * Returns 0 if streak is broken (missed more than 1 day)
+     */
+    public function getEffectiveStreak() {
+        if (!$this->check()) return 0;
+
+        $lastReadingDate = $this->user['last_reading_date'];
+        $currentStreak = $this->user['reading_streak'];
+
+        if (!$lastReadingDate) {
+            return 0;
+        }
+
+        $today = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+
+        // Streak is valid if last read was today or yesterday
+        if ($lastReadingDate === $today || $lastReadingDate === $yesterday) {
+            return $currentStreak;
+        }
+
+        // Streak is broken - they missed a day
+        return 0;
+    }
+
+    /**
      * Clean up expired sessions
      */
     public function cleanupExpiredSessions() {

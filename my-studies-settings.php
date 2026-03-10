@@ -15,6 +15,7 @@ if (!$auth->check()) {
 }
 
 $user = $auth->user();
+$effectiveStreak = $auth->getEffectiveStreak();
 $message = '';
 $error = '';
 
@@ -408,7 +409,7 @@ include __DIR__ . '/includes/header.php';
                 <div class="stats-summary">
                     <div class="stat-item">
                         <span class="stat-label">Current Streak</span>
-                        <span class="stat-value"><?= $user['reading_streak']; ?> days</span>
+                        <span class="stat-value"><?= $effectiveStreak; ?> days</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Longest Streak</span>

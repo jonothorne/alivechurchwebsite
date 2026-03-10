@@ -17,6 +17,7 @@ if (!$auth->check()) {
 }
 
 $user = $auth->user();
+$effectiveStreak = $auth->getEffectiveStreak();
 $userStudies = new UserStudies($pdo, $user['id']);
 
 // Get dashboard data
@@ -44,10 +45,10 @@ include __DIR__ . '/includes/header.php';
             </div>
             <div class="streak-display">
                 <div class="streak-flame">
-                    <?= $user['reading_streak'] > 0 ? '🔥' : '📖'; ?>
+                    <?= $effectiveStreak > 0 ? '🔥' : '📖'; ?>
                 </div>
                 <div class="streak-info">
-                    <span class="streak-number"><?= $user['reading_streak']; ?></span>
+                    <span class="streak-number"><?= $effectiveStreak; ?></span>
                     <span class="streak-label">day streak</span>
                 </div>
             </div>
