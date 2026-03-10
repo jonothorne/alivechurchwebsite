@@ -221,6 +221,10 @@ $readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinut
                 <div class="stat-number"><?= number_format($studiesCompleted); ?></div>
                 <div class="stat-label">Studies Completed</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number"><?= number_format($plansCompleted); ?></div>
+                <div class="stat-label">Plans Completed</div>
+            </div>
         </div>
     </div>
 </section>
