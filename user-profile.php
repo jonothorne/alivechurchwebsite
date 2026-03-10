@@ -198,10 +198,9 @@ include __DIR__ . '/includes/header.php';
 
 <!-- Stats Section -->
 <?php
-$readingMinutes = $user['total_reading_minutes'] ?? 0;
-$readingHours = floor($readingMinutes / 60);
-$remainingMinutes = $readingMinutes % 60;
-$readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinutes . 'm' : $readingMinutes . 'm';
+$readingHours = floor($totalReadingMinutes / 60);
+$remainingMinutes = $totalReadingMinutes % 60;
+$readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinutes . 'm' : $totalReadingMinutes . 'm';
 ?>
 <section class="profile-stats">
     <div class="container narrow">
