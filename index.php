@@ -1,13 +1,37 @@
 <?php
 require __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/SermonManager.php';
+
 $page_title = 'Alive Church | You Belong Here';
-include __DIR__ . '/includes/header.php';
 
 // Initialize CMS for homepage
 if (!isset($cms)) {
     require_once __DIR__ . '/includes/cms/ContentManager.php';
     $cms = new ContentManager('home');
 }
+
+// Get featured sermon from database (falls back to config.php data)
+$pdo = getDbConnection();
+$sermonManager = new SermonManager($pdo);
+$db_featured_sermon = $sermonManager->getFeaturedSermon('homepage');
+
+// If no database sermon, use the hardcoded one from config.php
+if ($db_featured_sermon) {
+    $featured_sermon = [
+        'title' => $db_featured_sermon['title'],
+        'speaker' => $db_featured_sermon['speaker'] ?? '',
+        'date' => $db_featured_sermon['sermon_date'] ? date('F j, Y', strtotime($db_featured_sermon['sermon_date'])) : '',
+        'length' => $db_featured_sermon['length'] ?? '',
+        'video_id' => $db_featured_sermon['youtube_video_id'] ?: $db_featured_sermon['video_id'],
+        'slug' => $db_featured_sermon['slug']
+    ];
+}
+
+// Get last 3 sermons for the "latest messages" section
+$recentSermons = $sermonManager->getRecentSermons(3);
+
+include __DIR__ . '/includes/header.php';
 ?>
 <section class="hero" id="visit">
     <div class="container hero-content">
@@ -91,8 +115,10 @@ if (!isset($cms)) {
         </div>
 
         <div class="hero-ctas" style="justify-content:center; margin-top: 1.5rem;">
-            <a class="btn btn-primary" href="/watch">Watch More Messages</a>
-            <a class="btn btn-secondary" href="/watch">Listen on Podcast</a>
+            <?php if (!empty($featured_sermon['slug'])): ?>
+                <a class="btn btn-primary" href="/sermon/<?= htmlspecialchars($featured_sermon['slug']); ?>">View Full Message</a>
+            <?php endif; ?>
+            <a class="btn btn-secondary" href="/sermons">Watch More Messages</a>
         </div>
     </div>
 </section>
@@ -176,23 +202,25 @@ if (!isset($cms)) {
     <div class="container">
         <div class="section-heading">
             <p class="eyebrow light" data-cms-editable="watch_eyebrow" data-cms-page="home" data-cms-type="text"><?= $cms->text('watch_eyebrow', 'Watch & Listen'); ?></p>
-            <h2 data-cms-editable="watch_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('watch_headline', 'Catch up on the latest series.'); ?></h2>
+            <h2 data-cms-editable="watch_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('watch_headline', 'Catch up on the latest messages.'); ?></h2>
         </div>
         <div class="sermon-grid">
             <?php
-            $sermon_images = [
+            $fallback_images = [
                 '/assets/imgs/gallery/alive-church-worship-team-stage.jpg',
                 '/assets/imgs/gallery/alive-church-live-worship-band-lincolnshire.jpg',
                 '/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg'
             ];
-            foreach ($sermons as $index => $sermon):
-                $img = $sermon_images[$index] ?? $sermon_images[0];
+            foreach ($recentSermons as $index => $sermon):
+                $img = $sermon['thumbnail'] ?? $fallback_images[$index] ?? $fallback_images[0];
+                $speaker = $sermon['speaker'] ?? $sermon['speaker_name'] ?? '';
+                $length = $sermon['length'] ?? '';
             ?>
                 <article class="sermon-card">
-                    <img src="<?= $img; ?>" alt="<?= $sermon['title']; ?> at Alive Church" class="sermon-image">
-                    <p class="sermon-meta"><?= $sermon['speaker']; ?> • <?= $sermon['length']; ?></p>
-                    <h3><?= $sermon['title']; ?></h3>
-                    <a class="text-link" href="<?= $sermon['url']; ?>">Watch now →</a>
+                    <img src="<?= htmlspecialchars($img); ?>" alt="<?= htmlspecialchars($sermon['title']); ?> at Alive Church" class="sermon-image">
+                    <p class="sermon-meta"><?= htmlspecialchars($speaker); ?><?= $length ? ' • ' . htmlspecialchars($length) : ''; ?></p>
+                    <h3><?= htmlspecialchars($sermon['title']); ?></h3>
+                    <a class="text-link" href="/sermon/<?= htmlspecialchars($sermon['slug']); ?>">Watch now →</a>
                 </article>
             <?php endforeach; ?>
         </div>
