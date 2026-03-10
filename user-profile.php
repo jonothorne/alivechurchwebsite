@@ -96,13 +96,21 @@ $daysReadStmt = $pdo->prepare("SELECT COUNT(*) FROM user_reading_plan_completion
 $daysReadStmt->execute([$user['id']]);
 $totalDaysRead = $daysReadStmt->fetchColumn();
 
-// Get bible studies completed
+// Get bible studies completed (from user_reading_history table)
 $studiesCompletedStmt = $pdo->prepare("
-    SELECT COUNT(*) FROM bible_study_progress
-    WHERE user_identifier = ? AND completed = 1
+    SELECT COUNT(*) FROM user_reading_history
+    WHERE user_id = ? AND completed = TRUE
 ");
 $studiesCompletedStmt->execute([$user['id']]);
 $studiesCompleted = $studiesCompletedStmt->fetchColumn();
+
+// Get total reading time (in minutes, from user_reading_history)
+$readingTimeStmt = $pdo->prepare("
+    SELECT COALESCE(SUM(time_spent), 0) FROM user_reading_history WHERE user_id = ?
+");
+$readingTimeStmt->execute([$user['id']]);
+$totalReadingSeconds = $readingTimeStmt->fetchColumn();
+$totalReadingMinutes = round($totalReadingSeconds / 60);
 
 // Get authored blog posts (if editor/admin)
 $authoredPosts = [];

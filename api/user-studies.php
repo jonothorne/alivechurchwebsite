@@ -133,7 +133,7 @@ switch ($action) {
         $studyId = intval($_POST['study_id'] ?? 0);
         $timeSpent = intval($_POST['time_spent'] ?? 0);
         $scrollProgress = floatval($_POST['scroll_progress'] ?? 0);
-        $completed = isset($_POST['completed']) && $_POST['completed'];
+        $completed = !empty($_POST['completed']) && $_POST['completed'] !== '0' && $_POST['completed'] !== 'false';
 
         if (!$studyId) {
             echo json_encode(['error' => 'Study ID required']);
