@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             $pdo->commit();
 
-            log_activity($_SESSION['admin_user_id'], 'update_settings', 'site_settings', null, 'Updated site settings');
+            log_activity($_SESSION['admin_user_id'] ?? null, 'update_settings', 'site_settings', null, 'Updated site settings');
 
             $success = 'Settings saved successfully!';
         } catch (Exception $e) {
