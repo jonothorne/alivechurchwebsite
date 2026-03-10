@@ -48,12 +48,12 @@ if (!isset($cms)) {
 
         <!-- Category Filter Buttons -->
         <div class="event-filters">
-            <button class="filter-btn active" data-filter="all">All Events</button>
-            <button class="filter-btn" data-filter="weekly">Weekly</button>
-            <button class="filter-btn" data-filter="special">Special Events</button>
-            <button class="filter-btn" data-filter="groups">Groups</button>
-            <button class="filter-btn" data-filter="youth">Youth</button>
-            <button class="filter-btn" data-filter="outreach">Outreach</button>
+            <button type="button" class="filter-btn active" data-filter="all">All Events</button>
+            <button type="button" class="filter-btn" data-filter="weekly">Weekly</button>
+            <button type="button" class="filter-btn" data-filter="special">Special Events</button>
+            <button type="button" class="filter-btn" data-filter="groups">Groups</button>
+            <button type="button" class="filter-btn" data-filter="youth">Youth</button>
+            <button type="button" class="filter-btn" data-filter="outreach">Outreach</button>
         </div>
 
         <!-- Events Grid -->

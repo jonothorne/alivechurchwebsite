@@ -89,8 +89,8 @@
     });
 
     // Enhanced Event filtering functionality (for Events page)
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const eventCards = document.querySelectorAll('.event-card-detailed');
+    const eventFiltersContainer = document.querySelector('.event-filters');
+    const eventsGrid = document.querySelector('.events-grid');
     const searchInput = document.getElementById('event-search');
     const monthFilter = document.getElementById('month-filter');
     const loadMoreBtn = document.getElementById('load-more-events');
@@ -104,6 +104,7 @@
 
     // Apply all filters
     function applyFilters() {
+        const eventCards = document.querySelectorAll('.event-card-detailed');
         let visibleCount = 0;
         let totalMatches = 0;
 
@@ -151,19 +152,23 @@
         }
     }
 
-    // Category filter buttons
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+    // Category filter buttons - use event delegation for robustness
+    if (eventFiltersContainer) {
+        eventFiltersContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.filter-btn');
+            if (!btn) return;
+
+            e.preventDefault();
             currentCategoryFilter = btn.dataset.filter;
             visibleLimit = 12; // Reset limit when changing filters
 
-            // Update active class
-            filterButtons.forEach(b => b.classList.remove('active'));
+            // Update active class on all filter buttons
+            eventFiltersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
             applyFilters();
         });
-    });
+    }
 
     // Search input
     if (searchInput) {
