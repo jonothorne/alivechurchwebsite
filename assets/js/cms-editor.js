@@ -495,14 +495,14 @@
             }
             const range = selection.getRangeAt(0).cloneRange();
 
-            const url = prompt('Enter URL:', 'https://');
-            if (url && url !== 'https://') {
+            const url = prompt('Enter URL (e.g., /connect or https://example.com):');
+            if (url && url.trim()) {
                 // Restore the selection
                 selection.removeAllRanges();
                 selection.addRange(range);
 
                 // Now create the link
-                document.execCommand('createLink', false, url);
+                document.execCommand('createLink', false, url.trim());
                 state.hasUnsavedChanges = true;
             }
             return;
