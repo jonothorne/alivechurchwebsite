@@ -57,6 +57,7 @@ $nav_links = [
     ],
     ['label' => 'Events', 'url' => '/events'],
     ['label' => 'Bible Study', 'url' => '/bible-study'],
+    ['label' => 'Sermons', 'url' => '/sermons'],
     ['label' => 'Connect', 'url' => '/connect'],
     ['label' => 'Blog', 'url' => '/blog'],
 ];
