@@ -1848,9 +1848,12 @@
 
     .admin-subnav-dropdown-menu {
         position: fixed;
+        top: 110px; /* Below header (60px) + subnav height (~50px) */
         left: 1rem;
         right: 1rem;
         width: auto;
+        max-height: 60vh;
+        overflow-y: auto;
     }
 
     .admin-page {
