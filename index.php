@@ -204,24 +204,37 @@ include __DIR__ . '/includes/header.php';
             <p class="eyebrow light" data-cms-editable="watch_eyebrow" data-cms-page="home" data-cms-type="text"><?= $cms->text('watch_eyebrow', 'Watch & Listen'); ?></p>
             <h2 data-cms-editable="watch_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('watch_headline', 'Catch up on the latest messages.'); ?></h2>
         </div>
-        <div class="sermon-grid">
-            <?php
-            $fallback_images = [
-                '/assets/imgs/gallery/alive-church-worship-team-stage.jpg',
-                '/assets/imgs/gallery/alive-church-live-worship-band-lincolnshire.jpg',
-                '/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg'
-            ];
-            foreach ($recentSermons as $index => $sermon):
-                $img = $sermon['thumbnail'] ?? $fallback_images[$index] ?? $fallback_images[0];
-                $speaker = $sermon['speaker'] ?? $sermon['speaker_name'] ?? '';
-                $length = $sermon['length'] ?? '';
-            ?>
-                <article class="sermon-card">
-                    <img src="<?= htmlspecialchars($img); ?>" alt="<?= htmlspecialchars($sermon['title']); ?> at Alive Church" class="sermon-image">
-                    <p class="sermon-meta"><?= htmlspecialchars($speaker); ?><?= $length ? ' • ' . htmlspecialchars($length) : ''; ?></p>
-                    <h3><?= htmlspecialchars($sermon['title']); ?></h3>
-                    <a class="text-link" href="/sermon/<?= htmlspecialchars($sermon['slug']); ?>">Watch now →</a>
-                </article>
+        <div class="sermon-grid-home">
+            <?php foreach ($recentSermons as $sermon): ?>
+                <a href="/sermon/<?= htmlspecialchars($sermon['slug']); ?>" class="sermon-card-netflix">
+                    <div class="card-thumb">
+                        <?php if (!empty($sermon['thumbnail_url'])): ?>
+                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="" loading="lazy">
+                        <?php elseif (!empty($sermon['youtube_video_id'])): ?>
+                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                        <?php else: ?>
+                            <div class="thumb-placeholder"></div>
+                        <?php endif; ?>
+                        <div class="card-overlay">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </div>
+                        </div>
+                        <?php if (!empty($sermon['length'])): ?>
+                            <span class="duration"><?= htmlspecialchars($sermon['length']); ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="card-info">
+                        <h3><?= htmlspecialchars($sermon['title'] ?? ''); ?></h3>
+                        <p class="meta">
+                            <?= !empty($sermon['speaker']) ? htmlspecialchars($sermon['speaker']) : ''; ?>
+                            <?= !empty($sermon['sermon_date']) ? ' • ' . date('M j', strtotime($sermon['sermon_date'])) : ''; ?>
+                        </p>
+                        <?php if (!empty($sermon['series_title'])): ?>
+                            <span class="series-tag"><?= htmlspecialchars($sermon['series_title']); ?></span>
+                        <?php endif; ?>
+                    </div>
+                </a>
             <?php endforeach; ?>
         </div>
         <div class="hero-ctas" style="justify-content:center;">
