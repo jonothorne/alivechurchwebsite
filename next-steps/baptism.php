@@ -30,13 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 include __DIR__ . '/../includes/header.php';
+
+// Initialize CMS
+if (!isset($cms)) {
+    require_once __DIR__ . '/../includes/cms/ContentManager.php';
+    $cms = new ContentManager('baptism');
+}
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow light">Next Steps</p>
-        <h1>Baptism: Declare Your Faith</h1>
-        <p>Baptism is a public declaration of your faith in Jesus. It's an outward sign of an inward decision to follow Him.</p>
+        <p class="eyebrow light" data-cms-editable="hero_eyebrow" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Next Steps'); ?></p>
+        <h1 data-cms-editable="hero_headline" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('hero_headline', 'Baptism: Declare Your Faith'); ?></h1>
+        <p data-cms-editable="hero_subtext" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('hero_subtext', 'Baptism is a public declaration of your faith in Jesus. It\'s an outward sign of an inward decision to follow Him.'); ?></p>
     </div>
 </section>
 
@@ -44,20 +50,20 @@ include __DIR__ . '/../includes/header.php';
     <div class="container">
         <div class="split">
             <div>
-                <h2>Why Get Baptized?</h2>
+                <h2 data-cms-editable="why_headline" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('why_headline', 'Why Get Baptized?'); ?></h2>
                 <ul class="info-list">
-                    <li><strong>Follow Jesus' Example:</strong> Jesus was baptized in the Jordan River (Matthew 3:13-17).</li>
-                    <li><strong>Obey His Command:</strong> Jesus instructed His followers to be baptized (Matthew 28:19).</li>
-                    <li><strong>Identify with Christ:</strong> Baptism symbolizes dying to your old life and rising to new life in Christ.</li>
-                    <li><strong>Celebrate Publicly:</strong> Share your faith story with your church family and invite loved ones to witness.</li>
+                    <li data-cms-editable="why_item_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_1', '<strong>Follow Jesus\' Example:</strong> Jesus was baptized in the Jordan River (Matthew 3:13-17).'); ?></li>
+                    <li data-cms-editable="why_item_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_2', '<strong>Obey His Command:</strong> Jesus instructed His followers to be baptized (Matthew 28:19).'); ?></li>
+                    <li data-cms-editable="why_item_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_3', '<strong>Identify with Christ:</strong> Baptism symbolizes dying to your old life and rising to new life in Christ.'); ?></li>
+                    <li data-cms-editable="why_item_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_4', '<strong>Celebrate Publicly:</strong> Share your faith story with your church family and invite loved ones to witness.'); ?></li>
                 </ul>
 
                 <div class="card" style="margin-top: 2rem;">
-                    <h3>What to Expect</h3>
-                    <p><strong>1. Preparation:</strong> Meet with a pastor to discuss your faith journey and what baptism means.</p>
-                    <p><strong>2. Celebration Sunday:</strong> Share your testimony and be baptized during a service.</p>
-                    <p><strong>3. Invitation:</strong> Invite friends and family to witness this special moment.</p>
-                    <p><strong>4. Party Time:</strong> Celebrate with our church family after the service!</p>
+                    <h3 data-cms-editable="expect_headline" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('expect_headline', 'What to Expect'); ?></h3>
+                    <p data-cms-editable="expect_step_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_1', '<strong>1. Preparation:</strong> Meet with a pastor to discuss your faith journey and what baptism means.'); ?></p>
+                    <p data-cms-editable="expect_step_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_2', '<strong>2. Celebration Sunday:</strong> Share your testimony and be baptized during a service.'); ?></p>
+                    <p data-cms-editable="expect_step_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_3', '<strong>3. Invitation:</strong> Invite friends and family to witness this special moment.'); ?></p>
+                    <p data-cms-editable="expect_step_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_4', '<strong>4. Party Time:</strong> Celebrate with our church family after the service!'); ?></p>
                 </div>
 
                 <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg"
@@ -66,7 +72,7 @@ include __DIR__ . '/../includes/header.php';
             </div>
 
             <form class="card form-card" method="post">
-                <h3>Baptism Signup</h3>
+                <h3 data-cms-editable="form_title" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('form_title', 'Baptism Signup'); ?></h3>
 
                 <?php if ($baptism_notice): ?>
                     <p class="notice notice-<?= $baptism_notice['type']; ?>" role="status"><?= $baptism_notice['message']; ?></p>

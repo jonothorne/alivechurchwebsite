@@ -42,10 +42,10 @@ if (!isset($cms)) {
             <div>
                 <h2 data-cms-editable="how_headline" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('how_headline', 'How we pray'); ?></h2>
                 <ul class="info-list">
-                    <li><strong>Daily Prayer:</strong> Our team prays through requests every morning at 7AM.</li>
-                    <li><strong>Confidential:</strong> All requests are kept private unless you choose to share publicly.</li>
-                    <li><strong>Follow-up:</strong> We'll check in with you to see how God is moving.</li>
-                    <li><strong>Always Available:</strong> You can submit as many requests as you need, anytime.</li>
+                    <li data-cms-editable="how_item_1" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_1', '<strong>Daily Prayer:</strong> Our team prays through requests every morning at 7AM.'); ?></li>
+                    <li data-cms-editable="how_item_2" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_2', '<strong>Confidential:</strong> All requests are kept private unless you choose to share publicly.'); ?></li>
+                    <li data-cms-editable="how_item_3" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_3', '<strong>Follow-up:</strong> We\'ll check in with you to see how God is moving.'); ?></li>
+                    <li data-cms-editable="how_item_4" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_4', '<strong>Always Available:</strong> You can submit as many requests as you need, anytime.'); ?></li>
                 </ul>
                 <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg"
                      alt="Prayer at Alive Church"
@@ -53,7 +53,7 @@ if (!isset($cms)) {
             </div>
 
             <form class="card form-card" method="post">
-                <h3>Share Your Prayer Need</h3>
+                <h3 data-cms-editable="form_title" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('form_title', 'Share Your Prayer Need'); ?></h3>
                 <?php if ($prayer_notice): ?>
                     <p class="notice notice-<?= $prayer_notice['type']; ?>" role="status"><?= $prayer_notice['message']; ?></p>
                 <?php endif; ?>

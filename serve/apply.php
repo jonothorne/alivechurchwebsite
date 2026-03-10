@@ -43,13 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 include __DIR__ . '/../includes/header.php';
+
+// Initialize CMS
+if (!isset($cms)) {
+    require_once __DIR__ . '/../includes/cms/ContentManager.php';
+    $cms = new ContentManager('serve');
+}
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow light">Serve With Us</p>
-        <h1>Apply to Serve<?= $selected_team ? ': ' . htmlspecialchars($selected_team['title']) : ''; ?></h1>
-        <p>Thank you for your interest in using your gifts to serve! Fill out the form below and our team will connect with you.</p>
+        <p class="eyebrow light" data-cms-editable="hero_eyebrow" data-cms-page="serve" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Serve With Us'); ?></p>
+        <h1 data-cms-editable="hero_headline" data-cms-page="serve" data-cms-type="text"><?= $cms->text('hero_headline', 'Apply to Serve'); ?><?= $selected_team ? ': ' . htmlspecialchars($selected_team['title']) : ''; ?></h1>
+        <p data-cms-editable="hero_subtext" data-cms-page="serve" data-cms-type="text"><?= $cms->text('hero_subtext', 'Thank you for your interest in using your gifts to serve! Fill out the form below and our team will connect with you.'); ?></p>
     </div>
 </section>
 
@@ -85,12 +91,12 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             <?php else: ?>
                 <div>
-                    <h2>Why Serve?</h2>
+                    <h2 data-cms-editable="why_headline" data-cms-page="serve" data-cms-type="text"><?= $cms->text('why_headline', 'Why Serve?'); ?></h2>
                     <ul class="info-list">
-                        <li><strong>Make a Difference:</strong> Your gifts can change someone's Sunday experience.</li>
-                        <li><strong>Grow Spiritually:</strong> Serving deepens your own faith journey.</li>
-                        <li><strong>Build Community:</strong> Meet amazing people and form lasting friendships.</li>
-                        <li><strong>Discover Your Calling:</strong> Find where your passions meet our mission.</li>
+                        <li data-cms-editable="why_item_1" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_1', '<strong>Make a Difference:</strong> Your gifts can change someone\'s Sunday experience.'); ?></li>
+                        <li data-cms-editable="why_item_2" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_2', '<strong>Grow Spiritually:</strong> Serving deepens your own faith journey.'); ?></li>
+                        <li data-cms-editable="why_item_3" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_3', '<strong>Build Community:</strong> Meet amazing people and form lasting friendships.'); ?></li>
+                        <li data-cms-editable="why_item_4" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_4', '<strong>Discover Your Calling:</strong> Find where your passions meet our mission.'); ?></li>
                     </ul>
                     <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg"
                          alt="Serving at Alive Church"
@@ -99,7 +105,7 @@ include __DIR__ . '/../includes/header.php';
             <?php endif; ?>
 
             <form class="card form-card" method="post">
-                <h3>Application Form</h3>
+                <h3 data-cms-editable="form_title" data-cms-page="serve" data-cms-type="text"><?= $cms->text('form_title', 'Application Form'); ?></h3>
 
                 <?php if ($serve_notice): ?>
                     <p class="notice notice-<?= $serve_notice['type']; ?>" role="status"><?= $serve_notice['message']; ?></p>
