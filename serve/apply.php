@@ -93,10 +93,10 @@ if (!isset($cms)) {
                 <div>
                     <h2 data-cms-editable="why_headline" data-cms-page="serve" data-cms-type="text"><?= $cms->text('why_headline', 'Why Serve?'); ?></h2>
                     <ul class="info-list">
-                        <li data-cms-editable="why_item_1" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_1', '<strong>Make a Difference:</strong> Your gifts can change someone\'s Sunday experience.'); ?></li>
-                        <li data-cms-editable="why_item_2" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_2', '<strong>Grow Spiritually:</strong> Serving deepens your own faith journey.'); ?></li>
-                        <li data-cms-editable="why_item_3" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_3', '<strong>Build Community:</strong> Meet amazing people and form lasting friendships.'); ?></li>
-                        <li data-cms-editable="why_item_4" data-cms-page="serve" data-cms-type="rich"><?= $cms->richText('why_item_4', '<strong>Discover Your Calling:</strong> Find where your passions meet our mission.'); ?></li>
+                        <li data-cms-editable="why_item_1" data-cms-page="serve" data-cms-type="rich"><?= $cms->html('why_item_1', '<strong>Make a Difference:</strong> Your gifts can change someone\'s Sunday experience.'); ?></li>
+                        <li data-cms-editable="why_item_2" data-cms-page="serve" data-cms-type="rich"><?= $cms->html('why_item_2', '<strong>Grow Spiritually:</strong> Serving deepens your own faith journey.'); ?></li>
+                        <li data-cms-editable="why_item_3" data-cms-page="serve" data-cms-type="rich"><?= $cms->html('why_item_3', '<strong>Build Community:</strong> Meet amazing people and form lasting friendships.'); ?></li>
+                        <li data-cms-editable="why_item_4" data-cms-page="serve" data-cms-type="rich"><?= $cms->html('why_item_4', '<strong>Discover Your Calling:</strong> Find where your passions meet our mission.'); ?></li>
                     </ul>
                     <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg"
                          alt="Serving at Alive Church"

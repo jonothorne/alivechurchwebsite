@@ -42,10 +42,10 @@ if (!isset($cms)) {
             <div>
                 <h2 data-cms-editable="how_headline" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('how_headline', 'How we pray'); ?></h2>
                 <ul class="info-list">
-                    <li data-cms-editable="how_item_1" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_1', '<strong>Daily Prayer:</strong> Our team prays through requests every morning at 7AM.'); ?></li>
-                    <li data-cms-editable="how_item_2" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_2', '<strong>Confidential:</strong> All requests are kept private unless you choose to share publicly.'); ?></li>
-                    <li data-cms-editable="how_item_3" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_3', '<strong>Follow-up:</strong> We\'ll check in with you to see how God is moving.'); ?></li>
-                    <li data-cms-editable="how_item_4" data-cms-page="prayer" data-cms-type="rich"><?= $cms->richText('how_item_4', '<strong>Always Available:</strong> You can submit as many requests as you need, anytime.'); ?></li>
+                    <li data-cms-editable="how_item_1" data-cms-page="prayer" data-cms-type="rich"><?= $cms->html('how_item_1', '<strong>Daily Prayer:</strong> Our team prays through requests every morning at 7AM.'); ?></li>
+                    <li data-cms-editable="how_item_2" data-cms-page="prayer" data-cms-type="rich"><?= $cms->html('how_item_2', '<strong>Confidential:</strong> All requests are kept private unless you choose to share publicly.'); ?></li>
+                    <li data-cms-editable="how_item_3" data-cms-page="prayer" data-cms-type="rich"><?= $cms->html('how_item_3', '<strong>Follow-up:</strong> We\'ll check in with you to see how God is moving.'); ?></li>
+                    <li data-cms-editable="how_item_4" data-cms-page="prayer" data-cms-type="rich"><?= $cms->html('how_item_4', '<strong>Always Available:</strong> You can submit as many requests as you need, anytime.'); ?></li>
                 </ul>
                 <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg"
                      alt="Prayer at Alive Church"

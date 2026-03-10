@@ -52,18 +52,18 @@ if (!isset($cms)) {
             <div>
                 <h2 data-cms-editable="why_headline" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('why_headline', 'Why Get Baptized?'); ?></h2>
                 <ul class="info-list">
-                    <li data-cms-editable="why_item_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_1', '<strong>Follow Jesus\' Example:</strong> Jesus was baptized in the Jordan River (Matthew 3:13-17).'); ?></li>
-                    <li data-cms-editable="why_item_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_2', '<strong>Obey His Command:</strong> Jesus instructed His followers to be baptized (Matthew 28:19).'); ?></li>
-                    <li data-cms-editable="why_item_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_3', '<strong>Identify with Christ:</strong> Baptism symbolizes dying to your old life and rising to new life in Christ.'); ?></li>
-                    <li data-cms-editable="why_item_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('why_item_4', '<strong>Celebrate Publicly:</strong> Share your faith story with your church family and invite loved ones to witness.'); ?></li>
+                    <li data-cms-editable="why_item_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('why_item_1', '<strong>Follow Jesus\' Example:</strong> Jesus was baptized in the Jordan River (Matthew 3:13-17).'); ?></li>
+                    <li data-cms-editable="why_item_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('why_item_2', '<strong>Obey His Command:</strong> Jesus instructed His followers to be baptized (Matthew 28:19).'); ?></li>
+                    <li data-cms-editable="why_item_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('why_item_3', '<strong>Identify with Christ:</strong> Baptism symbolizes dying to your old life and rising to new life in Christ.'); ?></li>
+                    <li data-cms-editable="why_item_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('why_item_4', '<strong>Celebrate Publicly:</strong> Share your faith story with your church family and invite loved ones to witness.'); ?></li>
                 </ul>
 
                 <div class="card" style="margin-top: 2rem;">
                     <h3 data-cms-editable="expect_headline" data-cms-page="baptism" data-cms-type="text"><?= $cms->text('expect_headline', 'What to Expect'); ?></h3>
-                    <p data-cms-editable="expect_step_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_1', '<strong>1. Preparation:</strong> Meet with a pastor to discuss your faith journey and what baptism means.'); ?></p>
-                    <p data-cms-editable="expect_step_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_2', '<strong>2. Celebration Sunday:</strong> Share your testimony and be baptized during a service.'); ?></p>
-                    <p data-cms-editable="expect_step_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_3', '<strong>3. Invitation:</strong> Invite friends and family to witness this special moment.'); ?></p>
-                    <p data-cms-editable="expect_step_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->richText('expect_step_4', '<strong>4. Party Time:</strong> Celebrate with our church family after the service!'); ?></p>
+                    <p data-cms-editable="expect_step_1" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('expect_step_1', '<strong>1. Preparation:</strong> Meet with a pastor to discuss your faith journey and what baptism means.'); ?></p>
+                    <p data-cms-editable="expect_step_2" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('expect_step_2', '<strong>2. Celebration Sunday:</strong> Share your testimony and be baptized during a service.'); ?></p>
+                    <p data-cms-editable="expect_step_3" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('expect_step_3', '<strong>3. Invitation:</strong> Invite friends and family to witness this special moment.'); ?></p>
+                    <p data-cms-editable="expect_step_4" data-cms-page="baptism" data-cms-type="rich"><?= $cms->html('expect_step_4', '<strong>4. Party Time:</strong> Celebrate with our church family after the service!'); ?></p>
                 </div>
 
                 <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg"
