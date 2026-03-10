@@ -134,6 +134,7 @@ class Analytics {
             'today' => $this->getVisitStats('today'),
             'week' => $this->getVisitStats('week'),
             'month' => $this->getVisitStats('month'),
+            'year' => $this->getVisitStats('year'),
             'all' => $this->getVisitStats('all')
         ];
     }
