@@ -115,6 +115,8 @@ html {
     /* Prevent layout shift from scrollbar appearing/disappearing */
     overflow-y: scroll;
     scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px; /* Account for fixed header when scrolling to anchors */
 }
 body {
     margin: 0;

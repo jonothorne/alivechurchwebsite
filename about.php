@@ -16,7 +16,7 @@ if (!isset($cms)) {
         <?= $cms->text('hero_subtext', 'From a small prayer gathering to a growing family, we are passionate about helping people live fully alive in Jesus and taking hope to every street.', ['tag' => 'p']); ?>
     </div>
 </section>
-<section class="content-section">
+<section id="beliefs" class="content-section">
     <div class="container split">
         <div>
             <?= $cms->text('whoweare_headline', 'Who we are', ['tag' => 'h2']); ?>
@@ -35,7 +35,7 @@ if (!isset($cms)) {
         </div>
     </div>
 </section>
-<section class="content-section alt">
+<section id="team" class="content-section alt">
     <div class="container">
         <div class="section-heading">
             <?= $cms->text('leadership_eyebrow', 'Leadership', ['tag' => 'p', 'class' => 'eyebrow']); ?>
