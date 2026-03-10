@@ -168,20 +168,12 @@ if ($lastReadingDate) {
                 <?php endif; ?>
             </div>
             <div class="profile-info">
-                <div class="streak-display">
-                    <div class="streak-flame">
-                        <?= $effectiveStreak > 0 ? '🔥' : '📖'; ?>
-                    </div>
-                    <div class="streak-info">
-                        <span class="streak-number"><?= $effectiveStreak; ?></span>
-                        <span class="streak-label">day streak</span>
-                    </div>
-                </div>
                 <h1><?= htmlspecialchars($displayName); ?></h1>
                 <?php if ($user['role'] !== 'member'): ?>
                     <span class="profile-role"><?= ucfirst($user['role']); ?></span>
                 <?php endif; ?>
                 <p class="profile-joined">Member since <?= date('F Y', strtotime($user['created_at'])); ?></p>
+                <span class="profile-streak-badge"><?= $effectiveStreak > 0 ? '🔥' : '📖'; ?> <?= $effectiveStreak; ?> day streak</span>
 
                 <?php if (!empty($socialLinks)): ?>
                     <div class="profile-social">
@@ -235,10 +227,6 @@ $readingTimeDisplay = $readingHours > 0 ? $readingHours . 'h ' . $remainingMinut
             <div class="stat-card">
                 <div class="stat-number"><?= $readingTimeDisplay; ?></div>
                 <div class="stat-label">Time Reading</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?= number_format($user['longest_streak']); ?></div>
-                <div class="stat-label">Best Streak</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= number_format($totalDaysRead); ?></div>

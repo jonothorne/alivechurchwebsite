@@ -3975,6 +3975,16 @@ body.cms-edit-mode [data-cms-editable]:hover {
     font-size: 0.875rem;
 }
 
+.profile-streak-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.75rem;
+}
+
 .profile-social {
     display: flex;
     gap: 0.75rem;
