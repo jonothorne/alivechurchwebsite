@@ -493,16 +493,34 @@
                 alert('Please select some text first to create a link.');
                 return;
             }
+
+            // Clone the range and extract the selected content
             const range = selection.getRangeAt(0).cloneRange();
+            const selectedText = range.toString();
+
+            if (!selectedText.trim()) {
+                alert('Please select some text first to create a link.');
+                return;
+            }
 
             const url = prompt('Enter URL (e.g., /connect or https://example.com):');
             if (url && url.trim()) {
-                // Restore the selection
-                selection.removeAllRanges();
-                selection.addRange(range);
+                // Create the link element manually
+                const link = document.createElement('a');
+                link.href = url.trim();
+                link.textContent = selectedText;
 
-                // Now create the link
-                document.execCommand('createLink', false, url.trim());
+                // Delete the selected content and insert the link
+                range.deleteContents();
+                range.insertNode(link);
+
+                // Move cursor after the link
+                selection.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.setStartAfter(link);
+                newRange.collapse(true);
+                selection.addRange(newRange);
+
                 state.hasUnsavedChanges = true;
             }
             return;
