@@ -155,13 +155,18 @@ CREATE TABLE IF NOT EXISTS sermon_series (
     description TEXT,
     image_url VARCHAR(500),
     date_range VARCHAR(100),
+    start_date DATE,
+    end_date DATE,
     message_count INT DEFAULT 0,
     display_order INT DEFAULT 0,
     visible BOOLEAN DEFAULT TRUE,
+    is_featured BOOLEAN DEFAULT FALSE,
+    featured_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_slug (slug),
-    INDEX idx_order (display_order)
+    INDEX idx_order (display_order),
+    INDEX idx_featured (is_featured, featured_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Individual sermons
@@ -169,19 +174,87 @@ CREATE TABLE IF NOT EXISTS sermons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     series_id INT NULL,
     title VARCHAR(200) NOT NULL,
+    slug VARCHAR(150) UNIQUE,
     speaker VARCHAR(100),
+    speaker_user_id INT NULL,
     sermon_date DATE,
     length VARCHAR(50),
+    duration_seconds INT,
     video_id VARCHAR(100),
+    youtube_video_id VARCHAR(50),
     audio_url VARCHAR(500),
+    thumbnail_url VARCHAR(500),
     description TEXT,
+    transcript LONGTEXT,
+    is_featured BOOLEAN DEFAULT FALSE,
+    featured_location VARCHAR(50) DEFAULT NULL,
+    featured_order INT DEFAULT 0,
+    youtube_fetched_at TIMESTAMP NULL,
+    youtube_data JSON,
     display_order INT DEFAULT 0,
     visible BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_series (series_id),
     INDEX idx_date (sermon_date),
-    FOREIGN KEY (series_id) REFERENCES sermon_series(id) ON DELETE SET NULL
+    INDEX idx_slug (slug),
+    INDEX idx_youtube_id (youtube_video_id),
+    INDEX idx_speaker_user (speaker_user_id),
+    INDEX idx_featured (is_featured, featured_location, featured_order),
+    FOREIGN KEY (series_id) REFERENCES sermon_series(id) ON DELETE SET NULL,
+    FOREIGN KEY (speaker_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sermon to Bible study links (for showing related sermons on study pages)
+CREATE TABLE IF NOT EXISTS sermon_study_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sermon_id INT NOT NULL,
+    study_id INT NOT NULL,
+    link_type ENUM('auto_suggested', 'admin_confirmed', 'admin_added') DEFAULT 'auto_suggested',
+    relevance_score DECIMAL(5,2) DEFAULT 0,
+    verse_reference VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    confirmed_at TIMESTAMP NULL,
+    confirmed_by INT NULL,
+    UNIQUE KEY unique_link (sermon_id, study_id),
+    INDEX idx_sermon (sermon_id),
+    INDEX idx_study (study_id),
+    INDEX idx_confirmed (link_type),
+    FOREIGN KEY (sermon_id) REFERENCES sermons(id) ON DELETE CASCADE,
+    FOREIGN KEY (study_id) REFERENCES bible_studies(id) ON DELETE CASCADE,
+    FOREIGN KEY (confirmed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sermon topic tags (for categorizing sermons by life topics)
+CREATE TABLE IF NOT EXISTS sermon_topic_tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sermon_id INT NOT NULL,
+    topic_id INT NOT NULL,
+    relevance_score DECIMAL(5,2) DEFAULT 0,
+    auto_tagged BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_tag (sermon_id, topic_id),
+    INDEX idx_sermon (sermon_id),
+    INDEX idx_topic (topic_id),
+    FOREIGN KEY (sermon_id) REFERENCES sermons(id) ON DELETE CASCADE,
+    FOREIGN KEY (topic_id) REFERENCES bible_study_topics(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sermon scripture references (detected from transcript)
+CREATE TABLE IF NOT EXISTS sermon_scripture_refs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sermon_id INT NOT NULL,
+    book_id INT NOT NULL,
+    chapter INT NOT NULL,
+    verse_start INT NULL,
+    verse_end INT NULL,
+    context_snippet VARCHAR(500),
+    auto_detected BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sermon (sermon_id),
+    INDEX idx_book_chapter (book_id, chapter),
+    FOREIGN KEY (sermon_id) REFERENCES sermons(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES bible_books(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Media library
