@@ -24,34 +24,34 @@ RewriteRule ^ %1 [R=301,L]
 
 # Event detail pages - handle before generic routing
 # /events/sunday-service -> events/detail.php?slug=sunday-service
-RewriteRule ^events/([a-zA-Z0-9-]+)/?$ /events/detail.php?slug=$1 [L,QSA]
+RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
 
 # Sermon pages
 # /sermon/sermon-slug -> sermon.php?slug=sermon-slug
-RewriteRule ^sermon/([a-zA-Z0-9-]+)/?$ /sermon.php?slug=$1 [L,QSA]
+RewriteRule ^sermon/([a-zA-Z0-9-]+)/?$ sermon.php?slug=$1 [L,QSA]
 
 # Sermon series pages
 # /sermons/series/series-slug -> sermon-series.php?slug=series-slug
-RewriteRule ^sermons/series/([a-zA-Z0-9-]+)/?$ /sermon-series.php?slug=$1 [L,QSA]
+RewriteRule ^sermons/series/([a-zA-Z0-9-]+)/?$ sermon-series.php?slug=$1 [L,QSA]
 
 # Sermon sub-pages
-RewriteRule ^sermons/series/?$ /sermons/series.php [L,QSA]
-RewriteRule ^sermons/speakers/?$ /sermons/speakers.php [L,QSA]
-RewriteRule ^sermons/topics/?$ /sermons/topics.php [L,QSA]
+RewriteRule ^sermons/series/?$ sermons/series.php [L,QSA]
+RewriteRule ^sermons/speakers/?$ sermons/speakers.php [L,QSA]
+RewriteRule ^sermons/topics/?$ sermons/topics.php [L,QSA]
 
 # About sub-pages
-RewriteRule ^about/history/?$ /about/history.php [L,QSA]
-RewriteRule ^about/what-we-believe/?$ /about/what-we-believe.php [L,QSA]
-RewriteRule ^about/vision/?$ /about/vision.php [L,QSA]
-RewriteRule ^about/dead-church/?$ /about/dead-church.php [L,QSA]
+RewriteRule ^about/history/?$ about/history.php [L,QSA]
+RewriteRule ^about/what-we-believe/?$ about/what-we-believe.php [L,QSA]
+RewriteRule ^about/vision/?$ about/vision.php [L,QSA]
+RewriteRule ^about/dead-church/?$ about/dead-church.php [L,QSA]
 
 # Bible study chapter pages
 # /bible-study/psalms/5 -> bible-study-chapter.php?book=psalms&chapter=5
-RewriteRule ^bible-study/([a-zA-Z0-9-]+)/([0-9]+)/?$ /bible-study-chapter.php?book=$1&chapter=$2 [L,QSA]
+RewriteRule ^bible-study/([a-zA-Z0-9-]+)/([0-9]+)/?$ bible-study-chapter.php?book=$1&chapter=$2 [L,QSA]
 
 # Blog post pages
 # /blog/post-slug -> blog-post.php?slug=post-slug
-RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ /blog-post.php?slug=$1 [L,QSA]
+RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ blog-post.php?slug=$1 [L,QSA]
 
 # Sermons browse page (already handled by generic routing to sermons.php)
 
