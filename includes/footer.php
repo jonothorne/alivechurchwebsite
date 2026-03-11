@@ -102,6 +102,8 @@ if ($show_blocks_btn): ?>
 </style>
 <?php endif; ?>
 
+<?php include __DIR__ . '/cookie-consent.php'; ?>
+
 <!-- Service Worker Registration -->
 <script>
 if ('serviceWorker' in navigator) {
