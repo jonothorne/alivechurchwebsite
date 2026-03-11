@@ -69,9 +69,10 @@ if (!$study) {
     $page_title = $book['name'] . ' ' . $chapter . ' - Study Not Available | ' . $site['name'];
     include __DIR__ . '/includes/header.php';
     ?>
+    <?php $random_texture = get_random_texture(); ?>
     <article class="bible-study-article">
         <!-- Study Header -->
-        <header class="study-header">
+        <header class="study-header <?= $random_texture; ?>">
             <div class="container">
                 <div class="study-header-content">
                     <a href="/bible-study/<?= htmlspecialchars($book['slug']); ?>" class="back-link">&larr; <?= htmlspecialchars($book['name']); ?></a>
@@ -373,7 +374,8 @@ include __DIR__ . '/includes/header.php';
     </div>
 
     <!-- Study Header -->
-    <header class="study-header">
+    <?php $random_texture = get_random_texture(); ?>
+    <header class="study-header <?= $random_texture; ?>">
         <div class="container">
             <div class="study-header-content">
                 <a href="/bible-study/<?= htmlspecialchars($book['slug']); ?>" class="back-link">&larr; <?= htmlspecialchars($book['name']); ?></a>
