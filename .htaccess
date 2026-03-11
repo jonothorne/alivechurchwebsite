@@ -65,7 +65,7 @@ RewriteRule ^about/dead-church/?$ about/dead-church.php [L,QSA]
 RewriteRule ^bible-study/topics/?$ bible-study-topics.php [L,QSA]
 RewriteRule ^bible-study/topic/([a-zA-Z0-9-]+)/?$ bible-study-topic.php?slug=$1 [L,QSA]
 RewriteRule ^bible-study/search/?$ bible-study-search.php [L,QSA]
-RewriteRule ^bible-study/questions/([a-zA-Z0-9-]+)/?$ bible-study-question.php?slug=$1 [L,QSA]
+RewriteRule ^bible-study/questions/([a-zA-Z0-9-]+)/?$ bible-study-question.php?question=$1 [L,QSA]
 
 # Bible study chapter pages
 # /bible-study/psalms/5 -> bible-study-chapter.php?book=psalms&chapter=5
