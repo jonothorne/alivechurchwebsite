@@ -14,7 +14,7 @@ $content_pages = ['pages', 'events', 'blog', 'bible-study', 'reading-plans', 'se
 $community_pages = ['ministries', 'groups', 'next-steps', 'serve', 'navigation'];
 $system_pages = ['forms', 'newsletter', 'users', 'settings', 'profanity-filter'];
 
-$is_content = in_array($admin_current_page, $content_pages) || strpos($admin_current_path, '/admin/blog/') !== false || strpos($admin_current_path, '/admin/bible-study/') !== false || strpos($admin_current_path, '/admin/reading-plans/') !== false || strpos($admin_current_path, '/admin/events/') !== false;
+$is_content = in_array($admin_current_page, $content_pages) || strpos($admin_current_path, '/admin/blog/') !== false || strpos($admin_current_path, '/admin/bible-study/') !== false || strpos($admin_current_path, '/admin/reading-plans/') !== false || strpos($admin_current_path, '/admin/events/') !== false || strpos($admin_current_path, '/admin/sermons/') !== false;
 $is_community = in_array($admin_current_page, $community_pages);
 $is_system = in_array($admin_current_page, $system_pages);
 ?>
@@ -59,6 +59,7 @@ $is_system = in_array($admin_current_page, $system_pages);
                     <a href="/admin/blog" class="<?= $admin_current_page === 'blog' || strpos($admin_current_path, '/admin/blog/') !== false ? 'active' : ''; ?>">Blog</a>
                     <a href="/admin/bible-study" class="<?= $admin_current_page === 'bible-study' || strpos($admin_current_path, '/admin/bible-study/') !== false ? 'active' : ''; ?>">Bible Studies</a>
                     <a href="/admin/reading-plans" class="<?= $admin_current_page === 'reading-plans' || strpos($admin_current_path, '/admin/reading-plans/') !== false ? 'active' : ''; ?>">Reading Plans</a>
+                    <a href="/admin/sermons" class="<?= $admin_current_page === 'sermons' || strpos($admin_current_path, '/admin/sermons/') !== false ? 'active' : ''; ?>">Sermons</a>
                     <a href="/admin/media" class="<?= $admin_current_page === 'media' ? 'active' : ''; ?>">Media Library</a>
                 </div>
             </div>

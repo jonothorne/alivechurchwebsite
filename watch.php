@@ -1,13 +1,35 @@
 <?php
 require __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/SermonManager.php';
+
 $page_title = 'Watch | ' . $site['name'];
-include __DIR__ . '/includes/header.php';
 
 // Initialize CMS
 if (!isset($cms)) {
     require_once __DIR__ . '/includes/cms/ContentManager.php';
     $cms = new ContentManager('watch');
 }
+
+// Get series from database (falls back to config.php data if empty)
+$pdo = getDbConnection();
+$sermonManager = new SermonManager($pdo);
+$db_series = $sermonManager->getSeriesList();
+
+if (!empty($db_series)) {
+    $sermon_series = array_map(function($s) {
+        return [
+            'title' => $s['title'],
+            'slug' => $s['slug'],
+            'description' => $s['description'] ?? '',
+            'image' => $s['image_url'] ?? '/assets/imgs/placeholder-series.jpg',
+            'date_range' => $s['date_range'] ?? ($s['start_date'] ? date('F Y', strtotime($s['start_date'])) : ''),
+            'message_count' => $s['message_count'] ?? 0
+        ];
+    }, $db_series);
+}
+
+include __DIR__ . '/includes/header.php';
 ?>
 <section class="page-hero watch-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
@@ -80,7 +102,7 @@ if (!isset($cms)) {
                     <h3><?= htmlspecialchars($series['title']); ?></h3>
                     <p class="series-meta"><?= htmlspecialchars($series['date_range']); ?></p>
                     <p><?= htmlspecialchars($series['description']); ?></p>
-                    <a class="text-link" href="<?= htmlspecialchars($site['social']['youtube']); ?>" target="_blank" rel="noopener">
+                    <a class="text-link" href="/sermons/series/<?= htmlspecialchars($series['slug']); ?>">
                         Watch series →
                     </a>
                 </article>

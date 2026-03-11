@@ -17,7 +17,8 @@ if (!function_exists('is_logged_in')) {
 if (!function_exists('require_auth')) {
     function require_auth() {
         if (!is_logged_in()) {
-            header('Location: /admin/login');
+            $redirect = $_SERVER['REQUEST_URI'] ?? '/admin';
+            header('Location: /login?redirect=' . urlencode($redirect));
             exit;
         }
     }
@@ -343,13 +344,32 @@ class Auth {
     }
 
     /**
-     * Attempt to log in
+     * Get user by username
      */
-    public function login($email, $password, $remember = false) {
-        $user = $this->getUserByEmail($email);
+    public function getUserByUsername($username) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get user by email or username
+     */
+    public function getUserByEmailOrUsername($identifier) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+        $stmt->execute([$identifier, $identifier]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Attempt to log in (accepts email or username)
+     */
+    public function login($identifier, $password, $remember = false) {
+        // Try to find user by email or username
+        $user = $this->getUserByEmailOrUsername($identifier);
 
         if (!$user) {
-            return ['success' => false, 'error' => 'Invalid email or password'];
+            return ['success' => false, 'error' => 'Invalid email/username or password'];
         }
 
         if (!$user['active']) {
@@ -357,7 +377,7 @@ class Auth {
         }
 
         if (!password_verify($password, $user['password_hash'])) {
-            return ['success' => false, 'error' => 'Invalid email or password'];
+            return ['success' => false, 'error' => 'Invalid email/username or password'];
         }
 
         // Update last login

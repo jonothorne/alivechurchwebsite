@@ -86,6 +86,12 @@ $is_blog_page = $current_url === '/blog'
     || strpos($current_url, '/author/') === 0;
 $show_blog_subnav = $is_blog_page && !$is_admin_page;
 
+// Check if on "Sermons" pages (for sub-nav)
+$is_sermons_page = $current_url === '/sermons'
+    || strpos($current_url, '/sermon/') === 0
+    || strpos($current_url, '/sermons/') === 0;
+$show_sermons_subnav = $is_sermons_page && !$is_admin_page;
+
 // Get last read study for "Read" button in subnav
 $last_read_url = '/bible-study';
 if ($current_user && $is_bible_study_page) {
@@ -121,10 +127,44 @@ if ($current_user && $is_bible_study_page) {
     <link rel="apple-touch-icon" href="/assets/imgs/icons/icon-192x192.png">
     <meta name="description" content="<?= htmlspecialchars($page_description ?? 'You Belong Here - Alive Church Norwich. Bible studies, reading plans, events, and community.'); ?>">
 
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="<?= htmlspecialchars($og_type ?? 'website'); ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($og_url ?? (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? '/')); ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($og_title ?? $page_title ?? $site['name']); ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($og_description ?? $page_description ?? 'You Belong Here - Alive Church Norwich'); ?>">
+    <?php if (!empty($og_image)): ?>
+    <meta property="og:image" content="<?= htmlspecialchars($og_image); ?>">
+    <?php endif; ?>
+    <meta property="og:site_name" content="<?= htmlspecialchars($site['name']); ?>">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="<?= htmlspecialchars($twitter_card ?? 'summary_large_image'); ?>">
+    <meta name="twitter:title" content="<?= htmlspecialchars($og_title ?? $page_title ?? $site['name']); ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($og_description ?? $page_description ?? 'You Belong Here - Alive Church Norwich'); ?>">
+    <?php if (!empty($og_image)): ?>
+    <meta name="twitter:image" content="<?= htmlspecialchars($og_image); ?>">
+    <?php endif; ?>
+
+    <?php if (!empty($og_video)): ?>
+    <!-- Video Meta Tags -->
+    <meta property="og:video" content="<?= htmlspecialchars($og_video); ?>">
+    <meta property="og:video:secure_url" content="<?= htmlspecialchars($og_video); ?>">
+    <meta property="og:video:type" content="text/html">
+    <meta property="og:video:width" content="1280">
+    <meta property="og:video:height" content="720">
+    <?php endif; ?>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
+    <?php
+    // Load sermon CSS for sermon-related pages
+    $is_sermon_page = strpos($current_url, '/sermon') === 0 || $current_url === '/sermons';
+    if ($is_sermon_page):
+    ?>
+    <link rel="stylesheet" href="/assets/css/sermons.css?v=<?= filemtime(__DIR__ . '/../assets/css/sermons.css'); ?>">
+    <?php endif; ?>
     <?php if ($is_cms_edit_mode): ?>
     <link rel="stylesheet" href="/assets/css/cms-editor.css?v=<?= filemtime(__DIR__ . '/../assets/css/cms-editor.css'); ?>">
     <?php endif; ?>
@@ -482,6 +522,40 @@ if ($current_user && $is_bible_study_page) {
                 <a href="/blog?category=events" class="section-subnav-item <?= strpos($current_url, 'category=events') !== false ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span>Events</span>
+                </a>
+                <?php if (!$current_user): ?>
+                <div class="study-subnav-auth">
+                    <a href="/login?redirect=<?= urlencode($current_url); ?>" class="section-subnav-item login">
+                        <span>Log In</span>
+                    </a>
+                    <a href="/register?redirect=<?= urlencode($current_url); ?>" class="section-subnav-item register">
+                        <span>Sign Up</span>
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </nav>
+    <?php endif; ?>
+    <?php if ($show_sermons_subnav): ?>
+    <nav class="section-subnav" aria-label="Sermons navigation">
+        <div class="container">
+            <div class="section-subnav-inner">
+                <a href="/sermons" class="section-subnav-item <?= $current_url === '/sermons' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Browse</span>
+                </a>
+                <a href="/sermons/series" class="section-subnav-item <?= strpos($current_url, '/sermons/series') === 0 ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+                    <span>Series</span>
+                </a>
+                <a href="/sermons/speakers" class="section-subnav-item <?= $current_url === '/sermons/speakers' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    <span>Speakers</span>
+                </a>
+                <a href="/sermons/topics" class="section-subnav-item <?= $current_url === '/sermons/topics' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+                    <span>Topics</span>
                 </a>
                 <?php if (!$current_user): ?>
                 <div class="study-subnav-auth">

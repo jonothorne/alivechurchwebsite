@@ -12,7 +12,13 @@ $auth = new Auth($pdo);
 
 // Redirect if already logged in
 if ($auth->check()) {
-    header('Location: /my-studies');
+    // Redirect admins to admin panel if coming from admin
+    $redirect = $_GET['redirect'] ?? '';
+    if ($auth->isAdmin() && str_starts_with($redirect, '/admin')) {
+        header('Location: ' . $redirect);
+    } else {
+        header('Location: /my-studies');
+    }
     exit;
 }
 
@@ -22,7 +28,7 @@ $redirect = $_GET['redirect'] ?? '/my-studies';
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $auth->login(
-        trim($_POST['email'] ?? ''),
+        trim($_POST['identifier'] ?? $_POST['email'] ?? ''),
         $_POST['password'] ?? '',
         isset($_POST['remember'])
     );
@@ -33,6 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!str_starts_with($redirect, '/')) {
             $redirect = '/my-studies';
         }
+
+        // If admin/editor trying to access admin area, allow it
+        if (str_starts_with($redirect, '/admin') && !in_array($result['user']['role'], ['admin', 'editor'])) {
+            $redirect = '/my-studies';
+        }
+
         header('Location: ' . $redirect);
         exit;
     } else {
@@ -68,10 +80,10 @@ include __DIR__ . '/includes/header.php';
                 <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect); ?>">
 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email"
-                           value="<?= htmlspecialchars($_POST['email'] ?? ''); ?>"
-                           placeholder="your@email.com" required autofocus>
+                    <label for="identifier">Email or Username</label>
+                    <input type="text" id="identifier" name="identifier"
+                           value="<?= htmlspecialchars($_POST['identifier'] ?? $_POST['email'] ?? ''); ?>"
+                           placeholder="your@email.com or username" required autofocus>
                 </div>
 
                 <div class="form-group">

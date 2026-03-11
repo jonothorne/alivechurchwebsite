@@ -26,20 +26,33 @@ class SermonManager {
     // ==================== YOUTUBE INTEGRATION ====================
 
     /**
-     * Fetch video data from YouTube Data API
+     * Fetch video data from YouTube Data API (with oEmbed fallback)
      */
     public function fetchYouTubeData(string $videoId): array {
-        $apiKey = $this->getYouTubeApiKey();
-
-        if (empty($apiKey)) {
-            throw new Exception('YouTube API key not configured. Please add it in Admin Settings.');
-        }
-
         // Validate video ID format (alphanumeric, dash, underscore)
         if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $videoId)) {
             throw new Exception('Invalid YouTube video ID format.');
         }
 
+        $apiKey = $this->getYouTubeApiKey();
+
+        // Try YouTube Data API first if key is available
+        if (!empty($apiKey)) {
+            try {
+                return $this->fetchYouTubeDataWithApi($videoId, $apiKey);
+            } catch (Exception $e) {
+                // Fall through to oEmbed fallback
+            }
+        }
+
+        // Fallback to oEmbed (no API key required, but limited data)
+        return $this->fetchYouTubeDataWithOEmbed($videoId);
+    }
+
+    /**
+     * Fetch video data using YouTube Data API
+     */
+    private function fetchYouTubeDataWithApi(string $videoId, string $apiKey): array {
         $url = "https://www.googleapis.com/youtube/v3/videos?" . http_build_query([
             'id' => $videoId,
             'key' => $apiKey,
@@ -93,51 +106,60 @@ class SermonManager {
     }
 
     /**
-     * Fetch transcript from YouTube (via unofficial API or captions)
-     * Note: YouTube doesn't provide official transcript API, this uses a workaround
+     * Fetch video data using oEmbed (no API key required, limited data)
      */
-    public function fetchTranscript(string $videoId): ?string {
-        // Try to fetch auto-generated or manual captions
-        // This uses the timedtext endpoint which is unofficial but commonly used
-
-        $transcriptUrl = "https://www.youtube.com/api/timedtext?" . http_build_query([
-            'v' => $videoId,
-            'lang' => 'en',
-            'fmt' => 'srv3'  // SRV3 format is plain text-ish
+    private function fetchYouTubeDataWithOEmbed(string $videoId): array {
+        $url = "https://www.youtube.com/oembed?" . http_build_query([
+            'url' => "https://www.youtube.com/watch?v={$videoId}",
+            'format' => 'json'
         ]);
 
         $context = stream_context_create([
             'http' => [
-                'timeout' => 15,
+                'timeout' => 10,
                 'ignore_errors' => true,
-                'header' => 'User-Agent: Mozilla/5.0 (compatible; ChurchCMS/1.0)'
+                'user_agent' => 'Mozilla/5.0 (compatible; AliveChurch/1.0)'
             ]
         ]);
 
-        $response = @file_get_contents($transcriptUrl, false, $context);
+        $response = @file_get_contents($url, false, $context);
 
-        if ($response === false || empty($response)) {
-            // Try alternative: Fetch from video page and parse caption track
-            return $this->fetchTranscriptAlternative($videoId);
+        if ($response === false) {
+            throw new Exception('Failed to connect to YouTube. Please check your internet connection.');
         }
 
-        // Parse the XML response
-        $transcript = $this->parseTranscriptXml($response);
+        $data = json_decode($response, true);
 
-        return $transcript;
+        if (!$data || !isset($data['title'])) {
+            throw new Exception('Video not found on YouTube or is private/unavailable.');
+        }
+
+        // oEmbed provides limited data - no duration or description
+        return [
+            'title' => $data['title'],
+            'description' => '', // Not available via oEmbed
+            'thumbnail_url' => "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg",
+            'duration_seconds' => null,
+            'duration_formatted' => null,
+            'published_at' => null,
+            'channel_title' => $data['author_name'] ?? '',
+            'raw_data' => $data
+        ];
     }
 
     /**
-     * Alternative transcript fetch method
+     * Fetch transcript from YouTube (via unofficial API or captions)
+     * Note: YouTube doesn't provide official transcript API, this uses a workaround
      */
-    private function fetchTranscriptAlternative(string $videoId): ?string {
-        // Fetch video page to get caption track URL
+    public function fetchTranscript(string $videoId): ?string {
+        // Fetch video page to extract caption track URLs
         $pageUrl = "https://www.youtube.com/watch?v=" . $videoId;
 
         $context = stream_context_create([
             'http' => [
                 'timeout' => 15,
-                'header' => 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'ignore_errors' => true,
+                'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\nAccept-Language: en-US,en;q=0.9"
             ]
         ]);
 
@@ -147,15 +169,49 @@ class SermonManager {
             return null;
         }
 
-        // Look for caption track in the page
-        if (preg_match('/"captionTracks":\s*\[(.*?)\]/', $html, $matches)) {
-            $captionData = json_decode('[' . $matches[1] . ']', true);
+        // Look for captions in the player response
+        if (preg_match('/ytInitialPlayerResponse\s*=\s*(\{.+?\});/', $html, $matches)) {
+            $playerResponse = @json_decode($matches[1], true);
+
+            if ($playerResponse && isset($playerResponse['captions']['playerCaptionsTracklistRenderer']['captionTracks'])) {
+                $captionTracks = $playerResponse['captions']['playerCaptionsTracklistRenderer']['captionTracks'];
+
+                // Find English caption track (prefer manual over auto-generated)
+                $selectedTrack = null;
+                foreach ($captionTracks as $track) {
+                    $langCode = $track['languageCode'] ?? '';
+                    if (strpos($langCode, 'en') === 0) {
+                        // Prefer non-auto-generated (asr) tracks
+                        if ($selectedTrack === null || strpos($track['vssId'] ?? '', 'a.') !== 0) {
+                            $selectedTrack = $track;
+                        }
+                    }
+                }
+
+                // If no English, try first available
+                if (!$selectedTrack && !empty($captionTracks)) {
+                    $selectedTrack = $captionTracks[0];
+                }
+
+                if ($selectedTrack && isset($selectedTrack['baseUrl'])) {
+                    $captionUrl = $selectedTrack['baseUrl'];
+                    $captionResponse = @file_get_contents($captionUrl, false, $context);
+
+                    if ($captionResponse) {
+                        return $this->parseTranscriptXml($captionResponse);
+                    }
+                }
+            }
+        }
+
+        // Fallback: Look for caption tracks in older format
+        if (preg_match('/"captionTracks":\s*(\[.*?\])/', $html, $matches)) {
+            $captionData = @json_decode($matches[1], true);
 
             if (!empty($captionData)) {
                 foreach ($captionData as $track) {
                     if (isset($track['baseUrl']) &&
-                        (strpos($track['languageCode'] ?? '', 'en') === 0 ||
-                         strpos($track['vssId'] ?? '', '.en') !== false)) {
+                        (strpos($track['languageCode'] ?? '', 'en') === 0)) {
 
                         $captionResponse = @file_get_contents($track['baseUrl'], false, $context);
                         if ($captionResponse) {

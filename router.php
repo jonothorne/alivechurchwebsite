@@ -70,6 +70,8 @@ $routes = [
     '/admin/bible-study' => '/admin/bible-study.php',
     '/admin/bible-study/edit' => '/admin/bible-study/edit.php',
     '/admin/profanity-filter' => '/admin/profanity-filter.php',
+    '/admin/sermons' => '/admin/sermons.php',
+    '/admin/sermons/edit' => '/admin/sermons/edit.php',
 ];
 
 // Check if route exists
@@ -176,6 +178,42 @@ if (preg_match('#^/reading-plan/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
 if (preg_match('#^/author/([a-zA-Z0-9_-]+)$#', $uri, $matches)) {
     $_GET['username'] = $matches[1];
     require __DIR__ . '/author.php';
+    return true;
+}
+
+// Sermon pages: /sermon/slug
+if (preg_match('#^/sermon/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
+    $_GET['slug'] = $matches[1];
+    require __DIR__ . '/sermon.php';
+    return true;
+}
+
+// Sermon series pages: /sermons/series/slug
+if (preg_match('#^/sermons/series/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
+    $_GET['slug'] = $matches[1];
+    require __DIR__ . '/sermon-series.php';
+    return true;
+}
+
+// Sermons browse page: /sermons
+if ($uri === '/sermons') {
+    require __DIR__ . '/sermons.php';
+    return true;
+}
+
+// API routes for sermons
+if ($uri === '/api/sermons/youtube-fetch' || $uri === '/api/sermons/youtube-fetch.php') {
+    require __DIR__ . '/api/sermons/youtube-fetch.php';
+    return true;
+}
+
+if ($uri === '/api/sermons/analyze-links' || $uri === '/api/sermons/analyze-links.php') {
+    require __DIR__ . '/api/sermons/analyze-links.php';
+    return true;
+}
+
+if ($uri === '/api/sermons/search' || $uri === '/api/sermons/search.php') {
+    require __DIR__ . '/api/sermons/search.php';
     return true;
 }
 

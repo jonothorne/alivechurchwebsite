@@ -9,11 +9,13 @@ require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/BibleStudyTagger.php';
 require_once __DIR__ . '/includes/CrossReferenceManager.php';
 require_once __DIR__ . '/includes/UserStudies.php';
+require_once __DIR__ . '/includes/SermonManager.php';
 
 $pdo = getDbConnection();
 $auth = new Auth($pdo);
 $tagger = new BibleStudyTagger($pdo);
 $crossRefManager = new CrossReferenceManager($pdo);
+$sermonManager = new SermonManager($pdo);
 
 // Check if user is logged in for save/highlight features
 $currentUser = $auth->user();
@@ -317,6 +319,9 @@ $crossReferences = $crossRefManager->getReferencesForStudy($study['id']);
 // Get related studies
 $relatedStudies = $crossRefManager->getRelatedStudies($study['id'], 4);
 
+// Get related sermons
+$relatedSermons = $sermonManager->getRelatedSermonsForStudy($study['id']);
+
 // Get user's saved status and highlights for this study
 $isSaved = false;
 $userHighlights = [];
@@ -571,6 +576,35 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($related['title']): ?>
                                     <span class="related-title"><?= htmlspecialchars($related['title']); ?></span>
                                 <?php endif; ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($relatedSermons)): ?>
+                <!-- Related Sermons -->
+                <div class="related-sermons">
+                    <h3>Related Sermons</h3>
+                    <div class="related-sermons-list">
+                        <?php foreach ($relatedSermons as $sermon): ?>
+                            <a href="/sermon/<?= htmlspecialchars($sermon['slug']); ?>" class="related-sermon-card">
+                                <?php if ($sermon['thumbnail_url'] || $sermon['youtube_video_id']): ?>
+                                    <div class="sermon-thumb">
+                                        <?php if ($sermon['thumbnail_url']): ?>
+                                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="">
+                                        <?php elseif ($sermon['youtube_video_id']): ?>
+                                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="">
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="sermon-info">
+                                    <span class="sermon-title"><?= htmlspecialchars($sermon['title']); ?></span>
+                                    <span class="sermon-meta">
+                                        <?= $sermon['speaker'] ? htmlspecialchars($sermon['speaker']) : ''; ?>
+                                        <?= $sermon['sermon_date'] ? ' • ' . date('M j, Y', strtotime($sermon['sermon_date'])) : ''; ?>
+                                    </span>
+                                </div>
                             </a>
                         <?php endforeach; ?>
                     </div>
