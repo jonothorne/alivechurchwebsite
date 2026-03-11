@@ -5,6 +5,7 @@
 require __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db-config.php';
 require_once __DIR__ . '/includes/Auth.php';
+require_once __DIR__ . '/includes/hero-textures.php';
 
 $pdo = getDbConnection();
 $auth = new Auth($pdo);
@@ -41,7 +42,7 @@ $page_title = 'Create Account | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="auth-page">
+<section class="auth-page <?= get_specific_texture('waves'); ?>">
     <div class="container narrow">
         <div class="auth-card">
             <div class="auth-header">
