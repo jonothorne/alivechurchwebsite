@@ -216,18 +216,37 @@
             applyFilters();
 
             // Scroll to the events section
-            const eventsSection = document.querySelector('.events-calendar');
-            if (eventsSection) {
-                eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            setTimeout(() => {
+                const eventsSection = document.querySelector('.events-calendar');
+                if (eventsSection) {
+                    eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
     }
 
     // Check hash on page load
-    handleHashFilter();
+    if (eventFiltersContainer) {
+        handleHashFilter();
+    }
 
     // Handle hash changes (for subnav clicks when already on events page)
     window.addEventListener('hashchange', handleHashFilter);
+
+    // Handle clicks on subnav links that point to event filters
+    document.querySelectorAll('a[href*="/events#"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            // Only handle if we're already on the events page
+            if (window.location.pathname === '/events' || window.location.pathname === '/events/') {
+                e.preventDefault();
+                const hash = link.getAttribute('href').split('#')[1];
+                if (hash) {
+                    window.location.hash = hash;
+                    handleHashFilter();
+                }
+            }
+        });
+    });
 
     // Newsletter form enhancement
     const newsletterForm = document.querySelector('.newsletter-form');
