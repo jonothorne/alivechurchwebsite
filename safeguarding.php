@@ -1,19 +1,24 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Safeguarding Policy | ' . $site['name'];
+
+// Initialize CMS
+require_once __DIR__ . '/includes/cms/ContentManager.php';
+$cms = new ContentManager('safeguarding');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow">Policy</p>
-        <h1>Safeguarding Policy</h1>
-        <p>Our commitment to protecting children, young people, and vulnerable adults.</p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="safeguarding" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Policy'); ?></p>
+        <h1 data-cms-editable="hero_title" data-cms-page="safeguarding" data-cms-type="text"><?= $cms->text('hero_title', 'Safeguarding Policy'); ?></h1>
+        <p data-cms-editable="hero_subtitle" data-cms-page="safeguarding" data-cms-type="text"><?= $cms->text('hero_subtitle', 'Our commitment to protecting children, young people, and vulnerable adults.'); ?></p>
     </div>
 </section>
 
 <section class="legal-content">
-    <div class="container narrow">
+    <div class="container narrow" data-cms-editable="content" data-cms-page="safeguarding" data-cms-type="html">
         <p class="legal-updated">Last updated: <?= date('F j, Y'); ?></p>
 
         <h2>Our Commitment</h2>

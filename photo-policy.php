@@ -1,19 +1,24 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Photo & Video Policy | ' . $site['name'];
+
+// Initialize CMS
+require_once __DIR__ . '/includes/cms/ContentManager.php';
+$cms = new ContentManager('photo-policy');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow">Policy</p>
-        <h1>Photo & Video Policy</h1>
-        <p>How we capture and use images and recordings at <?= htmlspecialchars($site['name']); ?>.</p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="photo-policy" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Policy'); ?></p>
+        <h1 data-cms-editable="hero_title" data-cms-page="photo-policy" data-cms-type="text"><?= $cms->text('hero_title', 'Photo & Video Policy'); ?></h1>
+        <p data-cms-editable="hero_subtitle" data-cms-page="photo-policy" data-cms-type="text"><?= $cms->text('hero_subtitle', 'How we capture and use images and recordings at ' . htmlspecialchars($site['name']) . '.'); ?></p>
     </div>
 </section>
 
 <section class="legal-content">
-    <div class="container narrow">
+    <div class="container narrow" data-cms-editable="content" data-cms-page="photo-policy" data-cms-type="html">
         <p class="legal-updated">Last updated: <?= date('F j, Y'); ?></p>
 
         <h2>Introduction</h2>

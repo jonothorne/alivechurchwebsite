@@ -1,19 +1,24 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Donation Policy | ' . $site['name'];
+
+// Initialize CMS
+require_once __DIR__ . '/includes/cms/ContentManager.php';
+$cms = new ContentManager('donation-policy');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow">Policy</p>
-        <h1>Donation Policy</h1>
-        <p>Information about giving to <?= htmlspecialchars($site['name']); ?> and how your donations are used.</p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="donation-policy" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Policy'); ?></p>
+        <h1 data-cms-editable="hero_title" data-cms-page="donation-policy" data-cms-type="text"><?= $cms->text('hero_title', 'Donation Policy'); ?></h1>
+        <p data-cms-editable="hero_subtitle" data-cms-page="donation-policy" data-cms-type="text"><?= $cms->text('hero_subtitle', 'Information about giving to ' . htmlspecialchars($site['name']) . ' and how your donations are used.'); ?></p>
     </div>
 </section>
 
 <section class="legal-content">
-    <div class="container narrow">
+    <div class="container narrow" data-cms-editable="content" data-cms-page="donation-policy" data-cms-type="html">
         <p class="legal-updated">Last updated: <?= date('F j, Y'); ?></p>
 
         <h2>Thank You for Your Generosity</h2>

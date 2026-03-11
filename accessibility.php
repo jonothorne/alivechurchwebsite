@@ -1,19 +1,24 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Accessibility Statement | ' . $site['name'];
+
+// Initialize CMS
+require_once __DIR__ . '/includes/cms/ContentManager.php';
+$cms = new ContentManager('accessibility');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow">Accessibility</p>
-        <h1>Accessibility Statement</h1>
-        <p>Our commitment to making this website accessible to everyone.</p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="accessibility" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Accessibility'); ?></p>
+        <h1 data-cms-editable="hero_title" data-cms-page="accessibility" data-cms-type="text"><?= $cms->text('hero_title', 'Accessibility Statement'); ?></h1>
+        <p data-cms-editable="hero_subtitle" data-cms-page="accessibility" data-cms-type="text"><?= $cms->text('hero_subtitle', 'Our commitment to making this website accessible to everyone.'); ?></p>
     </div>
 </section>
 
 <section class="legal-content">
-    <div class="container narrow">
+    <div class="container narrow" data-cms-editable="content" data-cms-page="accessibility" data-cms-type="html">
         <p class="legal-updated">Last updated: <?= date('F j, Y'); ?></p>
 
         <h2>Our Commitment</h2>

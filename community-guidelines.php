@@ -1,19 +1,24 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Community Guidelines | ' . $site['name'];
+
+// Initialize CMS
+require_once __DIR__ . '/includes/cms/ContentManager.php';
+$cms = new ContentManager('community-guidelines');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow">Guidelines</p>
-        <h1>Community Guidelines</h1>
-        <p>Creating a welcoming and respectful online community.</p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="community-guidelines" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Guidelines'); ?></p>
+        <h1 data-cms-editable="hero_title" data-cms-page="community-guidelines" data-cms-type="text"><?= $cms->text('hero_title', 'Community Guidelines'); ?></h1>
+        <p data-cms-editable="hero_subtitle" data-cms-page="community-guidelines" data-cms-type="text"><?= $cms->text('hero_subtitle', 'Creating a welcoming and respectful online community.'); ?></p>
     </div>
 </section>
 
 <section class="legal-content">
-    <div class="container narrow">
+    <div class="container narrow" data-cms-editable="content" data-cms-page="community-guidelines" data-cms-type="html">
         <p class="legal-updated">Last updated: <?= date('F j, Y'); ?></p>
 
         <h2>Welcome to Our Community</h2>

@@ -64,10 +64,7 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
         &copy; <?= date('Y'); ?> <?= htmlspecialchars($site['name']); ?>. All rights reserved.
     </p>
     <div class="footer-legal">
-        <a href="/privacy-policy">Privacy Policy</a>
-        <a href="/terms-of-service">Terms of Service</a>
-        <a href="/cookie-policy">Cookie Policy</a>
-        <a href="/gdpr">Your Data Rights</a>
+        <a href="/policies">Policies & Legal</a>
     </div>
 </footer>
 <?php if ($is_cms_edit_mode): ?>
