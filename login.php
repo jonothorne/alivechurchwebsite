@@ -9,7 +9,7 @@ require_once __DIR__ . '/includes/hero-textures.php';
 if ($auth->check()) {
     // Redirect admins to admin panel if coming from admin
     $redirect = $_GET['redirect'] ?? '';
-    if ($auth->isAdmin() && str_starts_with($redirect, '/admin')) {
+    if ($auth->isAdmin() && strpos($redirect, '/admin') === 0) {
         header('Location: ' . $redirect);
     } else {
         header('Location: /my-studies');
@@ -31,12 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result['success']) {
         // Sanitize redirect URL
         $redirect = $_POST['redirect'] ?? '/my-studies';
-        if (!str_starts_with($redirect, '/')) {
+        if (strpos($redirect, '/') !== 0) {
             $redirect = '/my-studies';
         }
 
         // If admin/editor trying to access admin area, allow it
-        if (str_starts_with($redirect, '/admin') && !in_array($result['user']['role'], ['admin', 'editor'])) {
+        if (strpos($redirect, '/admin') === 0 && !in_array($result['user']['role'], ['admin', 'editor'])) {
             $redirect = '/my-studies';
         }
 
