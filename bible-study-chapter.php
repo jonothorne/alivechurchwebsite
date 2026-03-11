@@ -198,11 +198,12 @@ if (!$study) {
             <span class="mobile-bar-btn disabled"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
         <?php endif; ?>
 
-        <span class="mobile-bar-btn disabled" aria-label="More options">
+        <button class="mobile-bar-btn mobile-browse-books-btn" aria-label="Browse all books">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
             </svg>
-        </span>
+        </button>
     </div>
 
     <!-- Mobile Slide-up Panels -->
@@ -1551,6 +1552,13 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php else: ?>
         <span class="mobile-bar-btn disabled"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
     <?php endif; ?>
+
+    <button class="mobile-bar-btn mobile-browse-books-btn" aria-label="Browse all books">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+    </button>
 
     <button class="mobile-bar-btn mobile-more-btn" aria-label="More options" data-panel="more">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

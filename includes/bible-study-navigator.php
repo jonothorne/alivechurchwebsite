@@ -73,10 +73,15 @@
         document.body.style.overflow = '';
     }
 
-    // Toggle popup
+    // Toggle popup - sidebar button
     if (toggle) {
         toggle.addEventListener('click', openPopup);
     }
+
+    // Mobile browse buttons
+    document.querySelectorAll('.mobile-browse-books-btn').forEach(btn => {
+        btn.addEventListener('click', openPopup);
+    });
 
     // Close popup
     closeBtn.addEventListener('click', closePopup);
