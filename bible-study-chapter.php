@@ -105,6 +105,13 @@ if (!$study) {
                                 <?php endif; ?>
                             <?php endfor; ?>
                         </div>
+                        <button class="browse-all-books-btn" id="study-nav-toggle">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                            Browse All Books
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -265,6 +272,7 @@ if (!$study) {
     </script>
 
     <?php
+    include __DIR__ . '/includes/bible-study-navigator.php';
     include __DIR__ . '/includes/footer.php';
     exit;
 }
@@ -440,6 +448,13 @@ include __DIR__ . '/includes/header.php';
                             <?php endif; ?>
                         <?php endfor; ?>
                     </div>
+                    <button class="browse-all-books-btn" id="study-nav-toggle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        Browse All Books
+                    </button>
                 </div>
 
                 <?php if (!empty($verseMarkers)): ?>
@@ -2355,4 +2370,5 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="/assets/js/bible-study-editor.js"></script>
 <?php endif; ?>
 
+<?php include __DIR__ . '/includes/bible-study-navigator.php'; ?>
 <?php include __DIR__ . '/includes/footer.php'; ?>
