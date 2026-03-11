@@ -154,6 +154,10 @@
         const isItalic = document.queryCommandState('italic');
         const isUnderline = document.queryCommandState('underline');
 
+        // Check if cursor is inside a link
+        const currentLink = findCurrentLink();
+        const isInLink = !!currentLink;
+
         // Check block formatting
         const block = findCurrentBlock();
         const blockTag = block ? block.tagName : '';
@@ -168,6 +172,7 @@
             if (cmd === 'bold') isActive = isBold;
             else if (cmd === 'italic') isActive = isItalic;
             else if (cmd === 'underline') isActive = isUnderline;
+            else if (cmd === 'createLink') isActive = isInLink;
             else if (cmd === 'formatBlock' && value === 'h2') isActive = blockTag === 'H2';
             else if (cmd === 'formatBlock' && value === 'h3') isActive = blockTag === 'H3';
             else if (cmd === 'formatBlock' && value === 'p') isActive = blockTag === 'P' && !hasIntro;
@@ -176,6 +181,33 @@
 
             btn.classList.toggle('active', isActive);
         });
+    }
+
+    /**
+     * Find if cursor is inside a link element
+     */
+    function findCurrentLink() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return null;
+
+        let node = selection.getRangeAt(0).commonAncestorContainer;
+
+        // If text node, get parent element
+        if (node.nodeType === 3) {
+            node = node.parentElement;
+        }
+
+        // Walk up to find an anchor element
+        while (node && node !== document.body) {
+            if (node.hasAttribute && node.hasAttribute('contenteditable')) {
+                return null; // Hit the container, no link found
+            }
+            if (node.tagName === 'A') {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return null;
     }
 
     /**
@@ -203,9 +235,10 @@
      * Start editing an element
      */
     function startEditing(el) {
-        // Save any previous edits
+        // Save any previous edits - IMPORTANT: capture the element before async save
         if (state.currentElement && state.currentElement !== el) {
-            saveCurrentEdit();
+            const elementToSave = state.currentElement;
+            saveElement(elementToSave); // Use separate function to avoid async race condition
         }
 
         state.isEditing = true;
@@ -287,8 +320,8 @@
         const el = state.currentElement;
 
         if (save && state.hasUnsavedChanges) {
-            // Save changes - this will update originalContent after successful save
-            saveCurrentEdit();
+            // Save changes - pass element directly to avoid race condition
+            saveElement(el);
         } else if (!save && state.hasUnsavedChanges) {
             // Cancel - restore original content only if there were unsaved changes
             el.innerHTML = state.originalContent.get(el);
@@ -314,12 +347,11 @@
     }
 
     /**
-     * Save current edit to server
+     * Save a specific element to server (prevents race conditions when switching elements)
      */
-    async function saveCurrentEdit() {
-        if (!state.currentElement) return;
+    async function saveElement(el) {
+        if (!el) return;
 
-        const el = state.currentElement;
         const isGlobal = el.hasAttribute('data-cms-global');
         const key = isGlobal ? el.dataset.cmsGlobal : el.dataset.cmsEditable;
         const pageSlug = el.dataset.cmsPage || getPageSlug();
@@ -336,6 +368,11 @@
         } else {
             content = el.innerHTML;
         }
+
+        console.log('Saving element:', key);
+        console.log('Content:', content);
+        console.log('Type:', type);
+        console.log('Page:', pageSlug);
 
         updateStatus('Saving...');
 
@@ -355,23 +392,34 @@
             });
 
             const result = await response.json();
+            console.log('Save response for', key, ':', result);
 
             if (result.success) {
                 // Update original content
                 state.originalContent.set(el, el.innerHTML);
-                state.hasUnsavedChanges = false;
                 updateStatus('Saved!');
+                console.log('Content saved successfully for', key);
 
                 // Flash green border
                 el.classList.add('cms-saved');
                 setTimeout(() => el.classList.remove('cms-saved'), 1000);
             } else {
+                console.error('Save failed for', key, ':', result.error);
                 updateStatus('Error: ' + result.error);
             }
         } catch (error) {
-            console.error('Save error:', error);
+            console.error('Save error for', key, ':', error);
             updateStatus('Error saving content');
         }
+    }
+
+    /**
+     * Save current edit to server
+     */
+    async function saveCurrentEdit() {
+        if (!state.currentElement) return;
+        await saveElement(state.currentElement);
+        state.hasUnsavedChanges = false;
     }
 
     /**
@@ -472,11 +520,15 @@
      */
     function handleToolbarCommand(cmd, value) {
         if (cmd === 'save') {
-            saveCurrentEdit().then(() => {
-                // After saving, stop editing but don't restore (content is already correct)
-                state.hasUnsavedChanges = false;
-                stopEditing(true);
-            });
+            // Capture the element before async operations
+            const elToSave = state.currentElement;
+            if (elToSave) {
+                saveElement(elToSave).then(() => {
+                    // After saving, stop editing but don't save again
+                    state.hasUnsavedChanges = false;
+                    stopEditing(false); // false = don't save again
+                });
+            }
             return;
         }
 
@@ -487,15 +539,21 @@
         }
 
         if (cmd === 'createLink') {
-            // Save the current selection before prompt steals focus
+            // Check if cursor is already in a link - if so, edit it
+            const existingLink = findCurrentLink();
+            if (existingLink) {
+                showLinkModal(existingLink, true); // true = editing existing
+                return;
+            }
+
+            // Save the current selection before anything steals focus
             const selection = window.getSelection();
             if (!selection.rangeCount || selection.isCollapsed) {
                 alert('Please select some text first to create a link.');
                 return;
             }
 
-            // Clone the range and extract the selected content
-            const range = selection.getRangeAt(0).cloneRange();
+            const range = selection.getRangeAt(0);
             const selectedText = range.toString();
 
             if (!selectedText.trim()) {
@@ -503,26 +561,29 @@
                 return;
             }
 
-            const url = prompt('Enter URL (e.g., /connect or https://example.com):');
-            if (url && url.trim()) {
-                // Create the link element manually
-                const link = document.createElement('a');
-                link.href = url.trim();
-                link.textContent = selectedText;
-
-                // Delete the selected content and insert the link
-                range.deleteContents();
-                range.insertNode(link);
-
-                // Move cursor after the link
-                selection.removeAllRanges();
-                const newRange = document.createRange();
-                newRange.setStartAfter(link);
-                newRange.collapse(true);
-                selection.addRange(newRange);
-
-                state.hasUnsavedChanges = true;
+            // Check if selection is within our editable element
+            if (!state.currentElement || !state.currentElement.contains(range.commonAncestorContainer)) {
+                alert('Please select text within the editable area.');
+                return;
             }
+
+            // Extract the selected content as a document fragment
+            const fragment = range.extractContents();
+
+            // Create link element and append the fragment
+            const link = document.createElement('a');
+            link.appendChild(fragment);
+
+            // Insert the link where the selection was
+            range.insertNode(link);
+
+            console.log('Link created:', link);
+            console.log('Current element HTML:', state.currentElement.innerHTML);
+
+            // Now show modal to get URL (link is already in place)
+            showLinkModal(link, false); // false = new link
+
+            state.hasUnsavedChanges = true;
             return;
         }
 
@@ -584,8 +645,20 @@
             return;
         }
 
+        // Check if a modal is open - don't blur while modal is active
+        const modal = document.getElementById('cms-modal');
+        if (modal) {
+            return;
+        }
+
         // Small delay to allow toolbar clicks
         setTimeout(() => {
+            // Check again for modal (might have opened during delay)
+            const modalCheck = document.getElementById('cms-modal');
+            if (modalCheck) {
+                return;
+            }
+
             if (state.currentElement && !state.currentElement.contains(document.activeElement)) {
                 // Save changes if any, then stop editing (pass true to indicate we want to save)
                 stopEditing(true);
@@ -918,6 +991,94 @@
         if (modal) {
             modal.remove();
         }
+    }
+
+    /**
+     * Show link URL input modal
+     */
+    function showLinkModal(linkElement, isEditing = false) {
+        const currentUrl = isEditing ? linkElement.getAttribute('href') || '' : '';
+        const title = isEditing ? 'Edit Link' : 'Insert Link';
+        const submitText = isEditing ? 'Update Link' : 'Insert Link';
+
+        const modal = createModal(title, `
+            <form id="cms-link-form" class="cms-form">
+                <div class="cms-form-group">
+                    <label>URL</label>
+                    <input type="text" name="url" id="cms-link-url" placeholder="e.g., /connect or https://example.com" value="${currentUrl}" autofocus>
+                </div>
+                <div class="cms-form-actions">
+                    ${isEditing ? '<button type="button" class="cms-btn cms-btn-danger" id="cms-link-remove">Remove Link</button>' : ''}
+                    <button type="button" class="cms-btn cms-btn-ghost" id="cms-link-cancel">Cancel</button>
+                    <button type="submit" class="cms-btn cms-btn-primary">${submitText}</button>
+                </div>
+            </form>
+        `);
+
+        const urlInput = document.getElementById('cms-link-url');
+        const form = document.getElementById('cms-link-form');
+        const cancelBtn = document.getElementById('cms-link-cancel');
+        const removeBtn = document.getElementById('cms-link-remove');
+
+        // Focus and select the input
+        setTimeout(() => {
+            urlInput.focus();
+            urlInput.select();
+        }, 100);
+
+        // Handle form submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const url = urlInput.value.trim();
+            if (url) {
+                linkElement.href = url;
+                state.hasUnsavedChanges = true;
+                closeModal();
+                updateStatus(isEditing ? 'Link updated - click Save' : 'Link added - click Save');
+
+                // Re-focus the editable element so save button works
+                if (state.currentElement) {
+                    state.currentElement.focus();
+                }
+            } else {
+                // No URL entered, remove the link wrapper but keep text
+                const textContent = linkElement.textContent;
+                linkElement.replaceWith(document.createTextNode(textContent));
+                state.hasUnsavedChanges = true;
+                closeModal();
+                updateStatus('Link removed - click Save');
+            }
+        });
+
+        // Handle remove link (only for editing)
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                const textContent = linkElement.textContent;
+                linkElement.replaceWith(document.createTextNode(textContent));
+                state.hasUnsavedChanges = true;
+                closeModal();
+                updateStatus('Link removed - click Save');
+
+                if (state.currentElement) {
+                    state.currentElement.focus();
+                }
+            });
+        }
+
+        // Handle cancel
+        cancelBtn.addEventListener('click', () => {
+            if (!isEditing) {
+                // New link - remove the link wrapper but keep text
+                const textContent = linkElement.textContent;
+                linkElement.replaceWith(document.createTextNode(textContent));
+            }
+            // For editing, just close - don't change anything
+            closeModal();
+
+            if (state.currentElement) {
+                state.currentElement.focus();
+            }
+        });
     }
 
     /**

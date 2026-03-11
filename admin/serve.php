@@ -163,13 +163,13 @@ $visible_count = count(array_filter($opportunities, fn($o) => $o['visible']));
                             <?php endif; ?>
                         </div>
                         <div class="admin-post-meta">
-                            <?php if ($opp['team_leader']): ?>
+                            <?php if (!empty($opp['team_leader'])): ?>
                                 <?= htmlspecialchars($opp['team_leader']); ?> ·
                             <?php endif; ?>
-                            <?php if ($opp['schedule']): ?>
+                            <?php if (!empty($opp['schedule'])): ?>
                                 <?= htmlspecialchars($opp['schedule']); ?> ·
                             <?php endif; ?>
-                            <?php if ($opp['commitment']): ?>
+                            <?php if (!empty($opp['commitment'])): ?>
                                 <?= htmlspecialchars($opp['commitment']); ?>
                             <?php endif; ?>
                         </div>

@@ -69,8 +69,9 @@ $nav_links = [
         'dropdown' => [
             ['label' => 'Plan Your Visit', 'url' => '/visit'],
             ['label' => 'About Us', 'url' => '/about'],
-            ['label' => 'What We Believe', 'url' => '/about#beliefs'],
-            ['label' => 'Our Team', 'url' => '/about#team'],
+            ['label' => 'Our History', 'url' => '/about/history'],
+            ['label' => 'What We Believe', 'url' => '/about/what-we-believe'],
+            ['label' => 'Our Vision', 'url' => '/about/vision'],
             ['label' => 'Watch Online', 'url' => '/watch'],
         ]
     ],

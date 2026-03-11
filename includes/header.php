@@ -52,6 +52,7 @@ $show_study_subnav = $is_bible_study_page && !$is_admin_page;
 // Check if on "I'm New" pages (for sub-nav)
 $is_new_visitor_page = $current_url === '/visit'
     || $current_url === '/about'
+    || strpos($current_url, '/about/') === 0
     || $current_url === '/watch'
     || $current_url === '/contact-us';
 $show_new_visitor_subnav = $is_new_visitor_page && !$is_admin_page;
@@ -395,13 +396,17 @@ if ($current_user && $is_bible_study_page) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span>About Us</span>
                 </a>
-                <a href="/about#beliefs" class="section-subnav-item">
+                <a href="/about/history" class="section-subnav-item <?= $current_url === '/about/history' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Our History</span>
+                </a>
+                <a href="/about/what-we-believe" class="section-subnav-item <?= $current_url === '/about/what-we-believe' ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
                     <span>What We Believe</span>
                 </a>
-                <a href="/about#team" class="section-subnav-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0 1 13 0"/></svg>
-                    <span>Our Team</span>
+                <a href="/about/vision" class="section-subnav-item <?= $current_url === '/about/vision' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Our Vision</span>
                 </a>
                 <a href="/watch" class="section-subnav-item <?= $current_url === '/watch' ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>

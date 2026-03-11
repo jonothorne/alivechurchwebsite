@@ -2377,7 +2377,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 <?php if ($canEdit): ?>
-<script src="/assets/js/bible-study-editor.js"></script>
+<script src="/assets/js/bible-study-editor.js?v=<?= filemtime(__DIR__ . '/assets/js/bible-study-editor.js'); ?>"></script>
 <?php endif; ?>
 
 <?php include __DIR__ . '/includes/bible-study-navigator.php'; ?>

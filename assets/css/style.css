@@ -389,11 +389,30 @@ img {
     font-family: 'Montserrat', sans-serif;
     font-weight: 900;
     font-size: clamp(3.5rem, 12vw, 7rem);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     text-transform: uppercase;
     line-height: 0.95;
     letter-spacing: -0.02em;
 }
+
+.hero .hero-dead-church {
+    margin-bottom: 0.75rem;
+}
+
+.hero .hero-dead-church a {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 400;
+    opacity: 0.7;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity var(--transition-fast);
+}
+
+.hero .hero-dead-church a:hover {
+    opacity: 1;
+}
+
 .hero h1 {
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     margin: 0 0 0.75rem;
@@ -446,6 +465,23 @@ img {
 .text-link-light:hover {
     opacity: 0.8;
 }
+.hero-dead-church-link {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+.hero-dead-church-link a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity var(--transition-fast);
+}
+
+.hero-dead-church-link a:hover {
+    opacity: 1;
+}
+
 .hero-ctas {
     display: flex;
     flex-wrap: wrap;
@@ -2402,6 +2438,30 @@ textarea {
     align-items: center;
     justify-content: center;
     position: relative;
+}
+
+.page-hero-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-hero-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(67, 22, 87, 0.75) 0%, rgba(43, 99, 181, 0.75) 100%);
+    z-index: 1;
+}
+
+.page-hero-image .container {
+    position: relative;
+    z-index: 2;
 }
 
 .hero-minimal {

@@ -2242,3 +2242,84 @@
 .btn-featured:hover {
     background: #d97706;
 }
+
+/* ==========================================================================
+   Bible Coverage Progress Bars
+   ========================================================================== */
+
+.bible-coverage {
+    padding: 0.5rem 0;
+}
+
+.bible-coverage-main {
+    margin-bottom: 1.25rem;
+}
+
+.bible-coverage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.bible-coverage-percent {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.bible-coverage-chapters {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.bible-coverage-bar {
+    height: 12px;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.bible-coverage-bar-sm {
+    height: 6px;
+}
+
+.bible-coverage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-purple), var(--color-magenta));
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
+}
+
+.bible-coverage-fill-ot {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.bible-coverage-fill-nt {
+    background: linear-gradient(90deg, #06b6d4, #22d3ee);
+}
+
+.bible-coverage-testaments {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.bible-coverage-testament-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.bible-coverage-sub {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+}

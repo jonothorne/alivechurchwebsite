@@ -36,9 +36,10 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="hero" id="visit">
     <div class="container hero-content">
-        <p class="hero-tag" data-cms-editable="hero_tagline" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_tagline', $site['tagline']); ?></p>
+        <p class="hero-tag" data-cms-editable="hero_tagline" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_tagline', 'YOU BELONG HERE'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_headline', 'Church for everyone, including you.'); ?></h1>
         <p data-cms-editable="hero_subtext" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_subtext', 'Life-giving worship, practical teaching, and real community in Norwich and online.'); ?></p>
+        <p class="hero-dead-church" data-cms-editable="hero_dead-church" data-cms-page="home" data-cms-type="html"><?= $cms->html('hero_dead-church', '<a href="/about/dead-church">Looking for dead church?</a>'); ?></p>
         <div class="hero-ctas">
             <a class="btn btn-primary" href="/visit">Plan Your Visit</a>
             <a class="btn btn-secondary" href="/watch">Watch Online</a>

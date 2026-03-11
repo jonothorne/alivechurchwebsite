@@ -214,21 +214,21 @@ if ($searchQuery || $speakerFilter):
             </div>
         </div>
     </div>
-
-    <!-- Search Bar Overlay -->
-    <div class="hero-search">
-        <div class="container">
-            <form action="/sermons" method="get" class="search-form-netflix">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="M21 21l-4.35-4.35"/>
-                </svg>
-                <input type="search" name="q" placeholder="Search sermons, speakers, topics..." value="">
-            </form>
-        </div>
-    </div>
 </section>
 <?php endif; ?>
+
+<!-- Search Bar Section -->
+<section class="sermons-search-bar">
+    <div class="container">
+        <form action="/sermons" method="get" class="search-form-netflix">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="search" name="q" placeholder="Search sermons, speakers, topics..." value="">
+        </form>
+    </div>
+</section>
 
 <!-- Latest Messages Row -->
 <?php if (count($recentSermons) > 1): ?>

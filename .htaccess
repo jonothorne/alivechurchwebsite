@@ -38,6 +38,12 @@ RewriteRule ^sermons/series/?$ /sermons/series.php [L,QSA]
 RewriteRule ^sermons/speakers/?$ /sermons/speakers.php [L,QSA]
 RewriteRule ^sermons/topics/?$ /sermons/topics.php [L,QSA]
 
+# About sub-pages
+RewriteRule ^about/history/?$ /about/history.php [L,QSA]
+RewriteRule ^about/what-we-believe/?$ /about/what-we-believe.php [L,QSA]
+RewriteRule ^about/vision/?$ /about/vision.php [L,QSA]
+RewriteRule ^about/dead-church/?$ /about/dead-church.php [L,QSA]
+
 # Sermons browse page (already handled by generic routing to sermons.php)
 
 # Route clean URLs to .php files

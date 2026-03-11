@@ -28,6 +28,42 @@ $formStats = $analytics->getFormStats();
 $newsletterStats = $analytics->getNewsletterStats();
 $mostReadStudies = $analytics->getMostReadStudies(5);
 
+// Bible coverage stats
+$totalChaptersStmt = $pdo->query("SELECT SUM(chapters) as total FROM bible_books");
+$totalChapters = (int)$totalChaptersStmt->fetch()['total'];
+
+$coveredChaptersStmt = $pdo->query("
+    SELECT COUNT(DISTINCT CONCAT(book_id, '-', chapter)) as covered
+    FROM bible_studies
+    WHERE status = 'published'
+");
+$coveredChapters = (int)$coveredChaptersStmt->fetch()['covered'];
+
+$coveragePercent = $totalChapters > 0 ? round(($coveredChapters / $totalChapters) * 100, 1) : 0;
+
+// Get coverage by testament
+$otCoverageStmt = $pdo->query("
+    SELECT
+        (SELECT SUM(chapters) FROM bible_books WHERE testament = 'old') as total,
+        (SELECT COUNT(DISTINCT CONCAT(bs.book_id, '-', bs.chapter))
+         FROM bible_studies bs
+         JOIN bible_books bb ON bs.book_id = bb.id
+         WHERE bs.status = 'published' AND bb.testament = 'old') as covered
+");
+$otCoverage = $otCoverageStmt->fetch();
+$otPercent = $otCoverage['total'] > 0 ? round(($otCoverage['covered'] / $otCoverage['total']) * 100, 1) : 0;
+
+$ntCoverageStmt = $pdo->query("
+    SELECT
+        (SELECT SUM(chapters) FROM bible_books WHERE testament = 'new') as total,
+        (SELECT COUNT(DISTINCT CONCAT(bs.book_id, '-', bs.chapter))
+         FROM bible_studies bs
+         JOIN bible_books bb ON bs.book_id = bb.id
+         WHERE bs.status = 'published' AND bb.testament = 'new') as covered
+");
+$ntCoverage = $ntCoverageStmt->fetch();
+$ntPercent = $ntCoverage['total'] > 0 ? round(($ntCoverage['covered'] / $ntCoverage['total']) * 100, 1) : 0;
+
 // Prepare chart data
 $chartLabels = [];
 $chartVisits = [];
@@ -260,6 +296,46 @@ foreach ($deviceBreakdown as $device) {
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- Bible Coverage -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Bible Coverage</h3>
+            </div>
+            <div class="bible-coverage">
+                <div class="bible-coverage-main">
+                    <div class="bible-coverage-header">
+                        <span class="bible-coverage-percent"><?= $coveragePercent; ?>%</span>
+                        <span class="bible-coverage-chapters"><?= $coveredChapters; ?> / <?= $totalChapters; ?> chapters</span>
+                    </div>
+                    <div class="bible-coverage-bar">
+                        <div class="bible-coverage-fill" style="width: <?= $coveragePercent; ?>%;"></div>
+                    </div>
+                </div>
+                <div class="bible-coverage-testaments">
+                    <div class="bible-coverage-testament">
+                        <div class="bible-coverage-testament-header">
+                            <span>Old Testament</span>
+                            <span><?= $otPercent; ?>%</span>
+                        </div>
+                        <div class="bible-coverage-bar bible-coverage-bar-sm">
+                            <div class="bible-coverage-fill bible-coverage-fill-ot" style="width: <?= $otPercent; ?>%;"></div>
+                        </div>
+                        <span class="bible-coverage-sub"><?= $otCoverage['covered']; ?> / <?= $otCoverage['total']; ?></span>
+                    </div>
+                    <div class="bible-coverage-testament">
+                        <div class="bible-coverage-testament-header">
+                            <span>New Testament</span>
+                            <span><?= $ntPercent; ?>%</span>
+                        </div>
+                        <div class="bible-coverage-bar bible-coverage-bar-sm">
+                            <div class="bible-coverage-fill bible-coverage-fill-nt" style="width: <?= $ntPercent; ?>%;"></div>
+                        </div>
+                        <span class="bible-coverage-sub"><?= $ntCoverage['covered']; ?> / <?= $ntCoverage['total']; ?></span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Newsletter -->

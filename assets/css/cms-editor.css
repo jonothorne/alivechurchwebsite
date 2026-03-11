@@ -133,6 +133,36 @@ body.cms-edit-mode .site-header {
     transform: translateY(-1px);
 }
 
+.cms-btn-danger {
+    background: var(--cms-error);
+    color: #fff;
+}
+
+.cms-btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   Link Styling in Editor
+   ============================================ */
+
+/* Links in editable content are highlighted */
+[contenteditable="true"] a,
+.cms-editing a {
+    background: rgba(75, 38, 121, 0.15);
+    padding: 1px 3px;
+    border-radius: 3px;
+    text-decoration: underline;
+    text-decoration-color: var(--cms-purple);
+    cursor: pointer;
+}
+
+[contenteditable="true"] a:hover,
+.cms-editing a:hover {
+    background: rgba(75, 38, 121, 0.25);
+}
+
 /* ============================================
    Floating Toolbar (WYSIWYG)
    Matches Bible study editor toolbar style
@@ -499,6 +529,11 @@ body.cms-edit-mode .site-header {
     justify-content: flex-end;
     gap: 10px;
     padding-top: 10px;
+}
+
+/* When there's a danger button, push it to the left */
+.cms-form-actions .cms-btn-danger {
+    margin-right: auto;
 }
 
 /* ============================================
