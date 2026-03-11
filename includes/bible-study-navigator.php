@@ -10,10 +10,11 @@
 
 <!-- Study Navigator Popup -->
 <div class="study-nav-popup" id="study-nav-popup">
-    <div class="study-nav-header">
-        <h3>Browse Studies</h3>
-        <button class="study-nav-close" id="study-nav-close">&times;</button>
-    </div>
+    <button class="study-nav-close" id="study-nav-close" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+    </button>
 
     <div class="study-nav-body">
         <!-- Book Selection -->
