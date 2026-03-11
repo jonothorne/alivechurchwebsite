@@ -198,19 +198,20 @@
 
     // Handle hash-based filter links from subnav (e.g., /events#weekly)
     function handleHashFilter() {
-        if (!eventFiltersContainer) return;
+        const container = document.querySelector('.event-filters');
+        if (!container) return;
 
         const hash = window.location.hash.replace('#', '');
         if (!hash) return;
 
         // Find the filter button that matches the hash
-        const filterBtn = eventFiltersContainer.querySelector(`[data-filter="${hash}"]`);
+        const filterBtn = container.querySelector(`[data-filter="${hash}"]`);
         if (filterBtn) {
             currentCategoryFilter = hash;
             visibleLimit = 12;
 
             // Update active class
-            eventFiltersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             filterBtn.classList.add('active');
 
             applyFilters();
@@ -225,27 +226,32 @@
         }
     }
 
-    // Check hash on page load
-    if (eventFiltersContainer) {
+    // Check hash on page load - run immediately and also after a short delay
+    // to ensure DOM is fully ready
+    if (eventFiltersContainer && window.location.hash) {
         handleHashFilter();
+        // Also try after a small delay in case of timing issues
+        setTimeout(handleHashFilter, 50);
     }
 
     // Handle hash changes (for subnav clicks when already on events page)
     window.addEventListener('hashchange', handleHashFilter);
 
-    // Handle clicks on subnav links that point to event filters
-    document.querySelectorAll('a[href*="/events#"]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            // Only handle if we're already on the events page
-            if (window.location.pathname === '/events' || window.location.pathname === '/events/') {
-                e.preventDefault();
-                const hash = link.getAttribute('href').split('#')[1];
-                if (hash) {
-                    window.location.hash = hash;
-                    handleHashFilter();
-                }
+    // Use event delegation for subnav clicks - more reliable than attaching to each link
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href*="/events#"]');
+        if (!link) return;
+
+        // Only handle if we're already on the events page
+        const isEventsPage = window.location.pathname === '/events' || window.location.pathname === '/events/';
+        if (isEventsPage) {
+            e.preventDefault();
+            const hash = link.getAttribute('href').split('#')[1];
+            if (hash) {
+                history.pushState(null, '', '#' + hash);
+                handleHashFilter();
             }
-        });
+        }
     });
 
     // Newsletter form enhancement
