@@ -216,7 +216,7 @@ if ($current_user && $is_bible_study_page) {
         window.isLoggedIn = <?= $current_user ? 'true' : 'false' ?>;
     })();
     </script>
-    <script defer src="/assets/js/main.js"></script>
+    <script defer src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js'); ?>"></script>
 </head>
 <body<?php if ($is_cms_edit_mode): ?> class="cms-edit-mode"<?php endif; ?>>
 <a class="skip-link" href="#content">Skip to content</a>
