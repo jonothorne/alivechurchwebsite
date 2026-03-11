@@ -11,6 +11,20 @@ RewriteRule ^sitemap\.xml$ sitemap.php [L]
 # Author pages - rewrite to author.php with username parameter
 RewriteRule ^author/([^/]+)/?$ author.php?username=$1 [L,QSA]
 
+# === DIRECTORY ROUTES (must come before trailing slash removal) ===
+# These directories exist on filesystem, handle them explicitly first
+
+# Events index page
+RewriteRule ^events/?$ events.php [L,QSA]
+
+# Event detail pages
+RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
+
+# Sermons index page
+RewriteRule ^sermons/?$ sermons.php [L,QSA]
+
+# === END DIRECTORY ROUTES ===
+
 # Force HTTPS (optional - uncomment when ready for production with SSL)
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
@@ -24,16 +38,6 @@ RewriteRule ^ %1 [R=301,L]
 # Remove .php extension if it exists in the URL
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
 RewriteRule ^ %1 [R=301,L]
-
-# Events index page (handle before detail pages)
-RewriteRule ^events/?$ events.php [L,QSA]
-
-# Event detail pages - handle before generic routing
-# /events/sunday-service -> events/detail.php?slug=sunday-service
-RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
-
-# Sermons index page (handle before sub-pages)
-RewriteRule ^sermons/?$ sermons.php [L,QSA]
 
 # Sermon pages
 # /sermon/sermon-slug -> sermon.php?slug=sermon-slug
