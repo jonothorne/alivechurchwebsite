@@ -604,13 +604,6 @@ main section {
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
-.sermon-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: var(--radius-lg);
-    margin-bottom: 1rem;
-}
 .sermon-meta {
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -4272,33 +4265,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
     box-shadow: var(--shadow-lg);
 }
 
-.study-card-image {
-    aspect-ratio: 16/9;
-    overflow: hidden;
-}
-
-.study-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.study-card-content {
-    padding: 1.25rem;
-}
-
-.study-card-content h3 {
-    margin: 0 0 0.5rem;
-    color: var(--color-dark);
-    font-size: 1.125rem;
-}
-
-.study-card-content p {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-}
-
 /* Profile Responsive */
 @media (max-width: 768px) {
     .profile-header {
@@ -4420,13 +4386,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
 .bible-study-stats {
     padding: 2rem 0;
     background: var(--color-grey);
-}
-
-.stats-row {
-    display: flex;
-    justify-content: center;
-    gap: 4rem;
-    text-align: center;
 }
 
 .stat {
@@ -5509,11 +5468,9 @@ body.cms-edit-mode [data-cms-editable]:hover {
     .primary-nav,
     .nav-toggle,
     .nav-toggle-label,
-    .cookie-banner,
     .testament-badge,
     .study-topics,
     .save-study-btn,
-    .login-prompt-btn,
     .study-header,
     .study-actions,
     .font-settings-wrapper,
@@ -5830,71 +5787,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
    Bible Study Topics Styles
    ============================================ */
 
-/* Popular Topics */
-.topics-popular {
-    padding: 3rem 0;
-    background: var(--color-card-bg);
-}
-
-.topics-popular h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.popular-topics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.popular-topic-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem;
-    background: linear-gradient(135deg, var(--color-purple) 0%, var(--color-dark) 100%);
-    color: #fff;
-    border-radius: var(--radius-lg);
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.popular-topic-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(75, 38, 121, 0.3);
-}
-
-.popular-topic-card .topic-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.popular-topic-card .topic-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.popular-topic-card .topic-count {
-    font-size: 0.75rem;
-    opacity: 0.8;
-    margin-top: 0.25rem;
-}
-
-/* Topics Category Section */
-.topics-category {
-    padding: 3rem 0;
-}
-
-.topics-category:nth-child(even) {
-    background: var(--color-grey);
-}
-
-.topics-category h2 {
-    margin-bottom: 1.5rem;
-}
-
 .topics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -5983,18 +5875,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
 
 .topic-hero .back-link:hover {
     opacity: 1;
-}
-
-.topic-category-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
 }
 
 .topic-hero-icon {
@@ -8543,17 +8423,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
     margin-left: 1.5rem;
 }
 
-.btn-login {
-    color: var(--color-dark);
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: color 0.2s;
-}
-
-.btn-login:hover {
-    color: var(--color-primary);
-}
-
 .user-nav .btn-sm {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
@@ -9639,10 +9508,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
     flex-shrink: 0;
 }
 
-.login-prompt-btn {
-    text-decoration: none;
-}
-
 /* User Highlights */
 .user-highlight {
     padding: 0.1em 0.15em;
@@ -9873,27 +9738,6 @@ body.cms-edit-mode [data-cms-editable]:hover {
 
 .toast-icon {
     color: #4ade80;
-}
-
-/* Highlight tooltip (optional - for future note feature) */
-.highlight-tooltip {
-    position: absolute;
-    background: #1c1c21;
-    color: #fff;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.8125rem;
-    white-space: nowrap;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-}
-
-.user-highlight:hover + .highlight-tooltip,
-.highlight-tooltip:hover {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 /* =====================================================
