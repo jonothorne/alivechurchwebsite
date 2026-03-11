@@ -187,9 +187,6 @@ if ($lastReadingDate) {
                     <span class="profile-streak-badge"><?= $effectiveStreak > 0 ? '🔥' : '📖'; ?> <?= $effectiveStreak; ?> day streak</span>
                 </div>
                 <p class="profile-joined">Member since <?= date('F Y', strtotime($user['created_at'])); ?></p>
-                <?php if (!empty($user['bio'])): ?>
-                    <p class="profile-bio"><?= nl2br(htmlspecialchars($user['bio'])); ?></p>
-                <?php endif; ?>
 
                 <?php if (!empty($socialLinks)): ?>
                     <div class="profile-social">
