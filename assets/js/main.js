@@ -196,6 +196,39 @@
         });
     }
 
+    // Handle hash-based filter links from subnav (e.g., /events#weekly)
+    function handleHashFilter() {
+        if (!eventFiltersContainer) return;
+
+        const hash = window.location.hash.replace('#', '');
+        if (!hash) return;
+
+        // Find the filter button that matches the hash
+        const filterBtn = eventFiltersContainer.querySelector(`[data-filter="${hash}"]`);
+        if (filterBtn) {
+            currentCategoryFilter = hash;
+            visibleLimit = 12;
+
+            // Update active class
+            eventFiltersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            filterBtn.classList.add('active');
+
+            applyFilters();
+
+            // Scroll to the events section
+            const eventsSection = document.querySelector('.events-calendar');
+            if (eventsSection) {
+                eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    // Check hash on page load
+    handleHashFilter();
+
+    // Handle hash changes (for subnav clicks when already on events page)
+    window.addEventListener('hashchange', handleHashFilter);
+
     // Newsletter form enhancement
     const newsletterForm = document.querySelector('.newsletter-form');
     if (newsletterForm) {
