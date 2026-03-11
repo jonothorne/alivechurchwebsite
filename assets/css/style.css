@@ -4105,10 +4105,41 @@ body.cms-edit-mode [data-cms-editable]:hover {
     color: rgba(255, 255, 255, 0.9);
 }
 
+.profile-author-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.profile-author-badge:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+.profile-author-badge svg {
+    opacity: 0.8;
+}
+
 .profile-joined {
     color: rgba(255, 255, 255, 0.7);
     margin: 0.5rem 0 0;
     font-size: 0.875rem;
+}
+
+.profile-bio {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 1rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 500px;
 }
 
 .profile-social {

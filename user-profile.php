@@ -173,9 +173,23 @@ if ($lastReadingDate) {
                     <?php if ($user['role'] !== 'member'): ?>
                         <span class="profile-role"><?= ucfirst($user['role']); ?></span>
                     <?php endif; ?>
+                    <?php if (in_array($user['role'], ['admin', 'editor'])): ?>
+                        <a href="/author/<?= htmlspecialchars($user['username']); ?>" class="profile-author-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                <path d="M2 2l7.586 7.586"/>
+                                <circle cx="11" cy="11" r="2"/>
+                            </svg>
+                            Author
+                        </a>
+                    <?php endif; ?>
                     <span class="profile-streak-badge"><?= $effectiveStreak > 0 ? '🔥' : '📖'; ?> <?= $effectiveStreak; ?> day streak</span>
                 </div>
                 <p class="profile-joined">Member since <?= date('F Y', strtotime($user['created_at'])); ?></p>
+                <?php if (!empty($user['bio'])): ?>
+                    <p class="profile-bio"><?= nl2br(htmlspecialchars($user['bio'])); ?></p>
+                <?php endif; ?>
 
                 <?php if (!empty($socialLinks)): ?>
                     <div class="profile-social">
