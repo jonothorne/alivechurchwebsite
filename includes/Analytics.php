@@ -2,13 +2,20 @@
 /**
  * Analytics Class
  * Handles page visit tracking and analytics data aggregation
+ * Optimized with deferred/batched writes
  */
 
 class Analytics {
     private PDO $pdo;
+    private static $batchFile;
+    private static $batchThreshold = 10; // Flush after this many entries
+    private static $batchTimeout = 60;   // Flush after this many seconds
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
+        if (self::$batchFile === null) {
+            self::$batchFile = __DIR__ . '/../data/analytics-batch.json';
+        }
     }
 
     /**
@@ -40,44 +47,136 @@ class Analytics {
     }
 
     /**
-     * Record a page visit
+     * Record a page visit - uses batching for performance
      */
     public function recordPageVisit(string $pageUrl, ?string $pageTitle = null, ?int $userId = null): void {
+        // Skip bots and crawlers
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if ($this->isBot($userAgent)) {
+            return;
+        }
+
         // Generate or retrieve session ID
         if (!isset($_COOKIE['analytics_session'])) {
-            $sessionId = bin2hex(random_bytes(32));
+            $sessionId = bin2hex(random_bytes(16)); // Reduced from 32 bytes
             setcookie('analytics_session', $sessionId, time() + (86400 * 30), '/', '', false, true);
         } else {
             $sessionId = $_COOKIE['analytics_session'];
         }
 
-        // Detect device type and browser
-        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $deviceType = $this->detectDeviceType($userAgent);
-        $browser = $this->detectBrowser($userAgent);
+        $visit = [
+            'page_url' => $pageUrl,
+            'page_title' => $pageTitle,
+            'referrer' => $_SERVER['HTTP_REFERER'] ?? null,
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'ip_address' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null,
+            'user_agent' => substr($userAgent, 0, 500),
+            'device_type' => $this->detectDeviceType($userAgent),
+            'browser' => $this->detectBrowser($userAgent),
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
 
-        // Get referrer
-        $referrer = $_SERVER['HTTP_REFERER'] ?? null;
+        $this->addToBatch($visit);
+    }
 
-        // Get IP address
-        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+    /**
+     * Check if user agent is a bot
+     */
+    private function isBot(string $userAgent): bool {
+        $bots = ['bot', 'crawler', 'spider', 'slurp', 'googlebot', 'bingbot', 'yandex', 'baidu', 'facebook', 'twitter'];
+        $ua = strtolower($userAgent);
+        foreach ($bots as $bot) {
+            if (strpos($ua, $bot) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        $stmt = $this->pdo->prepare("
-            INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
+    /**
+     * Add visit to batch file
+     */
+    private function addToBatch(array $visit): void {
+        $dataDir = dirname(self::$batchFile);
+        if (!is_dir($dataDir)) {
+            mkdir($dataDir, 0755, true);
+        }
 
-        $stmt->execute([
-            $pageUrl,
-            $pageTitle,
-            $referrer,
-            $userId,
-            $sessionId,
-            $ipAddress,
-            substr($userAgent, 0, 500),
-            $deviceType,
-            $browser
-        ]);
+        // Read existing batch
+        $batch = [];
+        $firstTimestamp = time();
+        if (file_exists(self::$batchFile)) {
+            $data = json_decode(file_get_contents(self::$batchFile), true);
+            if (is_array($data)) {
+                $batch = $data['visits'] ?? [];
+                $firstTimestamp = $data['first_timestamp'] ?? time();
+            }
+        }
+
+        // Add new visit
+        $batch[] = $visit;
+
+        // Check if we should flush
+        $shouldFlush = count($batch) >= self::$batchThreshold ||
+                      (time() - $firstTimestamp) >= self::$batchTimeout;
+
+        if ($shouldFlush) {
+            $this->flushBatch($batch);
+        } else {
+            // Save batch for later
+            file_put_contents(self::$batchFile, json_encode([
+                'first_timestamp' => $firstTimestamp,
+                'visits' => $batch
+            ]), LOCK_EX);
+        }
+    }
+
+    /**
+     * Flush batched visits to database
+     */
+    public function flushBatch(array $batch = null): void {
+        if ($batch === null) {
+            if (!file_exists(self::$batchFile)) {
+                return;
+            }
+            $data = json_decode(file_get_contents(self::$batchFile), true);
+            $batch = $data['visits'] ?? [];
+        }
+
+        if (empty($batch)) {
+            @unlink(self::$batchFile);
+            return;
+        }
+
+        try {
+            // Batch insert for efficiency
+            $placeholders = [];
+            $values = [];
+
+            foreach ($batch as $visit) {
+                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                $values[] = $visit['page_url'];
+                $values[] = $visit['page_title'];
+                $values[] = $visit['referrer'];
+                $values[] = $visit['user_id'];
+                $values[] = $visit['session_id'];
+                $values[] = $visit['ip_address'];
+                $values[] = $visit['user_agent'];
+                $values[] = $visit['device_type'];
+                $values[] = $visit['browser'];
+                $values[] = $visit['timestamp'];
+            }
+
+            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, visited_at) VALUES " . implode(', ', $placeholders);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($values);
+        } catch (PDOException $e) {
+            error_log('Analytics batch insert error: ' . $e->getMessage());
+        }
+
+        // Clear batch file
+        @unlink(self::$batchFile);
     }
 
     /**

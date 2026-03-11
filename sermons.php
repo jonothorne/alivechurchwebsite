@@ -3,8 +3,7 @@
  * Sermons Browse Page - Netflix Style
  * Browse all sermons by series, speaker, or search
  */
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/SermonManager.php';
 
 // Initialize CMS
@@ -13,7 +12,6 @@ if (!isset($cms)) {
     $cms = new ContentManager('sermons');
 }
 
-$pdo = getDbConnection();
 $sermonManager = new SermonManager($pdo);
 
 // Get all visible series

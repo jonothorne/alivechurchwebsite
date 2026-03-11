@@ -3,26 +3,22 @@
  * Bible Study - Chapter Study Page
  * Shows the full study content for a specific chapter
  */
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/BibleStudyTagger.php';
 require_once __DIR__ . '/includes/CrossReferenceManager.php';
 require_once __DIR__ . '/includes/UserStudies.php';
 require_once __DIR__ . '/includes/SermonManager.php';
 
-$pdo = getDbConnection();
-$auth = new Auth($pdo);
 $tagger = new BibleStudyTagger($pdo);
 $crossRefManager = new CrossReferenceManager($pdo);
 $sermonManager = new SermonManager($pdo);
 
 // Check if user is logged in for save/highlight features
-$currentUser = $auth->user();
-$userStudies = $currentUser ? new UserStudies($pdo, $currentUser['id']) : null;
+$userStudies = $current_user ? new UserStudies($pdo, $current_user['id']) : null;
 
 // Check if user can edit (editor or admin)
 $canEdit = $auth->isEditor();
+$currentUser = $current_user; // Keep compatibility with rest of file
 
 // Get book and chapter from URL
 $bookSlug = $_GET['book'] ?? '';

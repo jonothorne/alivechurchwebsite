@@ -1,6 +1,8 @@
 <?php
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
+/**
+ * Homepage
+ */
+require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/SermonManager.php';
 
 $page_title = 'Alive Church | You Belong Here';
@@ -12,7 +14,6 @@ if (!isset($cms)) {
 }
 
 // Get featured sermon from database (falls back to config.php data)
-$pdo = getDbConnection();
 $sermonManager = new SermonManager($pdo);
 $db_featured_sermon = $sermonManager->getFeaturedSermon('homepage');
 

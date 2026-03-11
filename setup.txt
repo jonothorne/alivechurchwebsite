@@ -1,0 +1,97 @@
+================================================================================
+ALIVE CHURCH SITE - PRODUCTION SETUP GUIDE
+================================================================================
+
+1. DATABASE INDEXES
+--------------------------------------------------------------------------------
+Run the optimization indexes to improve query performance:
+
+    mysql -u YOUR_DB_USER -p alive_church_cms < database/optimize-indexes.sql
+
+Or run via phpMyAdmin by importing: database/optimize-indexes.sql
+
+
+2. CRON JOBS
+--------------------------------------------------------------------------------
+Add these cron jobs to your server (via cPanel, or edit crontab directly):
+
+# Maintenance tasks - runs every 5 minutes
+# Flushes analytics, cleans expired sessions and cache
+*/5 * * * * /usr/bin/php /path/to/alivechurchsite/cron/maintenance.php >> /path/to/alivechurchsite/logs/cron.log 2>&1
+
+Replace /path/to/alivechurchsite with your actual path, e.g.:
+*/5 * * * * /usr/bin/php /home/username/public_html/cron/maintenance.php >> /home/username/public_html/logs/cron.log 2>&1
+
+
+3. DIRECTORY PERMISSIONS
+--------------------------------------------------------------------------------
+Ensure these directories are writable by the web server:
+
+    chmod 755 data/
+    chmod 755 data/cache/
+    chmod 755 logs/
+
+Create logs directory if it doesn't exist:
+    mkdir -p logs
+
+
+4. PHP SETTINGS (Recommended)
+--------------------------------------------------------------------------------
+Add to php.ini or .htaccess for better performance:
+
+# OPcache (significantly improves PHP performance)
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.max_accelerated_files=10000
+opcache.revalidate_freq=60
+
+# Session settings
+session.cookie_httponly=1
+session.use_strict_mode=1
+
+
+5. DATABASE CREDENTIALS
+--------------------------------------------------------------------------------
+Update includes/db-config.php with production credentials:
+
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'your_production_db');
+    define('DB_USER', 'your_db_user');
+    define('DB_PASS', 'your_secure_password');
+
+
+6. CACHE CLEAR (After Deployment)
+--------------------------------------------------------------------------------
+Clear the cache after deploying updates:
+
+    rm -rf data/cache/*.cache
+
+Or via PHP:
+    php -r "require 'includes/SiteCache.php'; SiteCache::flush();"
+
+
+7. SSL/HTTPS
+--------------------------------------------------------------------------------
+Ensure your site uses HTTPS. Add to .htaccess if needed:
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If pages don't load after deployment:
+1. Check PHP error logs
+2. Verify database connection in includes/db-config.php
+3. Ensure data/cache directory is writable
+4. Run: php -l includes/bootstrap.php (check for syntax errors)
+
+If cron doesn't run:
+1. Check the path to PHP: which php
+2. Verify file permissions: chmod +x cron/maintenance.php
+3. Check cron logs: grep CRON /var/log/syslog
+
+================================================================================

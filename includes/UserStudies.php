@@ -110,7 +110,8 @@ class UserStudies {
      */
     public function getStudyHighlights($studyId) {
         $stmt = $this->pdo->prepare("
-            SELECT * FROM user_highlights
+            SELECT id, study_id, highlighted_text, start_offset, end_offset, color, note, created_at
+            FROM user_highlights
             WHERE user_id = ? AND study_id = ?
             ORDER BY start_offset
         ");
@@ -174,66 +175,40 @@ class UserStudies {
     }
 
     /**
-     * Get reading stats
+     * Get reading stats - optimized single query
      */
     public function getReadingStats() {
-        $stats = [];
-
-        // Total studies read
+        // Consolidated query - fetches all stats in one database call
         $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) FROM user_reading_history WHERE user_id = ?
+            SELECT
+                (SELECT COUNT(*) FROM user_reading_history WHERE user_id = ?) as total_read,
+                (SELECT COUNT(*) FROM user_reading_history WHERE user_id = ? AND completed = TRUE) as completed,
+                (SELECT COALESCE(SUM(time_spent), 0) FROM user_reading_history WHERE user_id = ?) as total_time_seconds,
+                (SELECT COUNT(*) FROM user_reading_history WHERE user_id = ? AND last_read_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as this_week,
+                (SELECT COUNT(*) FROM user_highlights WHERE user_id = ?) as highlights,
+                (SELECT COUNT(*) FROM user_saved_studies WHERE user_id = ?) as saved,
+                (SELECT COUNT(DISTINCT c.plan_id)
+                 FROM user_reading_plan_completions c
+                 INNER JOIN (SELECT plan_id, MAX(day_number) as max_day FROM reading_plan_days GROUP BY plan_id) m
+                 ON c.plan_id = m.plan_id AND c.day_number = m.max_day
+                 WHERE c.user_id = ?) as plans_completed
         ");
-        $stmt->execute([$this->userId]);
-        $stats['total_read'] = $stmt->fetchColumn();
+        $stmt->execute([
+            $this->userId, $this->userId, $this->userId, $this->userId,
+            $this->userId, $this->userId, $this->userId
+        ]);
 
-        // Completed studies
-        $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) FROM user_reading_history WHERE user_id = ? AND completed = TRUE
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['completed'] = $stmt->fetchColumn();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Total reading time (in minutes)
-        $stmt = $this->pdo->prepare("
-            SELECT COALESCE(SUM(time_spent), 0) FROM user_reading_history WHERE user_id = ?
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['total_time'] = round($stmt->fetchColumn() / 60);
-
-        // Studies read this week
-        $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) FROM user_reading_history
-            WHERE user_id = ? AND last_read_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['this_week'] = $stmt->fetchColumn();
-
-        // Highlights count
-        $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) FROM user_highlights WHERE user_id = ?
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['highlights'] = $stmt->fetchColumn();
-
-        // Saved studies count
-        $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) FROM user_saved_studies WHERE user_id = ?
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['saved'] = $stmt->fetchColumn();
-
-        // Reading plans completed (where user finished final day)
-        $stmt = $this->pdo->prepare("
-            SELECT COUNT(DISTINCT plan_id) FROM user_reading_plan_completions
-            WHERE user_id = ?
-            AND (plan_id, day_number) IN (
-                SELECT plan_id, MAX(day_number) FROM reading_plan_days GROUP BY plan_id
-            )
-        ");
-        $stmt->execute([$this->userId]);
-        $stats['plans_completed'] = $stmt->fetchColumn();
-
-        return $stats;
+        return [
+            'total_read' => (int)$result['total_read'],
+            'completed' => (int)$result['completed'],
+            'total_time' => round($result['total_time_seconds'] / 60),
+            'this_week' => (int)$result['this_week'],
+            'highlights' => (int)$result['highlights'],
+            'saved' => (int)$result['saved'],
+            'plans_completed' => (int)$result['plans_completed']
+        ];
     }
 
     // ==================== READING PLANS ====================
@@ -347,35 +322,30 @@ class UserStudies {
     }
 
     /**
-     * Get today's reading for active plans
+     * Get today's reading for active plans - optimized single query
      */
     public function getTodaysReading() {
-        $activePlans = $this->getActivePlans();
-        $todaysReading = [];
-
-        foreach ($activePlans as $plan) {
-            if ($plan['is_paused']) continue;
-
-            $currentDay = $plan['current_day'];
-
-            $stmt = $this->pdo->prepare("
-                SELECT d.*, s.title as study_title, b.name as book_name, b.slug as book_slug
-                FROM reading_plan_days d
-                LEFT JOIN bible_studies s ON d.study_id = s.id
-                LEFT JOIN bible_books b ON s.book_id = b.id
-                WHERE d.plan_id = ? AND d.day_number = ?
-            ");
-            $stmt->execute([$plan['id'], $currentDay]);
-            $day = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($day) {
-                $day['plan_title'] = $plan['title'];
-                $day['plan_slug'] = $plan['slug'];
-                $day['plan_duration'] = $plan['duration_days'];
-                $todaysReading[] = $day;
-            }
-        }
-
-        return $todaysReading;
+        // Single query to get all today's readings for active plans
+        $stmt = $this->pdo->prepare("
+            SELECT
+                d.*,
+                s.title as study_title,
+                b.name as book_name,
+                b.slug as book_slug,
+                p.title as plan_title,
+                p.slug as plan_slug,
+                p.duration_days as plan_duration
+            FROM user_reading_plan_progress pp
+            JOIN reading_plans p ON pp.plan_id = p.id
+            JOIN reading_plan_days d ON d.plan_id = p.id AND d.day_number = pp.current_day
+            LEFT JOIN bible_studies s ON d.study_id = s.id
+            LEFT JOIN bible_books b ON s.book_id = b.id
+            WHERE pp.user_id = ?
+              AND pp.completed_at IS NULL
+              AND pp.is_paused = FALSE
+            ORDER BY pp.started_at DESC
+        ");
+        $stmt->execute([$this->userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

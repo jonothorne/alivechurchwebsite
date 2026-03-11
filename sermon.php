@@ -3,14 +3,10 @@
  * Individual Sermon Page - Enhanced Design
  * Shows full sermon with video player, sidebar, transcript, share options, comments, and suggestions
  */
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/SermonManager.php';
 require_once __DIR__ . '/includes/profanity-filter.php';
 
-$pdo = getDbConnection();
-$auth = new Auth($pdo);
 $sermonManager = new SermonManager($pdo);
 
 // Get sermon by slug

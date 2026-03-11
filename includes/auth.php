@@ -205,7 +205,12 @@ class Auth {
      * Get user by email
      */
     public function getUserByEmail($email) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT id, username, email, password_hash, full_name, avatar, avatar_color, bio, role,
+                   email_verified, reading_streak, longest_streak, last_reading_date,
+                   total_reading_minutes, preferences, social_links, active, created_at, last_login
+            FROM users WHERE email = ?
+        ");
         $stmt->execute([$email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -347,7 +352,12 @@ class Auth {
      * Get user by username
      */
     public function getUserByUsername($username) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT id, username, email, password_hash, full_name, avatar, avatar_color, bio, role,
+                   email_verified, reading_streak, longest_streak, last_reading_date,
+                   total_reading_minutes, preferences, social_links, active, created_at, last_login
+            FROM users WHERE username = ?
+        ");
         $stmt->execute([$username]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -356,7 +366,12 @@ class Auth {
      * Get user by email or username
      */
     public function getUserByEmailOrUsername($identifier) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT id, username, email, password_hash, full_name, avatar, avatar_color, bio, role,
+                   email_verified, reading_streak, longest_streak, last_reading_date,
+                   total_reading_minutes, preferences, social_links, active, created_at, last_login
+            FROM users WHERE email = ? OR username = ?
+        ");
         $stmt->execute([$identifier, $identifier]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }

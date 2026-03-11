@@ -305,12 +305,19 @@ class SermonManager {
     }
 
     /**
-     * Get YouTube API key from settings
+     * Get YouTube API key from settings (cached)
      */
     private function getYouTubeApiKey(): string {
-        $stmt = $this->pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'youtube_api_key'");
-        $stmt->execute();
-        return $stmt->fetchColumn() ?: '';
+        static $apiKey = null;
+        if ($apiKey === null) {
+            require_once __DIR__ . '/SiteCache.php';
+            $apiKey = SiteCache::remember('youtube_api_key', 3600, function() {
+                $stmt = $this->pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'youtube_api_key'");
+                $stmt->execute();
+                return $stmt->fetchColumn() ?: '';
+            });
+        }
+        return $apiKey;
     }
 
     // ==================== CONTENT ANALYSIS ====================
@@ -365,13 +372,17 @@ class SermonManager {
     }
 
     /**
-     * Get book patterns for scripture detection
+     * Get book patterns for scripture detection (cached)
      */
     private function getBookPatternsForAnalysis(): array {
         static $patterns = null;
 
         if ($patterns === null) {
-            $books = $this->pdo->query("SELECT id, name, abbreviation, slug FROM bible_books")->fetchAll(PDO::FETCH_ASSOC);
+            // Cache book data to avoid repeated queries
+            require_once __DIR__ . '/SiteCache.php';
+            $books = SiteCache::remember('bible_books', 86400, function() {
+                return $this->pdo->query("SELECT id, name, abbreviation, slug FROM bible_books")->fetchAll(PDO::FETCH_ASSOC);
+            });
             $patterns = [];
 
             $abbrevMap = $this->getBookAbbreviations();

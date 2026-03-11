@@ -1,7 +1,12 @@
 <?php
-// Start session for flash messages
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+/**
+ * Header Template
+ * Sets up page meta, navigation, and sub-navs
+ */
+
+// Use bootstrap if available, otherwise fall back
+if (!defined('APP_BOOTSTRAPPED')) {
+    require_once __DIR__ . '/bootstrap.php';
 }
 
 if (!isset($site)) {
@@ -17,24 +22,15 @@ require_once __DIR__ . '/hero-textures.php';
 $hero_texture_class = get_page_texture($current_url);
 
 // Check if admin is logged in for CMS edit mode
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/db-config.php';
 $is_cms_edit_mode = is_logged_in() && (!isset($_GET['preview']) || $_GET['preview'] !== 'true');
 
 // Initialize CMS if in edit mode
-if ($is_cms_edit_mode) {
+if ($is_cms_edit_mode && !isset($cms)) {
     require_once __DIR__ . '/cms/ContentManager.php';
     $cms = new ContentManager();
 }
 
-// Check if user is logged in (for user account system)
-if (!isset($auth)) {
-    $pdo = getDbConnection();
-    $auth = new Auth($pdo);
-}
-$current_user = $auth->user();
-
-// Track page visit for analytics
+// Track page visit for analytics (uses batched writes for performance)
 require_once __DIR__ . '/Analytics.php';
 $analytics = new Analytics($pdo);
 $analytics->recordPageVisit(

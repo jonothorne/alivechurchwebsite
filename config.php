@@ -1,13 +1,24 @@
 <?php
-// Load site settings from database with fallback defaults
+/**
+ * Site Configuration
+ * Loads site settings with caching for performance
+ */
+
+// Prevent multiple inclusions
+if (defined('CONFIG_LOADED')) {
+    return;
+}
+define('CONFIG_LOADED', true);
+
 require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/SiteCache.php';
 
 // Default values (used as fallback if database is unavailable)
 $site = [
     'name' => 'Alive Church',
     'location' => 'Alive House, Nelson Street, Norwich NR2 4DR',
     'email' => 'office@alive.me.uk',
-    'phone' => '', // Set via admin settings when available
+    'phone' => '',
     'service_times' => 'Sundays • 11:00AM',
     'service_details' => 'Coffee & light breakfast from 10:15AM',
     'tagline' => 'You Belong Here',
@@ -19,27 +30,35 @@ $site = [
     ]
 ];
 
-// Load settings from database
+// Load settings from cache or database
 try {
     $pdo = getDbConnection();
-    $stmt = $pdo->query("SELECT setting_key, setting_value FROM site_settings");
-    $db_settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $db_settings = SiteCache::getSiteSettings($pdo);
 
     // Map database keys to $site array keys
-    if (!empty($db_settings['site_name'])) $site['name'] = $db_settings['site_name'];
-    if (!empty($db_settings['site_tagline'])) $site['tagline'] = $db_settings['site_tagline'];
-    if (!empty($db_settings['site_location'])) $site['location'] = $db_settings['site_location'];
-    if (!empty($db_settings['site_email'])) $site['email'] = $db_settings['site_email'];
-    if (!empty($db_settings['site_phone'])) $site['phone'] = $db_settings['site_phone'];
-    if (!empty($db_settings['maps_url'])) $site['maps_url'] = $db_settings['maps_url'];
-    if (!empty($db_settings['service_times'])) $site['service_times'] = $db_settings['service_times'];
-    if (!empty($db_settings['service_details'])) $site['service_details'] = $db_settings['service_details'];
+    $mappings = [
+        'site_name' => 'name',
+        'site_tagline' => 'tagline',
+        'site_location' => 'location',
+        'site_email' => 'email',
+        'site_phone' => 'phone',
+        'maps_url' => 'maps_url',
+        'service_times' => 'service_times',
+        'service_details' => 'service_details',
+    ];
+
+    foreach ($mappings as $dbKey => $siteKey) {
+        if (!empty($db_settings[$dbKey])) {
+            $site[$siteKey] = $db_settings[$dbKey];
+        }
+    }
+
+    // Social links
     if (!empty($db_settings['social_facebook'])) $site['social']['facebook'] = $db_settings['social_facebook'];
     if (!empty($db_settings['social_instagram'])) $site['social']['instagram'] = $db_settings['social_instagram'];
     if (!empty($db_settings['social_youtube'])) $site['social']['youtube'] = $db_settings['social_youtube'];
 } catch (Exception $e) {
-    // Database unavailable - use defaults
-    error_log('Config: Could not load site settings from database: ' . $e->getMessage());
+    error_log('Config: Could not load site settings: ' . $e->getMessage());
 }
 
 $nav_links = [

@@ -2,13 +2,8 @@
 /**
  * User Registration Page
  */
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
-require_once __DIR__ . '/includes/Auth.php';
+require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/hero-textures.php';
-
-$pdo = getDbConnection();
-$auth = new Auth($pdo);
 
 // Redirect if already logged in
 if ($auth->check()) {

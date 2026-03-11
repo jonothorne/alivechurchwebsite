@@ -1,8 +1,8 @@
 <?php
-require __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/db-config.php';
-
-$pdo = getDbConnection();
+/**
+ * Blog Listing Page
+ */
+require_once __DIR__ . '/includes/bootstrap.php';
 
 // Get filter parameters
 $categorySlug = $_GET['category'] ?? '';

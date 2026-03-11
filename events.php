@@ -1,5 +1,8 @@
 <?php
-require __DIR__ . '/config.php';
+/**
+ * Events Page
+ */
+require_once __DIR__ . '/includes/bootstrap.php';
 $page_title = 'Events | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 
