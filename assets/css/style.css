@@ -2397,7 +2397,7 @@ textarea {
 
 .topics-hero {
     background: linear-gradient(135deg, rgba(67, 22, 87, 0.85) 0%, rgba(43, 99, 181, 0.85) 100%),
-                url('/assets/imgs/gallery/bible-study-topics-hero-image.png');
+                url('/assets/imgs/gallery/bible-study-topics-hero-image.jpg');
     background-size: cover;
     background-position: center;
     padding: 5rem 0;
@@ -4450,7 +4450,7 @@ body.cms-edit-mode [data-cms-editable]:hover {
 /* Bible Study Hero (condensed layout) */
 .bible-study-hero {
     background: linear-gradient(135deg, rgba(67, 22, 87, 0.85) 0%, rgba(43, 99, 181, 0.85) 100%),
-                url('/assets/imgs/gallery/bible-study-hero-image.png');
+                url('/assets/imgs/gallery/bible-study-hero-image.jpg');
     background-size: cover;
     background-position: center;
     padding: 5rem 0 2.5rem;
@@ -7633,7 +7633,7 @@ body.cms-edit-mode [data-cms-editable]:hover {
 
 .plans-hero {
     background: linear-gradient(135deg, rgba(67, 22, 87, 0.85) 0%, rgba(43, 99, 181, 0.85) 100%),
-                url('/assets/imgs/gallery/bible-study-plans-hero-image.png');
+                url('/assets/imgs/gallery/bible-study-plans-hero-image.jpg');
     background-size: cover;
     background-position: center;
     color: #fff;
@@ -11366,14 +11366,14 @@ textarea {
 
 [data-theme="dark"] .bible-study-hero {
     background: linear-gradient(135deg, rgba(30, 16, 51, 0.9) 0%, rgba(18, 18, 21, 0.9) 100%),
-                url('/assets/imgs/gallery/bible-study-hero-image.png');
+                url('/assets/imgs/gallery/bible-study-hero-image.jpg');
     background-size: cover;
     background-position: center;
 }
 
 [data-theme="dark"] .topics-hero {
     background: linear-gradient(135deg, rgba(30, 16, 51, 0.9) 0%, rgba(18, 18, 21, 0.9) 100%),
-                url('/assets/imgs/gallery/bible-study-topics-hero-image.png');
+                url('/assets/imgs/gallery/bible-study-topics-hero-image.jpg');
     background-size: cover;
     background-position: center;
 }

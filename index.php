@@ -170,7 +170,7 @@ include __DIR__ . '/includes/header.php';
                     <p class="stat-label" data-cms-editable="stat3_label" data-cms-page="home" data-cms-type="text"><?= $cms->text('stat3_label', 'meals served last month'); ?></p>
                 </div>
             </div>
-            <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image">
+            <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
         </div>
         <div class="card">
             <p class="eyebrow light">New here?</p>
@@ -286,12 +286,12 @@ include __DIR__ . '/includes/header.php';
             <h2 data-cms-editable="gallery_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('gallery_headline', 'See what happens when we gather.'); ?></h2>
         </div>
         <div class="gallery-grid">
-            <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church worship service with congregation" class="gallery-img">
-            <img src="/assets/imgs/gallery/alive-church-drummer-worship-team.jpg" alt="Alive Church drummer during worship" class="gallery-img">
-            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church community café outdoor gathering" class="gallery-img">
-            <img src="/assets/imgs/gallery/alive-church-christmas-worship-service.jpg" alt="Alive Church Christmas worship service" class="gallery-img">
-            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church Christmas celebration service" class="gallery-img">
-            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Alive Church acoustic worship and prayer" class="gallery-img">
+            <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church worship service with congregation" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-drummer-worship-team.jpg" alt="Alive Church drummer during worship" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church community café outdoor gathering" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-christmas-worship-service.jpg" alt="Alive Church Christmas worship service" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church Christmas celebration service" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Alive Church acoustic worship and prayer" class="gallery-img" loading="lazy">
         </div>
     </div>
 </section>
