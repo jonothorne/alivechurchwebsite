@@ -32,6 +32,9 @@ RewriteRule ^events/?$ events.php [L,QSA]
 # /events/sunday-service -> events/detail.php?slug=sunday-service
 RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
 
+# Sermons index page (handle before sub-pages)
+RewriteRule ^sermons/?$ sermons.php [L,QSA]
+
 # Sermon pages
 # /sermon/sermon-slug -> sermon.php?slug=sermon-slug
 RewriteRule ^sermon/([a-zA-Z0-9-]+)/?$ sermon.php?slug=$1 [L,QSA]
