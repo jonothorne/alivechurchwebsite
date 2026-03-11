@@ -47,7 +47,7 @@ if (!isset($cms)) {
 }
 ?>
 
-<section class="page-hero bible-study-hero">
+<section class="page-hero bible-study-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
         <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="bible-study" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Bible Study Library'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="bible-study" data-cms-type="text"><?= $cms->text('hero_headline', 'Deep Dive into Scripture'); ?></h1>

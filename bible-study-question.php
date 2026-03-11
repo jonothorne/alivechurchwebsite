@@ -26,7 +26,7 @@ if (!$question) {
     $page_title = 'Question Not Found | ' . $site['name'];
     include __DIR__ . '/includes/header.php';
     ?>
-    <section class="page-hero">
+    <section class="page-hero <?= $hero_texture_class; ?>">
         <div class="container narrow">
             <h1>Question Not Found</h1>
             <p>Sorry, we couldn't find that question.</p>
@@ -66,7 +66,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <article class="question-page" itemscope itemtype="https://schema.org/FAQPage">
-    <section class="question-hero">
+    <section class="question-hero <?= $hero_texture_class; ?>">
         <div class="container">
             <div class="question-hero-content">
                 <!-- Breadcrumb -->

@@ -25,7 +25,7 @@ if (!$topic) {
     $page_title = 'Topic Not Found | ' . $site['name'];
     include __DIR__ . '/includes/header.php';
     ?>
-    <section class="page-hero">
+    <section class="page-hero <?= $hero_texture_class; ?>">
         <div class="container narrow">
             <h1>Topic Not Found</h1>
             <p>Sorry, we couldn't find that topic.</p>
@@ -48,7 +48,7 @@ if ($isMainCategory) {
     include __DIR__ . '/includes/header.php';
     ?>
 
-    <section class="topic-hero category-hero">
+    <section class="topic-hero category-hero <?= $hero_texture_class; ?>">
         <div class="container">
             <div class="topic-hero-content">
                 <a href="/bible-study/topics" class="back-link">&larr; All Topics</a>
@@ -124,7 +124,7 @@ if ($isMainCategory) {
     include __DIR__ . '/includes/header.php';
     ?>
 
-    <section class="topic-hero subtopic-hero">
+    <section class="topic-hero subtopic-hero <?= $hero_texture_class; ?>">
         <div class="container">
             <div class="topic-hero-content">
                 <?php if ($topic['parent_name']): ?>
