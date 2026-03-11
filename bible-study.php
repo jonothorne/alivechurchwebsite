@@ -113,7 +113,7 @@ if (!isset($cms)) {
                     <span class="book-name"><?= htmlspecialchars($book['name']); ?></span>
                     <span class="book-chapters"><?= $book['chapters']; ?> chapters</span>
                     <?php if ($book['published_chapters'] > 0): ?>
-                        <span class="book-progress"><?= $book['published_chapters']; ?> <?= $book['published_chapters'] === 1 ? 'study' : 'studies'; ?></span>
+                        <span class="book-progress"><?= $book['published_chapters']; ?> <?= $book['published_chapters'] == 1 ? 'study' : 'studies'; ?></span>
                     <?php else: ?>
                         <span class="book-coming-soon">Coming soon</span>
                     <?php endif; ?>
@@ -134,7 +134,7 @@ if (!isset($cms)) {
                     <span class="book-name"><?= htmlspecialchars($book['name']); ?></span>
                     <span class="book-chapters"><?= $book['chapters']; ?> chapters</span>
                     <?php if ($book['published_chapters'] > 0): ?>
-                        <span class="book-progress"><?= $book['published_chapters']; ?> <?= $book['published_chapters'] === 1 ? 'study' : 'studies'; ?></span>
+                        <span class="book-progress"><?= $book['published_chapters']; ?> <?= $book['published_chapters'] == 1 ? 'study' : 'studies'; ?></span>
                     <?php else: ?>
                         <span class="book-coming-soon">Coming soon</span>
                     <?php endif; ?>
