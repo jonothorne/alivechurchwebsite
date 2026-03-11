@@ -12452,3 +12452,178 @@ textarea {
     background: var(--color-bg-elevated);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
 }
+
+/* =====================================================
+   LEGAL PAGES (Privacy, Terms, Cookie Policy, GDPR)
+   ===================================================== */
+.legal-content {
+    padding: 4rem 0;
+}
+
+.legal-content .container.narrow {
+    max-width: 800px;
+}
+
+.legal-content .legal-updated {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.legal-content h2 {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.legal-content h3 {
+    font-size: 1.125rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text);
+}
+
+.legal-content p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+}
+
+.legal-content ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.legal-content ul li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+}
+
+.legal-content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.legal-content a:hover {
+    color: var(--color-secondary);
+}
+
+.legal-content .contact-details {
+    list-style: none;
+    padding-left: 0;
+    background: var(--color-bg-subtle);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+}
+
+.legal-content .contact-details li {
+    margin-bottom: 0.5rem;
+}
+
+.legal-content .contact-details li:last-child {
+    margin-bottom: 0;
+}
+
+/* Cookie table */
+.cookie-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.875rem;
+}
+
+.cookie-table th,
+.cookie-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cookie-table th {
+    background: var(--color-bg-subtle);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.cookie-table td {
+    color: var(--color-text-muted);
+}
+
+.cookie-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* GDPR Rights grid */
+.rights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0 2rem;
+}
+
+.right-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+}
+
+.right-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: var(--color-primary);
+}
+
+.right-card p {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+/* Footer legal links */
+.footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.footer-legal a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+    color: var(--color-primary);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 2.5rem 0;
+    }
+
+    .legal-content h2 {
+        font-size: 1.25rem;
+    }
+
+    .cookie-table {
+        font-size: 0.8125rem;
+    }
+
+    .cookie-table th,
+    .cookie-table td {
+        padding: 0.5rem;
+    }
+
+    .rights-grid {
+        grid-template-columns: 1fr;
+    }
+}

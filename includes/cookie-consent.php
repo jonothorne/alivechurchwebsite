@@ -32,7 +32,7 @@ if ($has_consent) {
     <div class="cookie-consent-content">
         <div class="cookie-consent-text">
             <h4>We use cookies</h4>
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By clicking "Accept All", you consent to our use of cookies. <a href="/privacy-policy">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By clicking "Accept All", you consent to our use of cookies. <a href="/cookie-policy">Learn more</a></p>
         </div>
         <div class="cookie-consent-actions">
             <button type="button" class="btn btn-outline cookie-decline-btn" id="cookie-decline">Decline</button>
