@@ -50,8 +50,12 @@ try {
     // Save to JSON file
     saveSubscriber($email);
 
-    // Send confirmation email
-    sendConfirmationEmail($email);
+    // Send confirmation email (non-critical - don't fail if email can't be sent)
+    try {
+        sendConfirmationEmail($email);
+    } catch (Throwable $emailError) {
+        error_log('Newsletter confirmation email failed: ' . $emailError->getMessage());
+    }
 
     // Optional: Add to email service provider (Mailchimp, ConvertKit, etc.)
     // addToEmailService($email);
@@ -65,7 +69,7 @@ try {
     // Set success message
     $_SESSION['newsletter_message'] = 'Success! You\'re now subscribed. Check your email for a welcome message.';
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     error_log('Newsletter signup error: ' . $e->getMessage());
 
     if ($isAjax) {
@@ -90,13 +94,19 @@ function saveSubscriber($email) {
 
     // Create data directory if it doesn't exist
     if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0755, true);
+        if (!@mkdir($dataDir, 0755, true)) {
+            throw new Exception("Failed to create data directory: $dataDir");
+        }
     }
 
     // Load existing subscribers
     $subscribers = [];
     if (file_exists($dataFile)) {
-        $subscribers = json_decode(file_get_contents($dataFile), true) ?? [];
+        $content = file_get_contents($dataFile);
+        if ($content === false) {
+            throw new Exception("Failed to read subscribers file");
+        }
+        $subscribers = json_decode($content, true) ?? [];
     }
 
     // Add new subscriber
@@ -109,7 +119,10 @@ function saveSubscriber($email) {
     ];
 
     // Save to file
-    file_put_contents($dataFile, json_encode($subscribers, JSON_PRETTY_PRINT));
+    $result = file_put_contents($dataFile, json_encode($subscribers, JSON_PRETTY_PRINT));
+    if ($result === false) {
+        throw new Exception("Failed to write to subscribers file");
+    }
 }
 
 /**

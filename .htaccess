@@ -15,6 +15,8 @@ RewriteRule ^api/cms/blocks$ api/cms/blocks.php [L,QSA]
 RewriteRule ^api/bible-study/save$ api/bible-study/save.php [L,QSA]
 RewriteRule ^api/user-preferences$ api/user-preferences.php [L,QSA]
 RewriteRule ^api/cookie-consent$ api/cookie-consent.php [L,QSA]
+RewriteRule ^api/newsletter-signup$ api/newsletter-signup.php [L,QSA]
+RewriteRule ^api/user-studies$ api/user-studies.php [L,QSA]
 # === END API ROUTES ===
 
 # Sitemap - serve sitemap.xml from sitemap.php

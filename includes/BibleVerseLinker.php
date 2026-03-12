@@ -123,29 +123,51 @@ class BibleVerseLinker {
      * Link Bible verses in text content
      *
      * @param string $content HTML content to process
-     * @param array $options Optional settings
+     * @param array $options Optional settings:
+     *   - 'class': CSS class for links (default: 'bible-verse-link')
+     *   - 'exclude_book': Book slug to exclude (e.g., the current study's book)
+     *   - 'exclude_chapter': Chapter to exclude (e.g., the current study's chapter)
+     *   - 'require_verse': Only link references that include verse numbers (default: true)
      * @return string Content with verse references converted to links
      */
     public function linkVerses($content, $options = []) {
         $bookPattern = $this->getBookPattern();
         $bookMap = $this->getBookMap();
+        $requireVerse = $options['require_verse'] ?? true;
+        $excludeBook = $options['exclude_book'] ?? null;
+        $excludeChapter = $options['exclude_chapter'] ?? null;
 
         // Match patterns like:
-        // Genesis 1:3
-        // John 3:16-17
-        // 1 John 2:15
-        // 1 Cor. 13:4-7
-        // Psalm 23 (chapter only)
-        // Romans 8:28, 29
-        $pattern = '/\b(' . $bookPattern . ')\.?\s+(\d{1,3})(?::(\d{1,3})(?:\s*[-–—]\s*(\d{1,3}))?(?:\s*,\s*(\d{1,3}))?)?(?![^<]*>)/i';
+        // Genesis 1:3 (with verse - always matched)
+        // John 3:16-17 (with verse range)
+        // 1 John 2:15 (numbered book with verse)
+        // 1 Cor. 13:4-7 (abbreviation with verse)
+        // Romans 8:28, 29 (verse with additional verse)
+        // Psalm 23 (chapter only - only if require_verse is false)
 
-        $content = preg_replace_callback($pattern, function($matches) use ($bookMap, $options) {
+        if ($requireVerse) {
+            // Only match references that include a verse (Book Chapter:Verse)
+            $pattern = '/\b(' . $bookPattern . ')\.?\s+(\d{1,3}):(\d{1,3})(?:\s*[-–—]\s*(\d{1,3}))?(?:\s*,\s*(\d{1,3}))?(?![^<]*>)/i';
+        } else {
+            // Match chapter-only references too
+            $pattern = '/\b(' . $bookPattern . ')\.?\s+(\d{1,3})(?::(\d{1,3})(?:\s*[-–—]\s*(\d{1,3}))?(?:\s*,\s*(\d{1,3}))?)?(?![^<]*>)/i';
+        }
+
+        $content = preg_replace_callback($pattern, function($matches) use ($bookMap, $options, $requireVerse, $excludeBook, $excludeChapter) {
             $fullMatch = $matches[0];
             $bookName = strtolower(trim($matches[1]));
             $chapter = $matches[2];
-            $verseStart = $matches[3] ?? null;
-            $verseEnd = $matches[4] ?? null;
-            $verseExtra = $matches[5] ?? null;
+
+            // Adjust array indices based on pattern
+            if ($requireVerse) {
+                $verseStart = $matches[3] ?? null;
+                $verseEnd = $matches[4] ?? null;
+                $verseExtra = $matches[5] ?? null;
+            } else {
+                $verseStart = $matches[3] ?? null;
+                $verseEnd = $matches[4] ?? null;
+                $verseExtra = $matches[5] ?? null;
+            }
 
             // Look up the slug
             if (!isset($bookMap[$bookName])) {
@@ -153,6 +175,14 @@ class BibleVerseLinker {
             }
 
             $slug = $bookMap[$bookName];
+
+            // Skip if this is the excluded book/chapter (self-references)
+            if ($excludeBook && $excludeChapter) {
+                if ($slug === $excludeBook && $chapter == $excludeChapter) {
+                    return $fullMatch; // Don't link self-references
+                }
+            }
+
             $url = "/bible-study/{$slug}/{$chapter}";
 
             // Add verse anchor if specified

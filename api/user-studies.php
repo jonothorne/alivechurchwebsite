@@ -23,6 +23,8 @@ if (!$auth->check()) {
 $userStudies = new UserStudies($pdo, $auth->id());
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+try {
+
 switch ($action) {
     // ==================== SAVED STUDIES ====================
     case 'save_study':
@@ -253,4 +255,10 @@ switch ($action) {
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Unknown action']);
+}
+
+} catch (Throwable $e) {
+    error_log('User studies API error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Server error', 'message' => $e->getMessage()]);
 }

@@ -8691,6 +8691,7 @@ body.cms-edit-mode [data-cms-editable]:hover {
     padding: 0.5rem;
     opacity: 0;
     visibility: hidden;
+    z-index: 1000; /* Above subnavs and other elements */
     transform: translateY(-10px);
     transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
     z-index: 1000;
