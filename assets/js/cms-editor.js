@@ -354,7 +354,8 @@
 
         const isGlobal = el.hasAttribute('data-cms-global');
         const key = isGlobal ? el.dataset.cmsGlobal : el.dataset.cmsEditable;
-        const pageSlug = el.dataset.cmsPage || getPageSlug();
+        const dataAttrPage = el.dataset.cmsPage;
+        const pageSlug = dataAttrPage || getPageSlug();
         const type = el.dataset.cmsType || 'html';
 
         // Get content based on type
@@ -369,10 +370,13 @@
             content = el.innerHTML;
         }
 
-        console.log('Saving element:', key);
-        console.log('Content:', content);
+        console.log('=== CMS SAVE DEBUG ===');
+        console.log('Element:', el);
+        console.log('Key:', key);
+        console.log('data-cms-page attribute:', dataAttrPage || '(NOT SET - using URL fallback)');
+        console.log('Page slug being sent:', pageSlug);
         console.log('Type:', type);
-        console.log('Page:', pageSlug);
+        console.log('Content length:', content.length);
 
         updateStatus('Saving...');
 
