@@ -38,8 +38,10 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{THE_REQUEST} \s(.+?)/\s [NC]
 RewriteRule ^ %1 [R=301,L]
 
-# Remove .php extension if it exists in the URL
+# Remove .php extension if it exists in the URL (except for API endpoints)
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteCond %{REQUEST_URI} !^/api/ [NC]
+RewriteCond %{REQUEST_URI} !^/admin/api/ [NC]
 RewriteRule ^ %1 [R=301,L]
 
 # Sermon pages
