@@ -12107,6 +12107,25 @@ textarea {
     box-shadow: 0 2px 8px var(--color-shadow);
 }
 
+/* When CMS edit mode is active, position status toggle in the toolbar area */
+.cms-edit-mode .study-status-toggle {
+    top: 8px;
+    right: 280px;
+    z-index: 10001;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
+.cms-edit-mode .study-status-toggle .status-text {
+    color: #fff;
+}
+
+.cms-edit-mode .study-status-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: none;
+}
+
 .study-status-toggle:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--color-shadow);

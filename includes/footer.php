@@ -77,6 +77,7 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
 // Show "Use Block Builder" button for admins on dynamic pages
 $show_blocks_btn = $is_cms_edit_mode
     && empty($is_block_builder_page)
+    && empty($hide_block_builder_btn)
     && !isset($_GET['blocks'])
     && !isset($_GET['preview']);
 if ($show_blocks_btn): ?>

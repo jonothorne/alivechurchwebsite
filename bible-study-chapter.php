@@ -337,6 +337,7 @@ if ($userStudies) {
 }
 
 $page_title = $book['name'] . ' ' . $chapter . ' Study | ' . $site['name'];
+$hide_block_builder_btn = true; // Don't show block builder on Bible study pages
 include __DIR__ . '/includes/header.php';
 ?>
 
