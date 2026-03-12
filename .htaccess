@@ -5,6 +5,18 @@ RewriteBase /
 # Disable automatic directory slash redirect (prevents /www/ exposure)
 DirectorySlash Off
 
+# === API ROUTES (must come first to avoid redirect issues) ===
+# Route API calls without .php extension to their .php files
+RewriteRule ^api/cms/save$ api/cms/save.php [L,QSA]
+RewriteRule ^api/cms/upload$ api/cms/upload.php [L,QSA]
+RewriteRule ^api/cms/media$ api/cms/media.php [L,QSA]
+RewriteRule ^api/cms/page$ api/cms/page.php [L,QSA]
+RewriteRule ^api/cms/blocks$ api/cms/blocks.php [L,QSA]
+RewriteRule ^api/bible-study/save$ api/bible-study/save.php [L,QSA]
+RewriteRule ^api/user-preferences$ api/user-preferences.php [L,QSA]
+RewriteRule ^api/cookie-consent$ api/cookie-consent.php [L,QSA]
+# === END API ROUTES ===
+
 # Sitemap - serve sitemap.xml from sitemap.php
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
