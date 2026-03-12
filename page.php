@@ -26,10 +26,14 @@ $stmt = $pdo->prepare("SELECT * FROM pages WHERE slug = ? LIMIT 1");
 $stmt->execute([$slug]);
 $page = $stmt->fetch();
 
-// Check if page exists and is published (or user is admin)
+// Check if page exists and is published (or user is admin/editor)
 session_start();
 require_once __DIR__ . '/includes/Auth.php';
-$isAdmin = is_logged_in();
+require_once __DIR__ . '/includes/db-config.php';
+
+// Use Auth class to properly check admin/editor status
+$auth = new Auth($pdo);
+$canViewUnpublished = $auth->check() && $auth->isEditor();
 $isPreview = isset($_GET['preview']) && $_GET['preview'] === 'true';
 
 if (!$page) {
@@ -43,8 +47,8 @@ if (!$page) {
     exit;
 }
 
-// If page is not published and user is not admin, show 404
-if (!$page['published'] && !$isAdmin) {
+// If page is not published and user is not admin/editor, show 404
+if (!$page['published'] && !$canViewUnpublished) {
     http_response_code(404);
     if (file_exists(__DIR__ . '/404.php')) {
         require __DIR__ . '/404.php';
@@ -62,7 +66,7 @@ $blockBuilder = new BlockBuilder();
 $useBlockBuilder = $blockBuilder->pageHasBlocks($slug);
 
 // Check if user wants to enable block builder via URL param
-$enableBlockBuilder = isset($_GET['blocks']) && $_GET['blocks'] === 'true' && $isAdmin;
+$enableBlockBuilder = isset($_GET['blocks']) && $_GET['blocks'] === 'true' && $canViewUnpublished;
 
 if ($useBlockBuilder || $enableBlockBuilder) {
     // Render using block builder
