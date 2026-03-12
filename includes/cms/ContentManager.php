@@ -32,12 +32,9 @@ class ContentManager {
      * Check if user is in edit mode
      */
     private function checkEditMode() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        // Check for admin login - supports both session formats
-        $isLoggedIn = (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) ||
-                      isset($_SESSION['admin_user_id']);
+        // Use the unified is_logged_in() function which handles session sync
+        require_once __DIR__ . '/../Auth.php';
+        $isLoggedIn = is_logged_in();
         $this->isEditMode = $isLoggedIn &&
                            (!isset($_GET['preview']) || $_GET['preview'] !== 'true');
     }
