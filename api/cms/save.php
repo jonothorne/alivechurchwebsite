@@ -42,9 +42,6 @@ $content = $input['content'] ?? '';
 $type = $input['type'] ?? 'html';
 $isGlobal = $input['isGlobal'] ?? false;
 
-// Debug logging
-error_log("CMS Save Request - Key: {$key}, Page: {$page}, Type: {$type}, IsGlobal: " . ($isGlobal ? 'true' : 'false') . ", Content length: " . strlen($content));
-
 if (!$key) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Missing block key']);
@@ -110,12 +107,7 @@ try {
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Content saved successfully',
-                'debug' => [
-                    'page' => $page,
-                    'key' => $key,
-                    'content_length' => strlen($content)
-                ]
+                'message' => 'Content saved successfully'
             ]);
         } else {
             throw new Exception('Failed to save content');
