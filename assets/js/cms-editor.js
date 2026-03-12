@@ -90,7 +90,7 @@
         `;
 
         document.body.insertBefore(toolbar, document.body.firstChild);
-        document.body.style.paddingTop = '50px';
+        // Note: body padding is handled by CSS (.cms-edit-mode)
 
         // Event listeners
         document.getElementById('cms-preview-btn').addEventListener('click', togglePreview);

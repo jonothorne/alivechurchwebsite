@@ -26,9 +26,26 @@
    Edit Mode Body Adjustments
    ============================================ */
 
+/* Add padding to body for CMS toolbar */
+body.cms-edit-mode {
+    padding-top: 50px;
+}
+
 /* Adjust sticky header to sit below CMS toolbar */
 body.cms-edit-mode .site-header {
     top: 50px;
+}
+
+/* Adjust admin subnav to sit below CMS toolbar (80px header + 50px toolbar) */
+body.cms-edit-mode .admin-subnav {
+    top: 130px;
+}
+
+@media (max-width: 768px) {
+    /* Mobile: 60px header + 50px toolbar */
+    body.cms-edit-mode .admin-subnav {
+        top: 110px;
+    }
 }
 
 /* ============================================
