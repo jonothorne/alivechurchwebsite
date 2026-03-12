@@ -3,13 +3,22 @@
  * Cookie Consent API
  * Handles saving cookie consent preferences
  * - For logged-in users: saves to database (user preferences)
- * - For guests: saves to session
+ * - For all users: saves to cookie (persists across sessions)
  */
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+// Cookie settings - 1 year expiry
+$cookieExpiry = time() + (365 * 24 * 60 * 60);
+$cookieOptions = [
+    'expires' => $cookieExpiry,
+    'path' => '/',
+    'httponly' => true,
+    'samesite' => 'Lax'
+];
 
 switch ($action) {
     case 'accept':
@@ -34,8 +43,8 @@ switch ($action) {
             $stmt->execute([json_encode($preferences), $current_user['id']]);
         }
 
-        // Always save to session (covers both logged-in and guest users)
-        $_SESSION['cookie_consent'] = $consent;
+        // Save to cookie for persistence (works for guests and logged-in users)
+        setcookie('cookie_consent', json_encode($consent), $cookieOptions);
 
         echo json_encode(['success' => true, 'consent' => $consent]);
         break;
@@ -61,7 +70,8 @@ switch ($action) {
             $stmt->execute([json_encode($preferences), $current_user['id']]);
         }
 
-        $_SESSION['cookie_consent'] = $consent;
+        // Save to cookie for persistence
+        setcookie('cookie_consent', json_encode($consent), $cookieOptions);
 
         echo json_encode(['success' => true, 'consent' => $consent]);
         break;
@@ -82,9 +92,9 @@ switch ($action) {
             }
         }
 
-        // Fall back to session
-        if (!$consent && isset($_SESSION['cookie_consent'])) {
-            $consent = $_SESSION['cookie_consent'];
+        // Fall back to cookie
+        if (!$consent && isset($_COOKIE['cookie_consent'])) {
+            $consent = json_decode($_COOKIE['cookie_consent'], true);
         }
 
         echo json_encode([

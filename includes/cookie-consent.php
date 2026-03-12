@@ -7,8 +7,13 @@
 // Check if consent already given
 $has_consent = false;
 
-if (isset($current_user) && $current_user) {
-    // Check database for logged-in users
+// Check cookie first (works for all users)
+if (isset($_COOKIE['cookie_consent'])) {
+    $has_consent = true;
+}
+
+// For logged-in users, also check database
+if (!$has_consent && isset($current_user) && $current_user) {
     $stmt = $pdo->prepare("SELECT preferences FROM users WHERE id = ?");
     $stmt->execute([$current_user['id']]);
     $row = $stmt->fetch();
@@ -16,11 +21,6 @@ if (isset($current_user) && $current_user) {
         $preferences = json_decode($row['preferences'], true);
         $has_consent = isset($preferences['cookie_consent']);
     }
-}
-
-// Fall back to session check
-if (!$has_consent && isset($_SESSION['cookie_consent'])) {
-    $has_consent = true;
 }
 
 // Don't show popup if consent already given
