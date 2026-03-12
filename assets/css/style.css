@@ -302,6 +302,7 @@ img {
     justify-content: space-between;
     padding: 1rem 0;
     gap: 1rem;
+    position: relative; /* For absolute positioning of user-nav on mobile */
 }
 .logo {
     font-weight: 700;
@@ -2208,6 +2209,7 @@ textarea {
         transform: translateX(100%);
         transition: transform var(--transition-base);
         box-shadow: -20px 0 40px rgba(0, 0, 0, 0.15);
+        z-index: 999; /* Above overlay (998) */
     }
     .nav-toggle:checked ~ .primary-nav {
         transform: translateX(0);

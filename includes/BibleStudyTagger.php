@@ -84,8 +84,9 @@ class BibleStudyTagger {
 
         foreach ($topics as $topic) {
             $keywords = array_map('trim', explode(',', strtolower($topic['keywords'])));
-            $score = 0;
+            $totalOccurrences = 0;
             $matchedKeywords = [];
+            $keywordCounts = [];
 
             foreach ($keywords as $keyword) {
                 if (empty($keyword)) continue;
@@ -96,49 +97,80 @@ class BibleStudyTagger {
 
                 if ($count > 0) {
                     $matchedKeywords[] = $keyword;
-                    // Score based on frequency, normalized by document length
-                    // More occurrences = higher relevance
-                    $score += $count * (1 + (strlen($keyword) / 10)); // Longer keywords worth more
+                    $keywordCounts[$keyword] = $count;
+                    $totalOccurrences += $count;
                 }
             }
 
-            if ($score > 0) {
-                // Base score from keyword matches
-                // Give a minimum score just for having any match
-                $baseScore = count($matchedKeywords) * 5; // 5 points per unique keyword matched
+            // STRICT MATCHING: Require significant presence to tag
+            // A topic should only be tagged if it's a MAJOR theme of the study
+            $uniqueKeywordsMatched = count($matchedKeywords);
 
-                // Add frequency bonus (normalized by document length)
-                $frequencyBonus = min(50, ($score / $wordCount) * 500);
-
-                $normalizedScore = $baseScore + $frequencyBonus;
-
-                // Boost if keyword appears in title (more relevant)
-                $titleLower = strtolower($study['title'] ?? '');
-                foreach ($matchedKeywords as $kw) {
-                    if (strpos($titleLower, $kw) !== false) {
-                        $normalizedScore = min(100, $normalizedScore * 1.5);
-                        break;
-                    }
-                }
-
-                // Cap at 100
-                $normalizedScore = min(100, $normalizedScore);
-
-                $matches[] = [
-                    'topic_id' => $topic['id'],
-                    'score' => round($normalizedScore, 2),
-                    'matched_keywords' => $matchedKeywords
-                ];
+            // Skip if too few unique keywords matched (need at least 2 different keywords, or 1 appearing 3+ times)
+            if ($uniqueKeywordsMatched < 2 && $totalOccurrences < 3) {
+                continue;
             }
+
+            // Calculate density: what percentage of the content relates to this topic?
+            // For a 1000-word study, we want at least 1% density (10 occurrences) for strong relevance
+            $density = ($totalOccurrences / $wordCount) * 100;
+
+            // Skip if density is too low (less than 0.5% of content mentions this topic)
+            if ($density < 0.5 && $uniqueKeywordsMatched < 3) {
+                continue;
+            }
+
+            // Calculate score based on:
+            // 1. Number of unique keywords matched (diversity of topic coverage)
+            // 2. Total occurrences normalized by word count (depth of coverage)
+            // 3. Title presence (strong indicator of main theme)
+
+            $diversityScore = min(30, $uniqueKeywordsMatched * 10); // Up to 30 points for keyword diversity
+            $densityScore = min(40, $density * 20); // Up to 40 points for density
+            $frequencyScore = min(20, ($totalOccurrences / 5) * 5); // Up to 20 points for raw frequency
+
+            $normalizedScore = $diversityScore + $densityScore + $frequencyScore;
+
+            // Significant boost if keyword appears in title (indicates main theme)
+            $titleLower = strtolower($study['title'] ?? '');
+            $summaryLower = strtolower($study['summary'] ?? '');
+            $titleMatch = false;
+            $summaryMatch = false;
+
+            foreach ($matchedKeywords as $kw) {
+                if (strpos($titleLower, $kw) !== false) {
+                    $titleMatch = true;
+                }
+                if (strpos($summaryLower, $kw) !== false) {
+                    $summaryMatch = true;
+                }
+            }
+
+            if ($titleMatch) {
+                $normalizedScore = min(100, $normalizedScore * 1.8); // Strong title boost
+            } elseif ($summaryMatch) {
+                $normalizedScore = min(100, $normalizedScore * 1.3); // Moderate summary boost
+            }
+
+            // Cap at 100
+            $normalizedScore = min(100, $normalizedScore);
+
+            $matches[] = [
+                'topic_id' => $topic['id'],
+                'score' => round($normalizedScore, 2),
+                'matched_keywords' => $matchedKeywords,
+                'total_occurrences' => $totalOccurrences,
+                'density' => round($density, 2)
+            ];
         }
 
         // Sort by score descending
         usort($matches, fn($a, $b) => $b['score'] <=> $a['score']);
 
-        // Only keep topics with meaningful scores (threshold)
-        // Lower threshold - even a single keyword match is meaningful
-        $threshold = 1.0; // Minimum relevance score
-        $maxTags = 10; // Maximum tags per study
+        // STRICT THRESHOLD: Only tag if the topic is truly relevant
+        // Score of 25+ means: multiple keywords OR good density OR title match
+        $threshold = 25.0; // Much higher threshold - topic must be a real focus
+        $maxTags = 5; // Fewer tags per study - only the most relevant
         $matches = array_filter($matches, fn($m) => $m['score'] >= $threshold);
         $matches = array_slice($matches, 0, $maxTags);
 
@@ -325,7 +357,7 @@ class BibleStudyTagger {
 
         foreach ($questions as $question) {
             $keywords = array_map('trim', explode(',', strtolower($question['keywords'])));
-            $score = 0;
+            $totalOccurrences = 0;
             $matchedKeywords = [];
 
             foreach ($keywords as $keyword) {
@@ -336,27 +368,55 @@ class BibleStudyTagger {
 
                 if ($count > 0) {
                     $matchedKeywords[] = $keyword;
-                    $score += $count * (1 + (strlen($keyword) / 10));
+                    $totalOccurrences += $count;
                 }
             }
 
-            if ($score > 0) {
-                $baseScore = count($matchedKeywords) * 5;
-                $frequencyBonus = min(50, ($score / $wordCount) * 500);
-                $normalizedScore = min(100, $baseScore + $frequencyBonus);
+            $uniqueKeywordsMatched = count($matchedKeywords);
 
-                $matches[] = [
-                    'question_id' => $question['id'],
-                    'score' => round($normalizedScore, 2),
-                    'matched_keywords' => $matchedKeywords
-                ];
+            // STRICT: Require meaningful presence
+            if ($uniqueKeywordsMatched < 2 && $totalOccurrences < 3) {
+                continue;
             }
+
+            $density = ($totalOccurrences / $wordCount) * 100;
+            if ($density < 0.5 && $uniqueKeywordsMatched < 3) {
+                continue;
+            }
+
+            // Score calculation
+            $diversityScore = min(30, $uniqueKeywordsMatched * 10);
+            $densityScore = min(40, $density * 20);
+            $frequencyScore = min(20, ($totalOccurrences / 5) * 5);
+            $normalizedScore = $diversityScore + $densityScore + $frequencyScore;
+
+            // Title/summary boost
+            $titleLower = strtolower($study['title'] ?? '');
+            $summaryLower = strtolower($study['summary'] ?? '');
+            foreach ($matchedKeywords as $kw) {
+                if (strpos($titleLower, $kw) !== false) {
+                    $normalizedScore = min(100, $normalizedScore * 1.8);
+                    break;
+                } elseif (strpos($summaryLower, $kw) !== false) {
+                    $normalizedScore = min(100, $normalizedScore * 1.3);
+                    break;
+                }
+            }
+
+            $normalizedScore = min(100, $normalizedScore);
+
+            $matches[] = [
+                'question_id' => $question['id'],
+                'score' => round($normalizedScore, 2),
+                'matched_keywords' => $matchedKeywords
+            ];
         }
 
         usort($matches, fn($a, $b) => $b['score'] <=> $a['score']);
 
-        $threshold = 1.0;
-        $maxTags = 15;
+        // STRICT THRESHOLD for questions too
+        $threshold = 25.0;
+        $maxTags = 8; // Fewer question tags
         $matches = array_filter($matches, fn($m) => $m['score'] >= $threshold);
         $matches = array_slice($matches, 0, $maxTags);
 
