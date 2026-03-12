@@ -28,7 +28,7 @@ $page = $stmt->fetch();
 
 // Check if page exists and is published (or user is admin)
 session_start();
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/Auth.php';
 $isAdmin = is_logged_in();
 $isPreview = isset($_GET['preview']) && $_GET['preview'] === 'true';
 

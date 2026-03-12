@@ -4,7 +4,7 @@
  * Includes main site header and admin sub-navigation
  */
 
-require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/Auth.php';
 require_auth();
 
 // Set admin context flags

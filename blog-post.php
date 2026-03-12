@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db-config.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/Auth.php';
 require_once __DIR__ . '/includes/profanity-filter.php';
 require_once __DIR__ . '/includes/BibleVerseLinker.php';
 

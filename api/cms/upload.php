@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 // Start session and check auth
 session_start();
-require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/Auth.php';
 require_once __DIR__ . '/../../includes/db-config.php';
 
 // Check if user is logged in

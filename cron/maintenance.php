@@ -20,7 +20,7 @@ if (php_sapi_name() !== 'cli') {
 require_once __DIR__ . '/../includes/db-config.php';
 require_once __DIR__ . '/../includes/Analytics.php';
 require_once __DIR__ . '/../includes/SiteCache.php';
-require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/Auth.php';
 
 $pdo = getDbConnection();
 

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/Auth.php';
 require_once __DIR__ . '/../includes/db-config.php';
 
 // Use unified Auth class for logout

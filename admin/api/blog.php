@@ -19,7 +19,7 @@ function json_response($data, $code = 200) {
 }
 
 try {
-    require_once __DIR__ . '/../../includes/auth.php';
+    require_once __DIR__ . '/../../includes/Auth.php';
     require_once __DIR__ . '/../../includes/db-config.php';
 } catch (Exception $e) {
     json_response(['error' => 'Server configuration error'], 500);
