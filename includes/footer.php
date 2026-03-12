@@ -74,12 +74,22 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
 <script src="/assets/js/block-builder.js?v=<?= filemtime(__DIR__ . '/../assets/js/block-builder.js'); ?>"></script>
 <?php endif; ?>
 <?php
-// Show "Use Block Builder" button for admins on dynamic pages
-$show_blocks_btn = $is_cms_edit_mode
+// Show "Use Block Builder" button only on pages that exist in the pages table
+$show_blocks_btn = false;
+if ($is_cms_edit_mode
     && empty($is_block_builder_page)
     && empty($hide_block_builder_btn)
     && !isset($_GET['blocks'])
-    && !isset($_GET['preview']);
+    && !isset($_GET['preview'])) {
+    // Check if current URL matches a page in the pages table
+    $current_path = trim(strtok($_SERVER['REQUEST_URI'] ?? '/', '?'), '/');
+    if ($current_path === '') $current_path = 'home'; // Homepage
+
+    // Check if this slug exists in the pages table
+    $pageCheckStmt = $pdo->prepare("SELECT id FROM pages WHERE slug = ? LIMIT 1");
+    $pageCheckStmt->execute([$current_path]);
+    $show_blocks_btn = (bool) $pageCheckStmt->fetch();
+}
 if ($show_blocks_btn): ?>
 <a href="?blocks=true" class="switch-to-blocks-btn" title="Switch to Block Builder">Use Block Builder</a>
 <style>
