@@ -12110,11 +12110,12 @@ textarea {
 /* When CMS edit mode is active, position status toggle in the toolbar area */
 .cms-edit-mode .study-status-toggle {
     top: 8px;
-    right: 280px;
+    left: 200px;
+    right: auto;
     z-index: 10001;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: none;
+    background: #2d2d2d;
+    border-color: #444;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .cms-edit-mode .study-status-toggle .status-text {
@@ -12122,7 +12123,7 @@ textarea {
 }
 
 .cms-edit-mode .study-status-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #3d3d3d;
     transform: none;
 }
 
