@@ -10,7 +10,31 @@ if (!function_exists('is_logged_in')) {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+
+        // Check legacy admin session first
+        if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+            return true;
+        }
+
+        // Also check unified Auth system - if user is logged in with admin/editor role,
+        // restore the admin session variables for backward compatibility
+        if (isset($_SESSION['user_id'])) {
+            require_once __DIR__ . '/db-config.php';
+            $pdo = getDbConnection();
+            $stmt = $pdo->prepare("SELECT id, username, email, full_name, role FROM users WHERE id = ? AND active = 1");
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && in_array($user['role'], ['admin', 'editor'])) {
+                // Restore admin session for this request
+                $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_user_id'] = $user['id'];
+                $_SESSION['admin_user'] = $user;
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
