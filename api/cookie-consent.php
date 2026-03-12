@@ -5,60 +5,40 @@
  * - For logged-in users: saves to database (user preferences)
  * - For all users: saves to cookie (persists across sessions)
  */
-require_once __DIR__ . '/../includes/bootstrap.php';
 
-header('Content-Type: application/json');
-
+// Set cookie BEFORE any output
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 // Cookie settings - 1 year expiry
 $cookieExpiry = time() + (365 * 24 * 60 * 60);
-$cookieOptions = [
-    'expires' => $cookieExpiry,
-    'path' => '/',
-    'httponly' => true,
-    'samesite' => 'Lax'
-];
+
+// Set cookie immediately if accepting/declining (before any output)
+if ($action === 'accept' || $action === 'decline') {
+    $consent = [
+        'accepted' => ($action === 'accept'),
+        'timestamp' => date('Y-m-d H:i:s'),
+        'necessary' => true,
+        'analytics' => ($action === 'accept'),
+        'marketing' => false
+    ];
+    setcookie('cookie_consent', json_encode($consent), [
+        'expires' => $cookieExpiry,
+        'path' => '/',
+        'httponly' => false,
+        'samesite' => 'Lax'
+    ]);
+}
+
+require_once __DIR__ . '/../includes/bootstrap.php';
+
+header('Content-Type: application/json');
 
 switch ($action) {
     case 'accept':
-        $consent = [
-            'accepted' => true,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'necessary' => true,
-            'analytics' => isset($_POST['analytics']) ? (bool)$_POST['analytics'] : true,
-            'marketing' => isset($_POST['marketing']) ? (bool)$_POST['marketing'] : false
-        ];
-
-        if ($current_user) {
-            // Logged-in user: save to database
-            $stmt = $pdo->prepare("SELECT preferences FROM users WHERE id = ?");
-            $stmt->execute([$current_user['id']]);
-            $row = $stmt->fetch();
-
-            $preferences = $row['preferences'] ? json_decode($row['preferences'], true) : [];
-            $preferences['cookie_consent'] = $consent;
-
-            $stmt = $pdo->prepare("UPDATE users SET preferences = ? WHERE id = ?");
-            $stmt->execute([json_encode($preferences), $current_user['id']]);
-        }
-
-        // Save to cookie for persistence (works for guests and logged-in users)
-        setcookie('cookie_consent', json_encode($consent), $cookieOptions);
-
-        echo json_encode(['success' => true, 'consent' => $consent]);
-        break;
-
     case 'decline':
-        $consent = [
-            'accepted' => false,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'necessary' => true,
-            'analytics' => false,
-            'marketing' => false
-        ];
-
-        if ($current_user) {
+        // Cookie already set at top of file
+        // Also save to database for logged-in users
+        if (isset($current_user) && $current_user) {
             $stmt = $pdo->prepare("SELECT preferences FROM users WHERE id = ?");
             $stmt->execute([$current_user['id']]);
             $row = $stmt->fetch();
@@ -69,9 +49,6 @@ switch ($action) {
             $stmt = $pdo->prepare("UPDATE users SET preferences = ? WHERE id = ?");
             $stmt->execute([json_encode($preferences), $current_user['id']]);
         }
-
-        // Save to cookie for persistence
-        setcookie('cookie_consent', json_encode($consent), $cookieOptions);
 
         echo json_encode(['success' => true, 'consent' => $consent]);
         break;
