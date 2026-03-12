@@ -47,7 +47,10 @@ if ($has_consent) {
     const acceptBtn = document.getElementById('cookie-accept');
     const declineBtn = document.getElementById('cookie-decline');
 
-    if (!popup) return;
+    if (!popup || !acceptBtn || !declineBtn) {
+        console.error('Cookie consent elements not found');
+        return;
+    }
 
     function hidePopup() {
         popup.classList.add('hiding');
@@ -57,6 +60,9 @@ if ($has_consent) {
     }
 
     function saveConsent(action) {
+        // Immediately hide to give user feedback
+        hidePopup();
+
         const formData = new FormData();
         formData.append('action', action);
 
@@ -66,18 +72,24 @@ if ($has_consent) {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                hidePopup();
-            }
+            console.log('Cookie consent saved:', data);
         })
         .catch(error => {
             console.error('Cookie consent error:', error);
-            hidePopup();
         });
     }
 
-    acceptBtn.addEventListener('click', () => saveConsent('accept'));
-    declineBtn.addEventListener('click', () => saveConsent('decline'));
+    acceptBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        saveConsent('accept');
+    });
+
+    declineBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        saveConsent('decline');
+    });
 
     // Show popup with animation
     setTimeout(() => {
