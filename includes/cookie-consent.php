@@ -59,24 +59,34 @@ if ($has_consent) {
         }, 300);
     }
 
+    function setCookie(name, value, days) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + expires.toUTCString() + ';path=/;SameSite=Lax';
+    }
+
     function saveConsent(action) {
-        // Immediately hide to give user feedback
+        const consent = {
+            accepted: action === 'accept',
+            timestamp: new Date().toISOString(),
+            necessary: true,
+            analytics: action === 'accept',
+            marketing: false
+        };
+
+        // Set cookie directly in browser (365 days)
+        setCookie('cookie_consent', JSON.stringify(consent), 365);
+
+        // Hide popup
         hidePopup();
 
+        // Also notify server (fire and forget)
         const formData = new FormData();
         formData.append('action', action);
-
         fetch('/api/cookie-consent.php', {
             method: 'POST',
             body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Cookie consent saved:', data);
-        })
-        .catch(error => {
-            console.error('Cookie consent error:', error);
-        });
+        }).catch(() => {});
     }
 
     acceptBtn.addEventListener('click', function(e) {
