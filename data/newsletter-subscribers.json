@@ -19,5 +19,12 @@
         "ip_address": "::1",
         "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
         "status": "confirmed"
+    },
+    {
+        "email": "stevie@wonder.com",
+        "subscribed_at": "2026-03-11 14:24:30",
+        "ip_address": "::1",
+        "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/145.0.0.0 Safari\/537.36",
+        "status": "confirmed"
     }
 ]

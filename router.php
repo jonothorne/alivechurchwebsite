@@ -54,7 +54,7 @@ $routes = [
     '/my-studies/saved' => '/my-studies-saved.php',
     '/my-studies/highlights' => '/my-studies-highlights.php',
     '/my-studies/history' => '/my-studies-history.php',
-    '/my-studies/settings' => '/my-studies-settings.php',
+    '/settings' => '/settings.php',
     '/reading-plans' => '/reading-plans.php',
 
     // Admin routes

@@ -245,7 +245,7 @@ include __DIR__ . '/includes/header.php';
                             <span class="quick-icon">🔍</span>
                             <span>Search</span>
                         </a>
-                        <a href="/my-studies/settings" class="quick-link">
+                        <a href="/settings" class="quick-link">
                             <span class="quick-icon">⚙️</span>
                             <span>Settings</span>
                         </a>
