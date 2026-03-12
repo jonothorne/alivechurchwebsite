@@ -81,8 +81,10 @@ RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ blog-post.php?slug=$1 [L,QSA]
 
 # Reading plans
 RewriteRule ^reading-plans/?$ reading-plans.php [L,QSA]
-RewriteRule ^reading-plans/([a-zA-Z0-9-]+)/?$ reading-plan-view.php?slug=$1 [L,QSA]
-RewriteRule ^reading-plans/([a-zA-Z0-9-]+)/day/([0-9]+)/?$ reading-plan-day.php?slug=$1&day=$2 [L,QSA]
+
+# Individual reading plan pages (singular URL pattern used by PHP code)
+RewriteRule ^reading-plan/([a-zA-Z0-9-]+)/day/([0-9]+)/?$ reading-plan-day.php?plan=$1&day=$2 [L,QSA]
+RewriteRule ^reading-plan/([a-zA-Z0-9-]+)/?$ reading-plan-view.php?plan=$1 [L,QSA]
 
 # Sermons browse page (already handled by generic routing to sermons.php)
 
