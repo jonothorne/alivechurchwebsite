@@ -8746,7 +8746,8 @@ body.cms-edit-mode [data-cms-editable]:hover {
 @media (max-width: 900px) {
     .user-nav {
         position: absolute;
-        top: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
         right: 4rem;
         margin-left: 0;
     }
