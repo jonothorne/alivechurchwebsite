@@ -124,7 +124,7 @@
             statusEl.querySelector('.status-text').textContent = 'Saving...';
 
             try {
-                const response = await fetch('/api/bible-study/save.php', {
+                const response = await fetch('/api/bible-study/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ study_id: studyId, status: newStatus })
@@ -270,7 +270,7 @@
     async function loadMediaGrid(modal, callback) {
         const grid = modal.querySelector('#bible-study-media-grid');
         try {
-            const response = await fetch('/api/cms/media.php');
+            const response = await fetch('/api/cms/media');
             const result = await response.json();
             if (result.success && result.media.length > 0) {
                 grid.innerHTML = result.media.map(item => `
@@ -301,7 +301,7 @@
         formData.append('files[]', files[0]);
 
         try {
-            const response = await fetch('/api/cms/upload.php', {
+            const response = await fetch('/api/cms/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -492,7 +492,7 @@
         setToolbarStatus('Saving...', 'saving');
 
         try {
-            const response = await fetch('/api/bible-study/save.php', {
+            const response = await fetch('/api/bible-study/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

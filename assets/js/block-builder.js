@@ -41,7 +41,7 @@
      */
     async function loadBlocks() {
         try {
-            const response = await fetch(`/api/cms/blocks.php?page=${encodeURIComponent(state.pageSlug)}`);
+            const response = await fetch(`/api/cms/blocks?page=${encodeURIComponent(state.pageSlug)}`);
             const data = await response.json();
 
             if (data.success) {
@@ -384,7 +384,7 @@
                 const uuid = wrapper.dataset.blockUuid;
 
                 try {
-                    const response = await fetch(`/api/cms/blocks.php?uuid=${encodeURIComponent(uuid)}`, {
+                    const response = await fetch(`/api/cms/blocks?uuid=${encodeURIComponent(uuid)}`, {
                         method: 'DELETE'
                     });
                     const data = await response.json();
@@ -647,7 +647,7 @@
         }));
 
         try {
-            const response = await fetch('/api/cms/blocks.php', {
+            const response = await fetch('/api/cms/blocks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -679,7 +679,7 @@
         console.log('[BlockBuilder] Saving order:', order);
 
         try {
-            const response = await fetch('/api/cms/blocks.php', {
+            const response = await fetch('/api/cms/blocks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -727,7 +727,7 @@
             formData.append('files[]', file);
 
             try {
-                const response = await fetch('/api/cms/upload.php', {
+                const response = await fetch('/api/cms/upload', {
                     method: 'POST',
                     body: formData
                 });

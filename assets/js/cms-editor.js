@@ -381,7 +381,7 @@
         updateStatus('Saving...');
 
         try {
-            const response = await fetch('/api/cms/save.php', {
+            const response = await fetch('/api/cms/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -765,7 +765,7 @@
         const grid = document.getElementById('cms-media-grid');
 
         try {
-            const response = await fetch('/api/cms/media.php');
+            const response = await fetch('/api/cms/media');
             const result = await response.json();
 
             if (result.success && result.media.length > 0) {
@@ -808,7 +808,7 @@
         updateStatus('Uploading...');
 
         try {
-            const response = await fetch('/api/cms/upload.php', {
+            const response = await fetch('/api/cms/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -906,7 +906,7 @@
      */
     async function loadPageSettings() {
         try {
-            const response = await fetch('/api/cms/page.php?slug=' + getPageSlug());
+            const response = await fetch('/api/cms/page?slug=' + getPageSlug());
             const result = await response.json();
 
             if (result.success && result.page) {
@@ -934,7 +934,7 @@
         };
 
         try {
-            const response = await fetch('/api/cms/page.php', {
+            const response = await fetch('/api/cms/page', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

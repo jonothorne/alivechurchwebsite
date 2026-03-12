@@ -33,7 +33,7 @@
             formData.append('key', 'theme');
             formData.append('value', theme);
 
-            await fetch('/api/user-preferences.php', {
+            await fetch('/api/user-preferences', {
                 method: 'POST',
                 body: formData
             });
