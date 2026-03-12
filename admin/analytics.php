@@ -201,7 +201,7 @@ foreach ($deviceBreakdown as $device) {
                 <div class="analytics-browser-list">
                     <?php foreach ($browserBreakdown as $browser): ?>
                         <div class="analytics-browser-item">
-                            <span><?= htmlspecialchars($browser['browser']); ?></span>
+                            <span><?= htmlspecialchars($browser['browser'] ?? 'Unknown'); ?></span>
                             <span class="admin-muted"><?= number_format($browser['count']); ?></span>
                         </div>
                     <?php endforeach; ?>
