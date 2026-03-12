@@ -39,13 +39,22 @@ if (!$book) {
     exit;
 }
 
-// Get study content
-$studyStmt = $pdo->prepare("
-    SELECT s.*, u.full_name as author_name, u.username as author_username
-    FROM bible_studies s
-    LEFT JOIN users u ON s.author_id = u.id
-    WHERE s.book_id = ? AND s.chapter = ? AND s.status = 'published'
-");
+// Get study content - editors can see drafts, others only see published
+if ($canEdit) {
+    $studyStmt = $pdo->prepare("
+        SELECT s.*, u.full_name as author_name, u.username as author_username
+        FROM bible_studies s
+        LEFT JOIN users u ON s.author_id = u.id
+        WHERE s.book_id = ? AND s.chapter = ?
+    ");
+} else {
+    $studyStmt = $pdo->prepare("
+        SELECT s.*, u.full_name as author_name, u.username as author_username
+        FROM bible_studies s
+        LEFT JOIN users u ON s.author_id = u.id
+        WHERE s.book_id = ? AND s.chapter = ? AND s.status = 'published'
+    ");
+}
 $studyStmt->execute([$book['id'], $chapter]);
 $study = $studyStmt->fetch();
 
@@ -305,15 +314,22 @@ $processedContent = $crossRefManager->linkifyReferences($processedContent, $book
 $prevChapter = $chapter > 1 ? $chapter - 1 : null;
 $nextChapter = $chapter < $book['chapters'] ? $chapter + 1 : null;
 
-// Get all available chapters with studies for sidebar navigation
-$availableChaptersStmt = $pdo->prepare("SELECT chapter, title FROM bible_studies WHERE book_id = ? AND status = 'published' ORDER BY chapter");
+// Get all available chapters with studies for sidebar navigation (editors see drafts too)
+if ($canEdit) {
+    $availableChaptersStmt = $pdo->prepare("SELECT chapter, title, status FROM bible_studies WHERE book_id = ? ORDER BY chapter");
+} else {
+    $availableChaptersStmt = $pdo->prepare("SELECT chapter, title, status FROM bible_studies WHERE book_id = ? AND status = 'published' ORDER BY chapter");
+}
 $availableChaptersStmt->execute([$book['id']]);
 $availableChapters = $availableChaptersStmt->fetchAll();
 
 // Create lookup of chapters with studies
 $chaptersWithStudies = [];
 foreach ($availableChapters as $ch) {
-    $chaptersWithStudies[$ch['chapter']] = $ch['title'];
+    $chaptersWithStudies[$ch['chapter']] = [
+        'title' => $ch['title'],
+        'status' => $ch['status'] ?? 'published'
+    ];
 }
 
 // Get topics for this study
@@ -338,20 +354,23 @@ if ($userStudies) {
 
 $page_title = $book['name'] . ' ' . $chapter . ' Study | ' . $site['name'];
 $hide_block_builder_btn = true; // Don't show block builder on Bible study pages
+
+// Set CMS toolbar button for published status (rendered in header.php)
+if ($canEdit && $study) {
+    $isPublished = $study['status'] === 'published';
+    $cms_toolbar_button = '<button class="cms-btn cms-status-toggle ' . ($isPublished ? 'cms-status-published' : 'cms-status-draft') . '"
+            data-study-id="' . $study['id'] . '"
+            data-status="' . htmlspecialchars($study['status']) . '"
+            title="Click to toggle status">
+        <span class="cms-status-dot"></span>
+        <span class="cms-btn-text">' . ($isPublished ? 'Published' : 'Draft') . '</span>
+    </button>';
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <article class="bible-study-article<?= $canEdit ? ' bible-study-editable' : ''; ?>"<?= $canEdit ? ' data-study-id="' . $study['id'] . '"' : ''; ?>>
-    <?php if ($canEdit): ?>
-    <!-- Editor Status Toggle -->
-    <button class="study-status-toggle <?= $study['status'] === 'published' ? 'published' : ''; ?>"
-            data-status="<?= htmlspecialchars($study['status']); ?>"
-            title="Click to toggle status">
-        <span class="status-indicator"></span>
-        <span class="status-text"><?= $study['status'] === 'published' ? 'Published' : 'Draft'; ?></span>
-    </button>
-    <?php endif; ?>
-
     <!-- Print-only Header (hidden on screen, visible when printing) -->
     <div class="print-header screen-hidden">
         <div class="print-logo">
@@ -439,11 +458,12 @@ include __DIR__ . '/includes/header.php';
                     <div class="chapter-grid">
                         <?php for ($i = 1; $i <= $book['chapters']; $i++): ?>
                             <?php $hasStudy = isset($chaptersWithStudies[$i]); ?>
+                            <?php $chapterInfo = $hasStudy ? $chaptersWithStudies[$i] : null; ?>
                             <?php if ($hasStudy): ?>
                                 <a href="/bible-study/<?= htmlspecialchars($book['slug']); ?>/<?= $i; ?>"
-                                   class="chapter-grid-item <?= $i == $chapter ? 'active' : ''; ?>"
-                                   <?php if (isset($chaptersWithStudies[$i]) && $chaptersWithStudies[$i]): ?>
-                                   title="<?= htmlspecialchars($chaptersWithStudies[$i]); ?>"
+                                   class="chapter-grid-item <?= $i == $chapter ? 'active' : ''; ?><?= $canEdit && $chapterInfo['status'] === 'draft' ? ' draft' : ''; ?>"
+                                   <?php if ($chapterInfo && $chapterInfo['title']): ?>
+                                   title="<?= htmlspecialchars($chapterInfo['title']); ?><?= $chapterInfo['status'] === 'draft' ? ' (Draft)' : ''; ?>"
                                    <?php endif; ?>>
                                     <?= $i; ?>
                                 </a>
@@ -1582,9 +1602,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="mobile-chapter-grid">
             <?php for ($i = 1; $i <= $book['chapters']; $i++): ?>
                 <?php $hasStudy = isset($chaptersWithStudies[$i]); ?>
+                <?php $chapterInfo = $hasStudy ? $chaptersWithStudies[$i] : null; ?>
                 <?php if ($hasStudy): ?>
                     <a href="/bible-study/<?= htmlspecialchars($book['slug']); ?>/<?= $i; ?>"
-                       class="mobile-chapter-item <?= $i == $chapter ? 'active' : ''; ?>">
+                       class="mobile-chapter-item <?= $i == $chapter ? 'active' : ''; ?><?= $canEdit && $chapterInfo['status'] === 'draft' ? ' draft' : ''; ?>">
                         <?= $i; ?>
                     </a>
                 <?php else: ?>

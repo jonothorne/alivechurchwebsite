@@ -106,9 +106,9 @@
         });
     }
 
-    // Create status toggle button
+    // Create status toggle button (now in CMS toolbar via PHP)
     function createStatusToggle() {
-        const statusEl = document.querySelector('.study-status-toggle');
+        const statusEl = document.querySelector('.cms-status-toggle');
         if (!statusEl) return;
 
         statusEl.addEventListener('click', async () => {
@@ -121,7 +121,8 @@
             }
 
             statusEl.classList.add('saving');
-            statusEl.querySelector('.status-text').textContent = 'Saving...';
+            const textEl = statusEl.querySelector('.cms-btn-text');
+            if (textEl) textEl.textContent = 'Saving...';
 
             try {
                 const response = await fetch('/api/bible-study/save', {
@@ -134,15 +135,16 @@
 
                 if (result.success) {
                     statusEl.dataset.status = newStatus;
-                    statusEl.classList.toggle('published', newStatus === 'published');
-                    statusEl.querySelector('.status-text').textContent = newStatus === 'published' ? 'Published' : 'Draft';
+                    statusEl.classList.remove('cms-status-published', 'cms-status-draft');
+                    statusEl.classList.add(newStatus === 'published' ? 'cms-status-published' : 'cms-status-draft');
+                    if (textEl) textEl.textContent = newStatus === 'published' ? 'Published' : 'Draft';
                     showNotification('Status updated!', 'success');
                 } else {
                     throw new Error(result.error || 'Failed to update status');
                 }
             } catch (error) {
                 showNotification(error.message, 'error');
-                statusEl.querySelector('.status-text').textContent = currentStatus === 'published' ? 'Published' : 'Draft';
+                if (textEl) textEl.textContent = currentStatus === 'published' ? 'Published' : 'Draft';
             } finally {
                 statusEl.classList.remove('saving');
             }

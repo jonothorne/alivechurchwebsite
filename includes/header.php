@@ -220,6 +220,35 @@ if ($current_user && $is_bible_study_page) {
     <script defer src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js'); ?>"></script>
 </head>
 <body<?php if ($is_cms_edit_mode): ?> class="cms-edit-mode"<?php endif; ?>>
+<?php if ($is_cms_edit_mode): ?>
+<div id="cms-toolbar" class="cms-toolbar-php">
+    <div class="cms-toolbar-inner">
+        <div class="cms-toolbar-left">
+            <span class="cms-toolbar-logo">CMS</span>
+            <span class="cms-toolbar-status" id="cms-status">Ready</span>
+        </div>
+        <div class="cms-toolbar-actions">
+            <?php if (!empty($cms_toolbar_button)): ?>
+            <div id="cms-toolbar-slot"><?= $cms_toolbar_button; ?></div>
+            <?php else: ?>
+            <div id="cms-toolbar-slot"></div>
+            <?php endif; ?>
+            <button class="cms-btn" id="cms-preview-btn" title="Preview">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span class="cms-btn-text">Preview</span>
+            </button>
+            <button class="cms-btn" id="cms-media-btn" title="Media">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span class="cms-btn-text">Media</span>
+            </button>
+            <a href="/admin" class="cms-btn" title="Dashboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span class="cms-btn-text">Admin</span>
+            </a>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 <a class="skip-link" href="#content">Skip to content</a>
 <header class="site-header">
     <div class="container header-inner">

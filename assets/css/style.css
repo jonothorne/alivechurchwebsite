@@ -5075,6 +5075,23 @@ body.cms-edit-mode [data-cms-editable]:hover {
     transform: none;
 }
 
+/* Draft chapter indicator (visible to editors only) */
+.chapter-grid-item.draft {
+    background: #fef3c7;
+    border: 1px dashed #f59e0b;
+    color: #92400e;
+}
+
+.chapter-grid-item.draft:hover {
+    background: #fde68a;
+}
+
+.mobile-chapter-item.draft {
+    background: #fef3c7;
+    border: 1px dashed #f59e0b;
+    color: #92400e;
+}
+
 .verse-nav-list {
     display: flex;
     flex-wrap: wrap;
@@ -10235,6 +10252,17 @@ body.cms-edit-mode [data-cms-editable]:hover {
     color: var(--color-text-muted);
 }
 
+[data-theme="dark"] .chapter-grid-item.draft,
+[data-theme="dark"] .mobile-chapter-item.draft {
+    background: #422006;
+    border-color: #f59e0b;
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .chapter-grid-item.draft:hover {
+    background: #78350f;
+}
+
 [data-theme="dark"] .chapter-grid-item {
     background: #2e2e33;
     color: #e4e4e7;
@@ -12086,69 +12114,7 @@ textarea {
 
 /* ==================== Bible Study Inline Editor ==================== */
 /* Uses shared CMS editor variables from cms-editor.css */
-
-/* Status toggle button */
-.study-status-toggle {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--color-card-bg);
-    border: 2px solid var(--color-border);
-    border-radius: 2rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px var(--color-shadow);
-}
-
-/* When status toggle is moved into the CMS toolbar */
-.study-status-toggle.in-toolbar {
-    position: static;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: none;
-    margin-right: 0.5rem;
-}
-
-.study-status-toggle.in-toolbar .status-text {
-    color: #fff;
-}
-
-.study-status-toggle.in-toolbar:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: none;
-}
-
-.study-status-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--color-shadow);
-}
-
-.study-status-toggle .status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #f59e0b;
-}
-
-.study-status-toggle.published .status-indicator {
-    background: var(--cms-success, #10b981);
-}
-
-.study-status-toggle .status-text {
-    color: var(--color-text);
-}
-
-.study-status-toggle.saving {
-    opacity: 0.7;
-    pointer-events: none;
-}
+/* Note: Status toggle button is now in CMS toolbar (see cms-editor.css) */
 
 /* Editable elements for Bible study - matches CMS editor styling */
 [data-editable].can-edit {
@@ -12477,21 +12443,8 @@ textarea {
     color: var(--color-light);
 }
 
-[data-theme="dark"] .study-status-toggle {
-    background: var(--cms-dark-bg, #1a1a2e);
-    border-color: #333;
-}
-
 /* Mobile adjustments */
 @media (max-width: 768px) {
-    .study-status-toggle {
-        top: auto;
-        bottom: 80px;
-        right: 10px;
-        padding: 0.4rem 0.75rem;
-        font-size: 0.8rem;
-    }
-
     .bible-study-toolbar {
         min-width: auto;
         max-width: calc(100vw - 40px);

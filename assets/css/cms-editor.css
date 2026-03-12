@@ -60,10 +60,89 @@ body.cms-edit-mode .site-header {
     justify-content: space-between;
     height: 100%;
     max-width: 100%;
-    padding: 0 20px;
+    padding: 0 12px;
+    gap: 10px;
 }
 
-.cms-toolbar-left,
+.cms-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cms-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.cms-toolbar-actions::-webkit-scrollbar {
+    display: none;
+}
+
+/* Slot for page-specific buttons (e.g., published toggle) */
+#cms-toolbar-slot:not(:empty) {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+    padding-right: 6px;
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Status Toggle Button in Toolbar */
+.cms-status-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.cms-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fbbf24; /* Yellow/amber for draft */
+    flex-shrink: 0;
+}
+
+.cms-status-published .cms-status-dot {
+    background: var(--cms-success);
+}
+
+.cms-status-draft .cms-status-dot {
+    background: #fbbf24;
+}
+
+/* Override button styles for status toggle */
+#cms-toolbar .cms-status-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#cms-toolbar .cms-status-toggle:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+#cms-toolbar .cms-status-published {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+#cms-toolbar .cms-status-published:hover {
+    background: rgba(16, 185, 129, 0.3);
+}
+
+/* Saving state */
+#cms-toolbar .cms-status-toggle.saving {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
 .cms-toolbar-center,
 .cms-toolbar-right {
     display: flex;
@@ -95,22 +174,37 @@ body.cms-edit-mode .site-header {
 }
 
 /* Toolbar Buttons */
-.cms-btn {
+#cms-toolbar .cms-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.cms-btn svg {
-    opacity: 0.8;
+#cms-toolbar .cms-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+#cms-toolbar .cms-btn svg {
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.cms-btn-text {
+    display: inline;
 }
 
 .cms-btn-ghost {
@@ -578,20 +672,45 @@ body.cms-edit-mode .site-header {
    Responsive
    ============================================ */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+    /* Hide button text, show only icons */
+    #cms-toolbar .cms-btn-text {
+        display: none;
+    }
+
+    #cms-toolbar .cms-btn {
+        padding: 8px 10px;
+    }
+
     .cms-toolbar-center {
         display: none;
     }
+}
 
-    .cms-btn svg + span,
-    .cms-btn span:not(:only-child) {
+@media (max-width: 600px) {
+    .cms-toolbar-inner {
+        padding: 0 8px;
+    }
+
+    .cms-toolbar-status {
         display: none;
     }
 
-    .cms-toolbar-right {
-        gap: 8px;
+    #cms-toolbar .cms-btn {
+        padding: 8px;
     }
 
+    .cms-toolbar-actions {
+        gap: 4px;
+    }
+
+    #cms-toolbar-slot:not(:empty) {
+        margin-right: 4px;
+        padding-right: 4px;
+    }
+}
+
+@media (max-width: 768px) {
     .cms-floating-toolbar {
         max-width: calc(100vw - 40px);
     }
