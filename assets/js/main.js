@@ -62,13 +62,7 @@
         });
     });
 
-    // Close button for mobile nav
-    const navCloseBtn = document.getElementById('nav-close-btn');
-    if (navCloseBtn && navToggle) {
-        navCloseBtn.addEventListener('click', () => {
-            navToggle.checked = false;
-        });
-    }
+    // Close button for mobile nav is now a <label> that toggles the checkbox directly
 
     // ==================== NEWSLETTER AJAX ====================
     const newsletterForm = document.getElementById('newsletter-form');
@@ -316,17 +310,7 @@
         }
     });
 
-    // Newsletter form enhancement
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', (e) => {
-            const emailInput = newsletterForm.querySelector('input[type="email"]');
-            if (emailInput && !emailInput.value) {
-                e.preventDefault();
-                alert('Please enter your email address');
-            }
-        });
-    }
+    // Newsletter form enhancement (basic validation fallback - main AJAX handler is above)
 
     // User menu dropdown
     const userMenu = document.querySelector('.user-menu');
