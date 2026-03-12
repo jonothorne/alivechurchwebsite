@@ -90,6 +90,14 @@
         document.getElementById('cms-preview-btn').addEventListener('click', togglePreview);
         document.getElementById('cms-media-btn').addEventListener('click', openMediaLibrary);
         document.getElementById('cms-settings-btn').addEventListener('click', openPageSettings);
+
+        // Move study status toggle into toolbar if it exists (Bible study pages)
+        const studyStatusToggle = document.querySelector('.study-status-toggle');
+        if (studyStatusToggle) {
+            const toolbarRight = toolbar.querySelector('.cms-toolbar-right');
+            studyStatusToggle.classList.add('in-toolbar');
+            toolbarRight.insertBefore(studyStatusToggle, toolbarRight.firstChild);
+        }
     }
 
     /**

@@ -12107,23 +12107,21 @@ textarea {
     box-shadow: 0 2px 8px var(--color-shadow);
 }
 
-/* When CMS edit mode is active, position status toggle in the toolbar area */
-.cms-edit-mode .study-status-toggle {
-    top: 8px;
-    left: 200px;
-    right: auto;
-    z-index: 10001;
-    background: #2d2d2d;
-    border-color: #444;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+/* When status toggle is moved into the CMS toolbar */
+.study-status-toggle.in-toolbar {
+    position: static;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    margin-right: 0.5rem;
 }
 
-.cms-edit-mode .study-status-toggle .status-text {
+.study-status-toggle.in-toolbar .status-text {
     color: #fff;
 }
 
-.cms-edit-mode .study-status-toggle:hover {
-    background: #3d3d3d;
+.study-status-toggle.in-toolbar:hover {
+    background: rgba(255, 255, 255, 0.2);
     transform: none;
 }
 
