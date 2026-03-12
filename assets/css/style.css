@@ -266,6 +266,7 @@ img {
     .section-subnav-inner {
         padding: 0.375rem 0;
         gap: 0.125rem;
+        justify-content: space-around;
     }
 
     .study-subnav-item,
@@ -362,6 +363,12 @@ img {
     display: none;
 }
 .nav-toggle-label {
+    display: none;
+}
+.nav-overlay {
+    display: none;
+}
+.nav-close-btn {
     display: none;
 }
 .hero {
@@ -2242,6 +2249,44 @@ textarea {
     }
     .nav-toggle:checked + .nav-toggle-label span::after {
         transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* Nav overlay - covers content when nav is open */
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        cursor: pointer;
+    }
+    .nav-toggle:checked ~ .nav-overlay {
+        display: block;
+    }
+
+    /* Close button inside nav */
+    .nav-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 44px;
+        height: 44px;
+        background: var(--color-bg-subtle);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        color: var(--color-text);
+        z-index: 10;
+    }
+    .nav-close-btn:hover {
+        background: var(--color-border);
+    }
+    .nav-close-btn svg {
+        width: 20px;
+        height: 20px;
     }
 }
 @media (max-width: 600px) {
