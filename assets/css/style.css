@@ -1166,18 +1166,21 @@ textarea {
 }
 
 /* Newsletter Messages */
-.newsletter-card .notice {
+.newsletter-card .notice,
+.newsletter-message {
     margin-bottom: 1rem;
     padding: 0.85rem 1.25rem;
     border-radius: var(--radius-lg);
     font-weight: 500;
 }
-.notice-success {
+.notice-success,
+.newsletter-message.success {
     background: rgba(16, 185, 129, 0.15);
     color: #059669;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
-.notice-error {
+.notice-error,
+.newsletter-message.error {
     background: rgba(239, 68, 68, 0.15);
     color: #DC2626;
     border: 1px solid rgba(239, 68, 68, 0.3);

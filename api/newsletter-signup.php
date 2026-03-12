@@ -3,6 +3,7 @@
  * Newsletter Signup Handler
  *
  * Handles email newsletter subscriptions from the footer form.
+ * Supports both AJAX (JSON) and traditional form submissions.
  * Stores emails to JSON and optionally integrates with email service providers.
  */
 
@@ -15,10 +16,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Get and validate email
+// Check if this is an AJAX request
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+          strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+// Get email from POST data (works for both form and JSON)
 $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
 
 if (!$email) {
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Please enter a valid email address.']);
+        exit;
+    }
     $_SESSION['newsletter_error'] = 'Please enter a valid email address.';
     header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/'));
     exit;
@@ -26,6 +36,11 @@ if (!$email) {
 
 // Check for duplicate subscriptions
 if (isAlreadySubscribed($email)) {
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'You\'re already subscribed! Check your inbox for our latest updates.']);
+        exit;
+    }
     $_SESSION['newsletter_message'] = 'You\'re already subscribed! Check your inbox for our latest updates.';
     header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/'));
     exit;
@@ -41,15 +56,28 @@ try {
     // Optional: Add to email service provider (Mailchimp, ConvertKit, etc.)
     // addToEmailService($email);
 
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'Success! You\'re now subscribed. Check your email for a welcome message.']);
+        exit;
+    }
+
     // Set success message
     $_SESSION['newsletter_message'] = 'Success! You\'re now subscribed. Check your email for a welcome message.';
 
 } catch (Exception $e) {
-    $_SESSION['newsletter_error'] = 'Something went wrong. Please try again later.';
     error_log('Newsletter signup error: ' . $e->getMessage());
+
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Something went wrong. Please try again later.']);
+        exit;
+    }
+
+    $_SESSION['newsletter_error'] = 'Something went wrong. Please try again later.';
 }
 
-// Redirect back to referring page
+// Redirect back to referring page (for non-AJAX)
 header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/'));
 exit;
 

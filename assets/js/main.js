@@ -62,6 +62,68 @@
         });
     });
 
+    // Close button for mobile nav
+    const navCloseBtn = document.getElementById('nav-close-btn');
+    if (navCloseBtn && navToggle) {
+        navCloseBtn.addEventListener('click', () => {
+            navToggle.checked = false;
+        });
+    }
+
+    // ==================== NEWSLETTER AJAX ====================
+    const newsletterForm = document.getElementById('newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const emailInput = document.getElementById('newsletter-email');
+            const submitBtn = document.getElementById('newsletter-submit');
+            const messageEl = document.getElementById('newsletter-message');
+            const email = emailInput.value.trim();
+
+            if (!email) return;
+
+            // Show loading state
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Subscribing...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+
+                const response = await fetch('/api/newsletter-signup.php', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                // Show message
+                messageEl.textContent = result.message;
+                messageEl.className = 'newsletter-message ' + (result.success ? 'success' : 'error');
+                messageEl.style.display = 'block';
+
+                if (result.success) {
+                    emailInput.value = '';
+                    // Hide form after successful signup
+                    newsletterForm.style.display = 'none';
+                }
+
+            } catch (error) {
+                messageEl.textContent = 'Something went wrong. Please try again.';
+                messageEl.className = 'newsletter-message error';
+                messageEl.style.display = 'block';
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
     const formNotices = document.querySelectorAll('.notice');
     formNotices.forEach((notice) => {
             notice.setAttribute('role', 'status');
