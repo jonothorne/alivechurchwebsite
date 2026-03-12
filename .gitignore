@@ -1,6 +1,9 @@
 # Storage
 storage/form-submissions.json
 
+# Data folder (cache, analytics, etc.)
+data/
+
 # Database config (contains credentials)
 includes/db-config.php
 
