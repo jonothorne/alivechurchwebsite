@@ -23,6 +23,9 @@ RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
 # Sermons index page
 RewriteRule ^sermons/?$ sermons.php [L,QSA]
 
+# Admin panel
+RewriteRule ^admin/?$ admin/index.php [L,QSA]
+
 # === END DIRECTORY ROUTES ===
 
 # Force HTTPS (optional - uncomment when ready for production with SSL)
