@@ -68,6 +68,15 @@ include __DIR__ . '/../includes/header.php';
 
 <section class="content-section">
     <div class="container narrow">
+        <?= $cms->text('baptism_headline', 'Baptism & Communion', ['tag' => 'h2']); ?>
+        <?= $cms->html('baptism_content', '<p>We practise two ordinances given by Jesus to the Church:</p>
+        <p><strong>Baptism</strong> is the outward declaration of an inward transformation. We practise believer\'s baptism by full immersion - a powerful symbol of dying to our old life and rising to new life in Christ. Baptism doesn\'t save us, but it publicly identifies us with Jesus and His Church.</p>
+        <p><strong>Communion</strong> (the Lord\'s Supper) is a regular remembrance of Christ\'s sacrifice for us. As we share bread and wine together, we proclaim His death until He returns, examine our hearts, and celebrate our unity as one body in Christ.</p>', ['tag' => 'div', 'class' => 'prose']); ?>
+    </div>
+</section>
+
+<section class="content-section alt">
+    <div class="container narrow">
         <?= $cms->text('values_headline', 'Our Values', ['tag' => 'h2']); ?>
         <?= $cms->html('values_content', '<ul class="info-list">
             <li><strong>Presence:</strong> Everything begins with worship. We prioritise encountering God\'s presence together.</li>
