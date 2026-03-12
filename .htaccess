@@ -20,8 +20,9 @@ RewriteRule ^api/cookie-consent$ api/cookie-consent.php [L,QSA]
 # Sitemap - serve sitemap.xml from sitemap.php
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
-# Author pages - rewrite to author.php with username parameter
+# Author/User profile pages - rewrite to author.php with username parameter
 RewriteRule ^author/([^/]+)/?$ author.php?username=$1 [L,QSA]
+RewriteRule ^user/([^/]+)/?$ author.php?username=$1 [L,QSA]
 
 # === DIRECTORY ROUTES (must come before trailing slash removal) ===
 # These directories exist on filesystem, handle them explicitly first
@@ -110,6 +111,7 @@ RewriteRule ^reading-plan/([a-zA-Z0-9-]+)/?$ reading-plan-view.php?plan=$1 [L,QS
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/author/
+RewriteCond %{REQUEST_URI} !^/user/
 RewriteCond %{REQUEST_URI} !^/sermon/
 RewriteCond %{REQUEST_URI} !^/sermons/series/
 
@@ -124,6 +126,7 @@ RewriteRule ^(.*)$ $1.php [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/author/
+RewriteCond %{REQUEST_URI} !^/user/
 RewriteCond %{REQUEST_URI} !^/sermon/
 RewriteCond %{REQUEST_URI} !^/sermons/series/
 RewriteRule ^(.*)$ page.php [L,QSA]
