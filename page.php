@@ -29,11 +29,23 @@ $page = $stmt->fetch();
 // Check if page exists and is published (or user is admin/editor)
 session_start();
 require_once __DIR__ . '/includes/Auth.php';
-require_once __DIR__ . '/includes/db-config.php';
 
-// Use Auth class to properly check admin/editor status
+// Check admin/editor status - use Auth class first, fall back to legacy check
 $auth = new Auth($pdo);
-$canViewUnpublished = $auth->check() && $auth->isEditor();
+$canViewUnpublished = false;
+
+// Method 1: Check via Auth class (unified login system)
+if ($auth->check() && $auth->isEditor()) {
+    $canViewUnpublished = true;
+}
+// Method 2: Check legacy admin session (backward compatibility)
+elseif (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    // Verify the admin user still has admin/editor role
+    if (isset($_SESSION['admin_user']['role']) && in_array($_SESSION['admin_user']['role'], ['admin', 'editor'])) {
+        $canViewUnpublished = true;
+    }
+}
+
 $isPreview = isset($_GET['preview']) && $_GET['preview'] === 'true';
 
 if (!$page) {
