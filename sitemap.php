@@ -238,6 +238,28 @@ function getAllUrls($pdo, $baseUrl) {
     }
 
     // =========================================
+    // USER PROFILES (active users)
+    // =========================================
+    try {
+        $stmt = $pdo->query("
+            SELECT username, updated_at
+            FROM users
+            WHERE active = 1
+            ORDER BY username
+        ");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $urls[] = [
+                'loc' => $baseUrl . '/user/' . $row['username'],
+                'lastmod' => $row['updated_at'] ? date('Y-m-d', strtotime($row['updated_at'])) : null,
+                'priority' => '0.4',
+                'changefreq' => 'weekly'
+            ];
+        }
+    } catch (PDOException $e) {
+        // Table may not exist
+    }
+
+    // =========================================
     // SERMON SERIES (if exists)
     // =========================================
     try {
