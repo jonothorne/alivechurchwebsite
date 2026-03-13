@@ -50,24 +50,21 @@ try {
     // Save to JSON file
     saveSubscriber($email);
 
-    // Send confirmation email (non-critical - don't fail if email can't be sent)
-    try {
-        sendConfirmationEmail($email);
-    } catch (Throwable $emailError) {
-        error_log('Newsletter confirmation email failed: ' . $emailError->getMessage());
-    }
+    // Note: Confirmation emails disabled to avoid slow response times
+    // Re-enable with proper email queue/service when ready
+    // sendConfirmationEmail($email);
 
     // Optional: Add to email service provider (Mailchimp, ConvertKit, etc.)
     // addToEmailService($email);
 
     if ($isAjax) {
         header('Content-Type: application/json');
-        echo json_encode(['success' => true, 'message' => 'Success! You\'re now subscribed. Check your email for a welcome message.']);
+        echo json_encode(['success' => true, 'message' => 'Success! You\'re now subscribed.']);
         exit;
     }
 
     // Set success message
-    $_SESSION['newsletter_message'] = 'Success! You\'re now subscribed. Check your email for a welcome message.';
+    $_SESSION['newsletter_message'] = 'Success! You\'re now subscribed.';
 
 } catch (Throwable $e) {
     error_log('Newsletter signup error: ' . $e->getMessage());
