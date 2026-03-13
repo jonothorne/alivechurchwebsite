@@ -58,6 +58,10 @@ function getAllUrls($pdo, $baseUrl) {
         ['url' => '/cookie-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
         ['url' => '/donation-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
         ['url' => '/photo-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
+        ['url' => '/terms-of-service', 'priority' => '0.3', 'changefreq' => 'yearly'],
+        ['url' => '/safeguarding', 'priority' => '0.4', 'changefreq' => 'yearly'],
+        ['url' => '/accessibility', 'priority' => '0.3', 'changefreq' => 'yearly'],
+        ['url' => '/gdpr', 'priority' => '0.3', 'changefreq' => 'yearly'],
     ];
 
     foreach ($staticPages as $page) {
