@@ -111,6 +111,95 @@ body.cms-edit-mode .admin-subnav {
     border-right: 1px solid rgba(255,255,255,0.2);
 }
 
+/* Edit Mode Toggle Switch */
+.cms-edit-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: background 0.2s;
+}
+
+.cms-edit-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.cms-edit-toggle input {
+    display: none;
+}
+
+.cms-toggle-slider {
+    width: 36px;
+    height: 20px;
+    background: #52525b;
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.cms-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+}
+
+.cms-edit-toggle input:checked + .cms-toggle-slider {
+    background: var(--cms-success);
+}
+
+.cms-edit-toggle input:checked + .cms-toggle-slider::before {
+    transform: translateX(16px);
+}
+
+.cms-toggle-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* When editing is disabled */
+body.cms-editing-disabled [data-cms-editable],
+body.cms-editing-disabled [data-cms-global] {
+    pointer-events: auto !important;
+}
+
+body.cms-editing-disabled [data-cms-editable]:hover,
+body.cms-editing-disabled [data-cms-global]:hover {
+    outline: none !important;
+    cursor: default !important;
+}
+
+body.cms-editing-disabled [data-cms-editable]:hover::after,
+body.cms-editing-disabled [data-cms-global]:hover::after {
+    display: none !important;
+}
+
+body.cms-editing-disabled .cms-toolbar-actions .cms-btn:not([href="/admin"]) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+body.cms-editing-disabled #cms-toolbar-slot {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+body.cms-editing-disabled #cms-status {
+    display: none;
+}
+
 /* Status Toggle Button in Toolbar */
 .cms-status-toggle {
     display: inline-flex;

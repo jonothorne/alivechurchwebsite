@@ -42,9 +42,32 @@
             // PHP toolbar exists, just attach event listeners
             const previewBtn = document.getElementById('cms-preview-btn');
             const mediaBtn = document.getElementById('cms-media-btn');
+            const editToggle = document.getElementById('cms-edit-toggle');
 
             if (previewBtn) previewBtn.addEventListener('click', togglePreview);
             if (mediaBtn) mediaBtn.addEventListener('click', openMediaLibrary);
+
+            // Setup edit mode toggle
+            if (editToggle) {
+                // Restore saved state from localStorage
+                const editingEnabled = localStorage.getItem('cms-editing-enabled');
+                if (editingEnabled === 'false') {
+                    editToggle.checked = false;
+                    document.body.classList.add('cms-editing-disabled');
+                }
+
+                editToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.remove('cms-editing-disabled');
+                        localStorage.setItem('cms-editing-enabled', 'true');
+                        updateStatus('Editing enabled');
+                    } else {
+                        document.body.classList.add('cms-editing-disabled');
+                        localStorage.setItem('cms-editing-enabled', 'false');
+                        updateStatus('Editing disabled');
+                    }
+                });
+            }
             return;
         }
 
@@ -227,6 +250,10 @@
 
             // Click to edit
             el.addEventListener('click', (e) => {
+                // Don't allow editing if disabled
+                if (document.body.classList.contains('cms-editing-disabled')) {
+                    return;
+                }
                 if (!state.isEditing || state.currentElement !== el) {
                     e.preventDefault();
                     e.stopPropagation();

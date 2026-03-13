@@ -54,7 +54,12 @@ try {
         $files = glob($cacheDir . '/*.cache');
         $cleaned = 0;
         foreach ($files as $file) {
-            $data = @unserialize(file_get_contents($file));
+            $content = file_get_contents($file);
+            $data = json_decode($content, true);
+            // Fallback to unserialize for legacy cache files
+            if ($data === null) {
+                $data = @unserialize($content);
+            }
             if ($data && isset($data['expires']) && $data['expires'] !== 0 && $data['expires'] < time()) {
                 unlink($file);
                 $cleaned++;

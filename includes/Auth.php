@@ -135,6 +135,11 @@ class Auth {
     private $pdo;
     private $user = null;
 
+    // Rate limiting settings
+    private const MAX_LOGIN_ATTEMPTS = 5;
+    private const LOCKOUT_DURATION = 900; // 15 minutes in seconds
+    private const ATTEMPT_WINDOW = 900;   // Count attempts within 15 minutes
+
     public function __construct($pdo) {
         $this->pdo = $pdo;
 
@@ -143,8 +148,100 @@ class Auth {
             session_start();
         }
 
+        // Ensure login_attempts table exists
+        $this->ensureLoginAttemptsTable();
+
         // Try to authenticate user
         $this->authenticate();
+    }
+
+    /**
+     * Ensure the login_attempts table exists
+     */
+    private function ensureLoginAttemptsTable() {
+        try {
+            $this->pdo->exec("
+                CREATE TABLE IF NOT EXISTS login_attempts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    ip_address VARCHAR(45) NOT NULL,
+                    username VARCHAR(255) DEFAULT NULL,
+                    attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    successful BOOLEAN DEFAULT FALSE,
+                    INDEX idx_ip_time (ip_address, attempted_at),
+                    INDEX idx_username_time (username, attempted_at)
+                )
+            ");
+        } catch (PDOException $e) {
+            // Table might already exist, that's fine
+        }
+    }
+
+    /**
+     * Check if IP is rate limited
+     */
+    private function isRateLimited($ip, $username = null) {
+        $cutoff = date('Y-m-d H:i:s', time() - self::ATTEMPT_WINDOW);
+
+        // Check IP-based rate limit
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*) as attempts FROM login_attempts
+            WHERE ip_address = ? AND attempted_at > ? AND successful = FALSE
+        ");
+        $stmt->execute([$ip, $cutoff]);
+        $ipAttempts = $stmt->fetch()['attempts'];
+
+        if ($ipAttempts >= self::MAX_LOGIN_ATTEMPTS) {
+            return ['limited' => true, 'type' => 'ip', 'attempts' => $ipAttempts];
+        }
+
+        // Check username-based rate limit if provided
+        if ($username) {
+            $stmt = $this->pdo->prepare("
+                SELECT COUNT(*) as attempts FROM login_attempts
+                WHERE username = ? AND attempted_at > ? AND successful = FALSE
+            ");
+            $stmt->execute([$username, $cutoff]);
+            $userAttempts = $stmt->fetch()['attempts'];
+
+            if ($userAttempts >= self::MAX_LOGIN_ATTEMPTS) {
+                return ['limited' => true, 'type' => 'username', 'attempts' => $userAttempts];
+            }
+        }
+
+        return ['limited' => false, 'attempts' => $ipAttempts];
+    }
+
+    /**
+     * Record a login attempt
+     */
+    private function recordLoginAttempt($ip, $username, $successful) {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO login_attempts (ip_address, username, successful) VALUES (?, ?, ?)
+        ");
+        $stmt->execute([$ip, $username, $successful ? 1 : 0]);
+
+        // Cleanup old attempts (older than 24 hours)
+        $this->pdo->exec("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+    }
+
+    /**
+     * Get remaining lockout time in seconds
+     */
+    private function getRemainingLockoutTime($ip) {
+        $stmt = $this->pdo->prepare("
+            SELECT MAX(attempted_at) as last_attempt FROM login_attempts
+            WHERE ip_address = ? AND successful = FALSE
+        ");
+        $stmt->execute([$ip]);
+        $result = $stmt->fetch();
+
+        if ($result && $result['last_attempt']) {
+            $lastAttempt = strtotime($result['last_attempt']);
+            $unlockTime = $lastAttempt + self::LOCKOUT_DURATION;
+            $remaining = $unlockTime - time();
+            return max(0, $remaining);
+        }
+        return 0;
     }
 
     /**
@@ -404,20 +501,46 @@ class Auth {
      * Attempt to log in (accepts email or username)
      */
     public function login($identifier, $password, $remember = false) {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+
+        // Check rate limiting
+        $rateLimit = $this->isRateLimited($ip, $identifier);
+        if ($rateLimit['limited']) {
+            $remaining = $this->getRemainingLockoutTime($ip);
+            $minutes = ceil($remaining / 60);
+            return [
+                'success' => false,
+                'error' => "Too many login attempts. Please try again in $minutes minute" . ($minutes > 1 ? 's' : '') . ".",
+                'rate_limited' => true,
+                'retry_after' => $remaining
+            ];
+        }
+
         // Try to find user by email or username
         $user = $this->getUserByEmailOrUsername($identifier);
 
         if (!$user) {
+            $this->recordLoginAttempt($ip, $identifier, false);
             return ['success' => false, 'error' => 'Invalid email/username or password'];
         }
 
         if (!$user['active']) {
+            $this->recordLoginAttempt($ip, $identifier, false);
             return ['success' => false, 'error' => 'This account has been deactivated'];
         }
 
         if (!password_verify($password, $user['password_hash'])) {
-            return ['success' => false, 'error' => 'Invalid email/username or password'];
+            $this->recordLoginAttempt($ip, $identifier, false);
+            $attemptsLeft = self::MAX_LOGIN_ATTEMPTS - $rateLimit['attempts'] - 1;
+            $error = 'Invalid email/username or password';
+            if ($attemptsLeft > 0 && $attemptsLeft <= 3) {
+                $error .= " ($attemptsLeft attempt" . ($attemptsLeft > 1 ? 's' : '') . " remaining)";
+            }
+            return ['success' => false, 'error' => $error];
         }
+
+        // Successful login - record it
+        $this->recordLoginAttempt($ip, $identifier, true);
 
         // Update last login
         $this->pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);

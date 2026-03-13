@@ -23,9 +23,6 @@ if (!$auth->check()) {
 $userStudies = new UserStudies($pdo, $auth->id());
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
-// Debug: log what we're receiving
-error_log('User studies API - Action: ' . $action . ', POST: ' . print_r($_POST, true));
-
 try {
 
 switch ($action) {

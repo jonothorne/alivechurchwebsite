@@ -230,6 +230,11 @@ if ($current_user && $is_bible_study_page) {
     <div class="cms-toolbar-inner">
         <div class="cms-toolbar-left">
             <span class="cms-toolbar-logo">CMS</span>
+            <label class="cms-edit-toggle" title="Toggle editing mode">
+                <input type="checkbox" id="cms-edit-toggle" checked>
+                <span class="cms-toggle-slider"></span>
+                <span class="cms-toggle-label">Edit</span>
+            </label>
             <span class="cms-toolbar-status" id="cms-status">Ready</span>
         </div>
         <div class="cms-toolbar-actions">

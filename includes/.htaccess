@@ -1,0 +1,12 @@
+# Deny direct access to PHP files in includes directory
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# For Apache 2.2 compatibility
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.php$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+</IfModule>

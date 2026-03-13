@@ -54,9 +54,11 @@ RewriteRule ^my-studies/history/?$ my-studies-history.php [L,QSA]
 
 # === END DIRECTORY ROUTES ===
 
-# Force HTTPS (optional - uncomment when ready for production with SSL)
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Force HTTPS in production
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^localhost [NC]
+RewriteCond %{HTTP_HOST} !\.test$ [NC]
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Remove trailing slashes (except for directories)
 # Use THE_REQUEST to get the original URL (not internally rewritten)
@@ -154,6 +156,12 @@ Options -Indexes
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Content Security Policy - adjust as needed for your site
+    # Note: 'unsafe-inline' needed for inline styles/scripts, consider using nonces in future
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.youtube.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://js.stripe.com https://www.google.com; connect-src 'self' https://api.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self';"
 </IfModule>
 
 # Compression (optional - improves performance)

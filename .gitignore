@@ -25,6 +25,9 @@ Thumbs.db
 *.log
 logs/
 
+# Database backups
+*.sql
+
 # Cache
 cache/
 *.cache

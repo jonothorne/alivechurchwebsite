@@ -1,0 +1,17 @@
+# Deny access to sensitive files
+<FilesMatch "\.(json|php|phtml)$">
+    Require all denied
+</FilesMatch>
+
+# Disable script execution in this directory
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+# For Apache 2.2 compatibility
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(json|php|phtml)$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+</IfModule>

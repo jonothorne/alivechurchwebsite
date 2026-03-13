@@ -36,7 +36,18 @@ class SiteCache {
             return $default;
         }
 
-        $data = unserialize(file_get_contents($file));
+        $data = json_decode(file_get_contents($file), true);
+        if ($data === null) {
+            // Try legacy unserialize for backward compatibility, then migrate
+            $data = @unserialize(file_get_contents($file));
+            if ($data !== false) {
+                // Re-save as JSON
+                file_put_contents($file, json_encode($data), LOCK_EX);
+            } else {
+                unlink($file);
+                return $default;
+            }
+        }
 
         // Check expiration
         if ($data['expires'] !== 0 && $data['expires'] < time()) {
@@ -68,7 +79,7 @@ class SiteCache {
             'value' => $value
         ];
 
-        file_put_contents($file, serialize($data), LOCK_EX);
+        file_put_contents($file, json_encode($data), LOCK_EX);
     }
 
     /**

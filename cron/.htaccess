@@ -1,0 +1,8 @@
+# Deny all access to cron directory (CLI only)
+Require all denied
+
+# For Apache 2.2 compatibility
+<IfModule !mod_authz_core.c>
+    Order Allow,Deny
+    Deny from all
+</IfModule>
