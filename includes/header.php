@@ -157,7 +157,12 @@ if ($current_user && $is_bible_study_page) {
     <link rel="dns-prefetch" href="https://www.youtube.com">
     <link rel="dns-prefetch" href="https://img.youtube.com">
     <link rel="dns-prefetch" href="https://i.ytimg.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet">
+    <?php if ($current_url === '/'): ?>
+    <!-- Preload LCP image for homepage -->
+    <link rel="preload" as="image" href="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" fetchpriority="high">
+    <?php endif; ?>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
     <?php
     // Load sermon CSS for sermon-related pages
@@ -253,8 +258,8 @@ if ($current_user && $is_bible_study_page) {
 <header class="site-header">
     <div class="container header-inner">
         <a class="logo" href="/">
-            <img src="/assets/imgs/logo.png" alt="<?= htmlspecialchars($site['name']); ?>" class="logo-light">
-            <img src="/assets/imgs/logo-dark.png" alt="<?= htmlspecialchars($site['name']); ?>" class="logo-dark">
+            <img src="/assets/imgs/logo.png" alt="<?= htmlspecialchars($site['name']); ?>" class="logo-light" width="923" height="250">
+            <img src="/assets/imgs/logo-dark.png" alt="<?= htmlspecialchars($site['name']); ?>" class="logo-dark" width="976" height="256">
         </a>
         <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
         <label class="nav-toggle-label" for="nav-toggle" aria-label="Toggle navigation">

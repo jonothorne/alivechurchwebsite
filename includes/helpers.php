@@ -176,11 +176,13 @@ function str_contains_any($haystack, array $needles) {
 /**
  * Debug dump and die
  */
-function dd(...$vars) {
-    echo '<pre>';
-    foreach ($vars as $var) {
-        var_dump($var);
+if (!function_exists('dd')) {
+    function dd(...$vars) {
+        echo '<pre>';
+        foreach ($vars as $var) {
+            var_dump($var);
+        }
+        echo '</pre>';
+        exit;
     }
-    echo '</pre>';
-    exit;
 }

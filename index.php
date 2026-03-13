@@ -81,6 +81,8 @@ include __DIR__ . '/includes/header.php';
             <div class="cta-image">
                 <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg"
                      alt="Welcoming team at Alive Church"
+                     width="960" height="720"
+                     fetchpriority="high"
                      data-cms-editable="newhere_image" data-cms-page="home" data-cms-type="image">
             </div>
         </div>
@@ -95,16 +97,20 @@ include __DIR__ . '/includes/header.php';
             <h2 data-cms-editable="sermon_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('sermon_headline', 'Watch this week\'s teaching.'); ?></h2>
         </div>
 
-        <!-- Embedded YouTube Player -->
+        <!-- Lazy-loaded YouTube Player (facade pattern for performance) -->
         <div class="video-player-wrapper">
-            <iframe
-                src="https://www.youtube.com/embed/<?= $featured_sermon['video_id']; ?>"
-                title="<?= htmlspecialchars($featured_sermon['title']); ?>"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media;
-                       gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
+            <div class="youtube-facade" data-video-id="<?= htmlspecialchars($featured_sermon['video_id']); ?>">
+                <img src="https://i.ytimg.com/vi/<?= htmlspecialchars($featured_sermon['video_id']); ?>/hqdefault.jpg"
+                     alt="<?= htmlspecialchars($featured_sermon['title']); ?>"
+                     loading="lazy"
+                     width="480" height="360">
+                <button class="youtube-play-btn" aria-label="Play video">
+                    <svg viewBox="0 0 68 48" width="68" height="48">
+                        <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
+                        <path d="M45 24L27 14v20" fill="white"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <div class="sermon-info">
@@ -171,7 +177,7 @@ include __DIR__ . '/includes/header.php';
                     <p class="stat-label" data-cms-editable="stat3_label" data-cms-page="home" data-cms-type="text"><?= $cms->text('stat3_label', 'meals served last month'); ?></p>
                 </div>
             </div>
-            <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" width="748" height="800" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
         </div>
         <div class="card">
             <p class="eyebrow light">New here?</p>
@@ -287,12 +293,12 @@ include __DIR__ . '/includes/header.php';
             <h2 data-cms-editable="gallery_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('gallery_headline', 'See what happens when we gather.'); ?></h2>
         </div>
         <div class="gallery-grid">
-            <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church worship service with congregation" class="gallery-img" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-drummer-worship-team.jpg" alt="Alive Church drummer during worship" class="gallery-img" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church community café outdoor gathering" class="gallery-img" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-christmas-worship-service.jpg" alt="Alive Church Christmas worship service" class="gallery-img" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church Christmas celebration service" class="gallery-img" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Alive Church acoustic worship and prayer" class="gallery-img" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church worship service with congregation" class="gallery-img" width="800" height="516" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-drummer-worship-team.jpg" alt="Alive Church drummer during worship" class="gallery-img" width="800" height="600" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church community café outdoor gathering" class="gallery-img" width="800" height="600" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-christmas-worship-service.jpg" alt="Alive Church Christmas worship service" class="gallery-img" width="960" height="720" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church Christmas celebration service" class="gallery-img" width="960" height="720" loading="lazy">
+            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Alive Church acoustic worship and prayer" class="gallery-img" width="768" height="1024" loading="lazy">
         </div>
     </div>
 </section>
