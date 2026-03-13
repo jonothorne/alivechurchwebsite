@@ -41,6 +41,12 @@ RewriteRule ^sermons/?$ sermons.php [L,QSA]
 # Admin panel
 RewriteRule ^admin/?$ admin/index.php [L,QSA]
 
+# My Studies pages
+RewriteRule ^my-studies/?$ my-studies.php [L,QSA]
+RewriteRule ^my-studies/saved/?$ my-studies-saved.php [L,QSA]
+RewriteRule ^my-studies/highlights/?$ my-studies-highlights.php [L,QSA]
+RewriteRule ^my-studies/history/?$ my-studies-history.php [L,QSA]
+
 # === END DIRECTORY ROUTES ===
 
 # Force HTTPS (optional - uncomment when ready for production with SSL)
