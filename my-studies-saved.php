@@ -149,7 +149,7 @@ document.querySelectorAll('.unsave-btn').forEach(btn => {
             formData.append('action', 'unsave_study');
             formData.append('study_id', studyId);
             
-            const response = await fetch('/api/user-studies.php', {
+            const response = await fetch('/api/user-studies', {
                 method: 'POST',
                 body: formData
             });

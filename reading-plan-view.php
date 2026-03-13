@@ -104,13 +104,13 @@ include __DIR__ . '/includes/header.php';
                         </a>
                     <?php elseif ($userProgress && $userProgress['completed_at']): ?>
                         <div class="plan-completed-badge">✓ Completed</div>
-                        <form method="post" action="/api/user-studies.php" class="restart-form">
+                        <form method="post" action="/api/user-studies" class="restart-form">
                             <input type="hidden" name="action" value="start_plan">
                             <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
                             <button type="submit" class="plan-action-btn secondary">Start Again</button>
                         </form>
                     <?php else: ?>
-                        <form method="post" action="/api/user-studies.php" class="start-form">
+                        <form method="post" action="/api/user-studies" class="start-form">
                             <input type="hidden" name="action" value="start_plan">
                             <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
                             <button type="submit" class="plan-action-btn primary">Start This Plan</button>
@@ -172,7 +172,7 @@ document.querySelectorAll('.start-form, .restart-form').forEach(form => {
         btn.textContent = 'Starting...';
 
         try {
-            const response = await fetch('/api/user-studies.php', {
+            const response = await fetch('/api/user-studies', {
                 method: 'POST',
                 body: new FormData(form)
             });

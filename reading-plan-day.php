@@ -270,7 +270,7 @@ include __DIR__ . '/includes/header.php';
                         <span>You've completed this day's reading!</span>
                     </div>
                 <?php else: ?>
-                    <form method="post" action="/api/user-studies.php" class="complete-form" id="complete-day-form">
+                    <form method="post" action="/api/user-studies" class="complete-form" id="complete-day-form">
                         <input type="hidden" name="action" value="complete_day">
                         <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
                         <input type="hidden" name="day_number" value="<?= $dayNumber; ?>">
@@ -322,7 +322,7 @@ document.getElementById('complete-day-form')?.addEventListener('submit', async (
     btn.textContent = 'Saving...';
 
     try {
-        const response = await fetch('/api/user-studies.php', {
+        const response = await fetch('/api/user-studies', {
             method: 'POST',
             body: new FormData(form)
         });

@@ -752,7 +752,7 @@ if (saveBtn && isLoggedIn) {
             formData.append('action', action);
             formData.append('study_id', studyId);
 
-            const response = await fetch('/api/user-studies.php', {
+            const response = await fetch('/api/user-studies', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
@@ -1239,7 +1239,7 @@ async function saveHighlight(text, range, color = 'yellow') {
         formData.append('end_offset', text.length);
         formData.append('color', color);
 
-        const response = await fetch('/api/user-studies.php', {
+        const response = await fetch('/api/user-studies', {
             method: 'POST',
             body: formData,
             credentials: 'same-origin'
@@ -1363,7 +1363,7 @@ async function deleteHighlight(highlight) {
             formData.append('action', 'delete_highlight');
             formData.append('highlight_id', highlightId);
 
-            await fetch('/api/user-studies.php', {
+            await fetch('/api/user-studies', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
@@ -1460,7 +1460,7 @@ async function recordReading(completed = false) {
         formData.append('scroll_progress', scrollProgress);
         formData.append('completed', completed ? '1' : '0');
 
-        await fetch('/api/user-studies.php', {
+        await fetch('/api/user-studies', {
             method: 'POST',
             body: formData,
             credentials: 'same-origin'
@@ -1514,7 +1514,7 @@ window.addEventListener('beforeunload', () => {
             data.append('scroll_progress', scrollProgress);
             data.append('completed', scrollProgress >= 90 ? '1' : '0');
 
-            navigator.sendBeacon('/api/user-studies.php', data);
+            navigator.sendBeacon('/api/user-studies', data);
         }
     }
 });
@@ -1734,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('action', action);
                 formData.append('study_id', studyId);
 
-                const response = await fetch('/api/user-studies.php', {
+                const response = await fetch('/api/user-studies', {
                     method: 'POST',
                     body: formData,
                     credentials: 'same-origin'
@@ -2207,7 +2207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // If logged in, fetch from server (may override localStorage)
         if (isLoggedIn) {
             try {
-                const response = await fetch('/api/user-studies.php?action=get_font_settings', {
+                const response = await fetch('/api/user-studies?action=get_font_settings', {
                     credentials: 'same-origin'
                 });
                 const data = await response.json();
@@ -2237,7 +2237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('font_size', settings.fontSize);
                 formData.append('font_family', settings.fontFamily);
 
-                await fetch('/api/user-studies.php', {
+                await fetch('/api/user-studies', {
                     method: 'POST',
                     body: formData,
                     credentials: 'same-origin'
