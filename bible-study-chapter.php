@@ -754,7 +754,8 @@ if (saveBtn && isLoggedIn) {
 
             const response = await fetch('/api/user-studies.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             });
             const result = await response.json();
 
@@ -1240,7 +1241,8 @@ async function saveHighlight(text, range, color = 'yellow') {
 
         const response = await fetch('/api/user-studies.php', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin'
         });
         const result = await response.json();
 
@@ -1258,7 +1260,9 @@ async function saveHighlight(text, range, color = 'yellow') {
                 mark.remove();
             });
             highlightedTexts.delete(text.toLowerCase());
-            showToast('Failed to save highlight');
+            const errorMsg = result.error || 'Failed to save highlight';
+            showToast(errorMsg);
+            console.error('Highlight save failed:', result);
         }
     } catch (error) {
         console.error('Error saving highlight:', error);
@@ -1361,7 +1365,8 @@ async function deleteHighlight(highlight) {
 
             await fetch('/api/user-studies.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             });
         } catch (error) {
             console.error('Error deleting highlight:', error);
@@ -1457,7 +1462,8 @@ async function recordReading(completed = false) {
 
         await fetch('/api/user-studies.php', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin'
         });
 
         if ((completed || scrollProgress >= 50) && !streakUpdated) {
@@ -1730,7 +1736,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const response = await fetch('/api/user-studies.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 });
                 const result = await response.json();
 
@@ -2200,7 +2207,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // If logged in, fetch from server (may override localStorage)
         if (isLoggedIn) {
             try {
-                const response = await fetch('/api/user-studies.php?action=get_font_settings');
+                const response = await fetch('/api/user-studies.php?action=get_font_settings', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
                 if (data.fontSize || data.fontFamily) {
                     settings.fontSize = data.fontSize || defaultSettings.fontSize;
@@ -2230,7 +2239,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 await fetch('/api/user-studies.php', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 });
             } catch (error) {
                 console.error('Error saving font settings:', error);
