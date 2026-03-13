@@ -369,4 +369,146 @@
             });
         }
     });
+
+    // ==================== YOUTUBE FACADE (Performance) ====================
+    // Lazy-load YouTube iframes only when user clicks play
+    document.querySelectorAll('.youtube-facade').forEach(facade => {
+        facade.addEventListener('click', function() {
+            const videoId = this.dataset.videoId;
+            if (!videoId) return;
+
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            iframe.title = this.querySelector('img')?.alt || 'YouTube video';
+            iframe.frameBorder = '0';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+
+            this.replaceWith(iframe);
+        });
+    });
+
+    // ==================== QUESTION SEARCH AUTOCOMPLETE ====================
+    // Autocomplete for bible study question search (works on both questions and topics pages)
+    const questionSearchInput = document.getElementById('question-search-input') || document.getElementById('topics-search-input');
+    const autocompleteDropdown = document.getElementById('autocomplete-dropdown') || document.getElementById('topics-autocomplete-dropdown');
+
+    if (questionSearchInput && autocompleteDropdown) {
+        let debounceTimer;
+        let selectedIndex = -1;
+
+        // Debounced search
+        questionSearchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                autocompleteDropdown.innerHTML = '';
+                autocompleteDropdown.classList.remove('active');
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/question-search?q=${encodeURIComponent(query)}&limit=8`);
+                    const data = await response.json();
+
+                    if (data.results && data.results.length > 0) {
+                        renderAutocomplete(data.results);
+                    } else {
+                        autocompleteDropdown.innerHTML = '<div class="autocomplete-no-results">No matching questions found</div>';
+                        autocompleteDropdown.classList.add('active');
+                    }
+                } catch (error) {
+                    console.error('Autocomplete error:', error);
+                }
+            }, 200);
+        });
+
+        function renderAutocomplete(results) {
+            selectedIndex = -1;
+            autocompleteDropdown.innerHTML = results.map((r, i) => {
+                if (r.type === 'topic') {
+                    // Render topic
+                    return `
+                        <a href="${r.url}" class="autocomplete-item autocomplete-topic-item" data-index="${i}">
+                            <span class="autocomplete-icon">${r.icon || '📁'}</span>
+                            <div class="autocomplete-content">
+                                <span class="autocomplete-label">Topic</span>
+                                <span class="autocomplete-title">${escapeHtml(r.name)}</span>
+                                <span class="autocomplete-meta">
+                                    ${r.parent ? `<span class="autocomplete-parent">${escapeHtml(r.parent)}</span>` : ''}
+                                    ${r.study_count > 0 ? `<span class="autocomplete-count">${r.study_count} ${r.study_count === 1 ? 'study' : 'studies'}</span>` : ''}
+                                </span>
+                            </div>
+                        </a>
+                    `;
+                } else {
+                    // Render question
+                    return `
+                        <a href="${r.url}" class="autocomplete-item autocomplete-question-item" data-index="${i}">
+                            <span class="autocomplete-icon">${r.icon || '❓'}</span>
+                            <div class="autocomplete-content">
+                                <span class="autocomplete-question">${escapeHtml(r.question)}</span>
+                                <span class="autocomplete-meta">
+                                    <span class="autocomplete-topic-badge">${escapeHtml(r.topic)}</span>
+                                    ${r.study_count > 0 ? `<span class="autocomplete-count">${r.study_count} ${r.study_count === 1 ? 'study' : 'studies'}</span>` : ''}
+                                </span>
+                            </div>
+                        </a>
+                    `;
+                }
+            }).join('');
+            autocompleteDropdown.classList.add('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Keyboard navigation
+        questionSearchInput.addEventListener('keydown', (e) => {
+            const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(items);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                items[selectedIndex].click();
+            } else if (e.key === 'Escape') {
+                autocompleteDropdown.classList.remove('active');
+                selectedIndex = -1;
+            }
+        });
+
+        function updateSelection(items) {
+            items.forEach((item, i) => {
+                item.classList.toggle('selected', i === selectedIndex);
+            });
+        }
+
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            if (!questionSearchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.classList.remove('active');
+            }
+        });
+
+        // Show dropdown on focus if there's content
+        questionSearchInput.addEventListener('focus', () => {
+            if (autocompleteDropdown.innerHTML && questionSearchInput.value.length >= 2) {
+                autocompleteDropdown.classList.add('active');
+            }
+        });
+    }
+
 })();

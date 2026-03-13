@@ -1078,6 +1078,39 @@ textarea {
     height: 100%;
     border-radius: var(--radius-xl);
 }
+/* YouTube facade for lazy loading */
+.youtube-facade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    background: #000;
+    border-radius: var(--radius-xl);
+}
+.youtube-facade img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+}
+.youtube-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.9;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.youtube-facade:hover .youtube-play-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
 .sermon-info {
     text-align: center;
     max-width: 700px;
@@ -2327,7 +2360,7 @@ textarea {
     color: #fff;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* Hero Texture Patterns */
@@ -2474,12 +2507,15 @@ textarea {
     -webkit-text-fill-color: #fff !important;
 }
 
-.topics-hero {
+.topics-hero,
+.questions-hero {
     background: linear-gradient(135deg, rgba(67, 22, 87, 0.85) 0%, rgba(43, 99, 181, 0.85) 100%),
                 url('/assets/imgs/gallery/bible-study-topics-hero-image.jpg');
     background-size: cover;
     background-position: center;
     padding: 5rem 0;
+    padding-bottom: 6rem; /* Extra space for autocomplete dropdown */
+    overflow: visible;
 }
 
 .page-hero-full {
@@ -4523,6 +4559,324 @@ body.cms-edit-mode [data-cms-editable]:hover {
     font-size: 1.125rem;
 }
 
+/* Search Autocomplete */
+.search-autocomplete-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+/* Ensure dropdown is visible outside hero */
+.page-hero .study-search-form {
+    position: relative;
+    z-index: 50;
+    overflow: visible;
+}
+
+.page-hero .search-autocomplete-wrapper {
+    position: relative;
+}
+
+.page-hero .autocomplete-dropdown {
+    z-index: 99;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    margin-top: 4px;
+    text-align: left;
+}
+
+.autocomplete-dropdown.active {
+    display: block;
+}
+
+.autocomplete-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: background 0.15s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background: #f8f5ff;
+}
+
+.autocomplete-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.autocomplete-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.autocomplete-question {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.autocomplete-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.autocomplete-topic {
+    background: #f0ebf8;
+    color: var(--color-purple);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+}
+
+.autocomplete-count {
+    color: #888;
+    font-size: 0.75rem;
+}
+
+/* Topic items in autocomplete */
+.autocomplete-topic-item {
+    background: #fafafa;
+    border-left: 3px solid var(--color-purple);
+}
+
+.autocomplete-topic-item:hover {
+    background: #f0ebf8;
+}
+
+.autocomplete-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-purple);
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.autocomplete-title {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.autocomplete-parent {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+.autocomplete-topic-badge {
+    background: #f0ebf8;
+    color: var(--color-purple);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+}
+
+.autocomplete-no-results {
+    padding: 1.25rem;
+    text-align: center;
+    color: #666;
+}
+
+.autocomplete-no-results a {
+    color: var(--color-purple);
+    font-weight: 500;
+}
+
+.autocomplete-loading {
+    padding: 1rem;
+    text-align: center;
+    color: #999;
+}
+
+/* Question filters and list styles */
+.questions-filters {
+    padding: 1.5rem 0;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    background: #f5f5f5;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    color: #444;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.filter-pill:hover {
+    background: #e8e8e8;
+}
+
+.filter-pill.active {
+    background: var(--color-purple);
+    color: #fff;
+}
+
+.filter-pill .count {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.sort-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: 0.9rem;
+}
+
+.results-count {
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.questions-list {
+    padding: 2rem 0 4rem;
+}
+
+.topic-questions-section {
+    margin-bottom: 3rem;
+}
+
+.topic-questions-section .topic-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #eee;
+}
+
+.topic-questions-section .topic-heading a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.topic-questions-section .topic-heading a:hover {
+    color: var(--color-purple);
+}
+
+.topic-questions-section .question-count {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #888;
+    margin-left: auto;
+}
+
+.questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.question-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+
+.question-card:hover {
+    border-color: var(--color-purple);
+    box-shadow: 0 4px 12px rgba(75, 38, 121, 0.1);
+    transform: translateY(-2px);
+}
+
+.question-card .question-text {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.question-card .question-description {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.question-card .question-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+}
+
+.question-card .study-count {
+    font-size: 0.8rem;
+    color: #888;
+}
+
 /* Bible Study Stats */
 .bible-study-stats {
     padding: 2rem 0;
@@ -6487,9 +6841,34 @@ body.cms-edit-mode [data-cms-editable]:hover {
     background: var(--color-grey);
 }
 
-.questions-popular h2 {
-    text-align: center;
+.questions-popular .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.questions-popular h2 {
+    margin-bottom: 0;
+}
+
+.questions-popular .view-all-link {
+    font-weight: 500;
+    color: var(--color-magenta);
+    text-decoration: none;
+}
+
+.questions-popular .view-all-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .questions-popular .section-header {
+        flex-direction: column;
+        text-align: center;
+    }
 }
 
 .popular-questions-grid {

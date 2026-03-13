@@ -27,8 +27,11 @@ include __DIR__ . '/includes/header.php';
         <h1>What Are You Going Through?</h1>
         <p>Find Bible studies that speak to where you are in life. Whether you're facing a challenge, seeking answers, or wanting to grow deeper in faith, explore Scripture through the lens of life's real questions.</p>
 
-        <form action="/bible-study/search" method="GET" class="study-search-form hero-search">
-            <input type="text" name="q" placeholder="Search questions or enter a topic (e.g., anxiety, forgiveness)..." aria-label="Search Bible studies">
+        <form action="/bible-study/search" method="GET" class="study-search-form hero-search" id="topics-search-form">
+            <div class="search-autocomplete-wrapper">
+                <input type="text" name="q" id="topics-search-input" placeholder="Search questions or enter a topic (e.g., anxiety, forgiveness)..." aria-label="Search Bible studies" autocomplete="off">
+                <div class="autocomplete-dropdown" id="topics-autocomplete-dropdown"></div>
+            </div>
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
     </div>
@@ -38,7 +41,10 @@ include __DIR__ . '/includes/header.php';
 <!-- Popular Questions -->
 <section class="questions-popular">
     <div class="container">
-        <h2>Questions People Are Asking</h2>
+        <div class="section-header">
+            <h2>Questions People Are Asking</h2>
+            <a href="/bible-study/questions" class="view-all-link">View All Questions &rarr;</a>
+        </div>
         <div class="popular-questions-grid">
             <?php foreach ($popularQuestions as $question): ?>
                 <a href="/bible-study/questions/<?= htmlspecialchars($question['slug']); ?>" class="popular-question-card">
