@@ -104,35 +104,36 @@ if (!isset($cms)) {
                 </div>
             <?php endif; ?>
 
-            <form class="card form-card" method="post">
+            <form class="card form-card" method="post" id="serve-form">
                 <h3 data-cms-editable="form_title" data-cms-page="serve" data-cms-type="text"><?= $cms->text('form_title', 'Application Form'); ?></h3>
 
-                <?php if ($serve_notice): ?>
-                    <p class="notice notice-<?= $serve_notice['type']; ?>" role="status"><?= $serve_notice['message']; ?></p>
-                <?php endif; ?>
+                <input type="hidden" name="form_type" value="serve">
+                <div class="form-message" id="form-message" style="display: none;"></div>
 
                 <label>
                     <span>Name *</span>
-                    <input type="text" name="name" placeholder="First & Last" value="<?= htmlspecialchars($serve_values['name']); ?>" required>
+                    <input type="text" name="name" id="name" placeholder="First & Last" required>
+                    <span class="form-error" id="name-error"></span>
                 </label>
 
                 <label>
                     <span>Email *</span>
-                    <input type="email" name="email" placeholder="you@email.com" value="<?= htmlspecialchars($serve_values['email']); ?>" required>
+                    <input type="email" name="email" id="email" placeholder="you@email.com" required>
+                    <span class="form-error" id="email-error"></span>
                 </label>
 
                 <label>
                     <span>Phone</span>
-                    <input type="tel" name="phone" placeholder="07123 456789" value="<?= htmlspecialchars($serve_values['phone']); ?>">
+                    <input type="tel" name="phone" id="phone" placeholder="07123 456789">
                 </label>
 
                 <label>
                     <span>Team/Ministry *</span>
-                    <select name="team" required>
+                    <select name="team" id="team" required>
                         <option value="">Select a team...</option>
                         <?php foreach ($serve_opportunities as $opportunity): ?>
                             <option value="<?= htmlspecialchars($opportunity['title']); ?>"
-                                <?= $serve_values['team'] === $opportunity['title'] ? 'selected' : ''; ?>>
+                                <?= ($selected_team['title'] ?? '') === $opportunity['title'] ? 'selected' : ''; ?>>
                                 <?= htmlspecialchars($opportunity['title']); ?>
                             </option>
                         <?php endforeach; ?>
@@ -141,28 +142,96 @@ if (!isset($cms)) {
 
                 <label>
                     <span>Availability *</span>
-                    <select name="availability" required>
+                    <select name="availability" id="availability" required>
                         <option value="">Select your availability...</option>
-                        <option <?= $serve_values['availability'] === 'Every week' ? 'selected' : ''; ?>>Every week</option>
-                        <option <?= $serve_values['availability'] === 'Twice a month' ? 'selected' : ''; ?>>Twice a month</option>
-                        <option <?= $serve_values['availability'] === 'Once a month' ? 'selected' : ''; ?>>Once a month</option>
-                        <option <?= $serve_values['availability'] === 'Special events only' ? 'selected' : ''; ?>>Special events only</option>
-                        <option <?= $serve_values['availability'] === 'Flexible' ? 'selected' : ''; ?>>Flexible</option>
+                        <option>Every week</option>
+                        <option>Twice a month</option>
+                        <option>Once a month</option>
+                        <option>Special events only</option>
+                        <option>Flexible</option>
                     </select>
                 </label>
 
                 <label>
                     <span>Relevant Experience</span>
-                    <textarea rows="3" name="experience" placeholder="Have you served in this area before? Any relevant skills or training?"><?= htmlspecialchars($serve_values['experience']); ?></textarea>
+                    <textarea rows="3" name="experience" id="experience" placeholder="Have you served in this area before? Any relevant skills or training?"></textarea>
                 </label>
 
                 <label>
                     <span>Anything Else We Should Know?</span>
-                    <textarea rows="3" name="message" placeholder="Questions, preferences, or additional info..."><?= htmlspecialchars($serve_values['message']); ?></textarea>
+                    <textarea rows="3" name="message" id="message" placeholder="Questions, preferences, or additional info..."></textarea>
                 </label>
 
-                <button type="submit" class="btn btn-primary">Submit Application</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <span class="btn-text">Submit Application</span>
+                    <span class="btn-spinner" style="display: none;">
+                        <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                            </path>
+                        </svg>
+                    </span>
+                </button>
             </form>
+
+            <script>
+            document.getElementById('serve-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const form = this;
+                const btn = document.getElementById('submit-btn');
+                const btnText = btn.querySelector('.btn-text');
+                const btnSpinner = btn.querySelector('.btn-spinner');
+                const formMessage = document.getElementById('form-message');
+
+                document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+                formMessage.style.display = 'none';
+
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                btnSpinner.style.display = 'inline-block';
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('/api/forms/submit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        formMessage.className = 'form-message success';
+                        formMessage.textContent = data.message;
+                        formMessage.style.display = 'block';
+                        form.reset();
+                    } else {
+                        if (data.errors) {
+                            for (const [field, error] of Object.entries(data.errors)) {
+                                const fieldError = document.getElementById(field + '-error');
+                                if (fieldError) fieldError.textContent = error;
+                            }
+                        }
+                        formMessage.className = 'form-message error';
+                        formMessage.textContent = data.error || 'Please fix the errors and try again.';
+                        formMessage.style.display = 'block';
+                    }
+
+                    btn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnSpinner.style.display = 'none';
+                } catch (error) {
+                    formMessage.className = 'form-message error';
+                    formMessage.textContent = 'Something went wrong. Please try again.';
+                    formMessage.style.display = 'block';
+
+                    btn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnSpinner.style.display = 'none';
+                }
+            });
+            </script>
         </div>
     </div>
 </section>

@@ -649,8 +649,8 @@ include __DIR__ . '/includes/header.php';
 
                             <!-- Reply Form (hidden by default) -->
                             <div class="reply-form-container" id="reply-form-<?= $comment['id']; ?>" style="display: none;">
-                                <form method="POST" class="comment-form">
-                                    <input type="hidden" name="parent_id" value="<?= $comment['id']; ?>">
+                                <div class="form-message reply-form-message" style="display: none;"></div>
+                                <form method="POST" class="comment-form reply-comment-form" data-comment-type="sermon" data-content-id="<?= $sermon['id']; ?>" data-parent-id="<?= $comment['id']; ?>">
                                     <?php if ($currentUser): ?>
                                         <div class="comment-form-user">
                                             <?php if ($currentUser['avatar']): ?>
@@ -670,7 +670,17 @@ include __DIR__ . '/includes/header.php';
                                     <?php endif; ?>
                                     <textarea name="content" placeholder="Your reply..." required></textarea>
                                     <div class="form-actions">
-                                        <button type="submit" name="submit_comment" class="btn btn-primary">Post Reply</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <span class="btn-text">Post Reply</span>
+                                            <span class="btn-spinner" style="display: none;">
+                                                <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                                                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                                                    </path>
+                                                </svg>
+                                            </span>
+                                        </button>
                                         <button type="button" class="btn btn-outline" onclick="hideReplyForm(<?= $comment['id']; ?>)">Cancel</button>
                                     </div>
                                 </form>
@@ -723,8 +733,9 @@ include __DIR__ . '/includes/header.php';
             <!-- Comment Form -->
             <div class="comment-form-section">
                 <h3>Leave a Comment</h3>
+                <div class="form-message comment-form-message" id="main-comment-message" style="display: none;"></div>
                 <?php if ($currentUser): ?>
-                    <form method="POST" class="comment-form">
+                    <form method="POST" class="comment-form" id="main-comment-form" data-comment-type="sermon" data-content-id="<?= $sermon['id']; ?>">
                         <div class="comment-form-user">
                             <?php if ($currentUser['avatar']): ?>
                                 <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
@@ -736,16 +747,36 @@ include __DIR__ . '/includes/header.php';
                             <span class="comment-form-username"><?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?></span>
                         </div>
                         <textarea name="content" placeholder="Share your thoughts on this message..." rows="4" required></textarea>
-                        <button type="submit" name="submit_comment" class="btn btn-primary">Post Comment</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Post Comment</span>
+                            <span class="btn-spinner" style="display: none;">
+                                <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                                    </path>
+                                </svg>
+                            </span>
+                        </button>
                     </form>
                 <?php else: ?>
-                    <form method="POST" class="comment-form">
+                    <form method="POST" class="comment-form" id="main-comment-form" data-comment-type="sermon" data-content-id="<?= $sermon['id']; ?>">
                         <div class="form-row">
                             <input type="text" name="author_name" placeholder="Your Name *" required>
                             <input type="email" name="author_email" placeholder="Your Email *" required>
                         </div>
                         <textarea name="content" placeholder="Share your thoughts on this message..." rows="4" required></textarea>
-                        <button type="submit" name="submit_comment" class="btn btn-primary">Post Comment</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Post Comment</span>
+                            <span class="btn-spinner" style="display: none;">
+                                <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                                    </path>
+                                </svg>
+                            </span>
+                        </button>
                     </form>
                     <p class="comment-login-prompt">Have an account? <a href="/login?redirect=<?= urlencode('/sermon/' . $sermon['slug']); ?>">Log in</a> to post instantly.</p>
                 <?php endif; ?>
@@ -892,6 +923,108 @@ function toggleComment(commentId) {
         btn.textContent = 'Read more';
     }
 }
+
+// AJAX Comment Submission
+async function submitComment(form, messageEl) {
+    const btn = form.querySelector('button[type="submit"]');
+    const btnText = btn.querySelector('.btn-text');
+    const btnSpinner = btn.querySelector('.btn-spinner');
+
+    // Show loading state
+    btn.disabled = true;
+    if (btnText) btnText.style.display = 'none';
+    if (btnSpinner) btnSpinner.style.display = 'inline-block';
+    messageEl.style.display = 'none';
+
+    const formData = new FormData(form);
+    formData.append('comment_type', form.dataset.commentType);
+    formData.append('content_id', form.dataset.contentId);
+    if (form.dataset.parentId) {
+        formData.append('parent_id', form.dataset.parentId);
+    }
+
+    try {
+        const response = await fetch('/api/comments/submit', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            messageEl.className = 'form-message success';
+            messageEl.textContent = data.message;
+            messageEl.style.display = 'block';
+            form.reset();
+
+            // If comment was auto-approved, add it to the page
+            if (data.approved && data.comment) {
+                if (form.dataset.parentId) {
+                    // Reply - find the parent comment's replies section
+                    const parentComment = document.getElementById('reply-form-' + form.dataset.parentId).closest('.comment');
+                    let repliesContainer = parentComment.querySelector('.comment-replies');
+                    if (!repliesContainer) {
+                        repliesContainer = document.createElement('div');
+                        repliesContainer.className = 'comment-replies';
+                        parentComment.appendChild(repliesContainer);
+                    }
+                    repliesContainer.insertAdjacentHTML('beforeend', data.comment);
+                    hideReplyForm(form.dataset.parentId);
+                } else {
+                    // Main comment - add to comments list
+                    const commentsList = document.querySelector('.comments-list');
+                    if (commentsList) {
+                        commentsList.insertAdjacentHTML('beforeend', data.comment);
+                    } else {
+                        const section = document.querySelector('.comment-form-section');
+                        section.insertAdjacentHTML('beforebegin', '<div class="comments-list">' + data.comment + '</div>');
+                    }
+                }
+
+                // Highlight new comment briefly
+                setTimeout(() => {
+                    const newComment = document.querySelector('.new-comment');
+                    if (newComment) {
+                        newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        newComment.classList.add('highlight');
+                        setTimeout(() => newComment.classList.remove('new-comment', 'highlight'), 2000);
+                    }
+                }, 100);
+            }
+        } else {
+            messageEl.className = 'form-message error';
+            messageEl.textContent = data.error || 'Failed to submit comment.';
+            messageEl.style.display = 'block';
+        }
+    } catch (error) {
+        messageEl.className = 'form-message error';
+        messageEl.textContent = 'Something went wrong. Please try again.';
+        messageEl.style.display = 'block';
+    }
+
+    // Reset button
+    btn.disabled = false;
+    if (btnText) btnText.style.display = 'inline';
+    if (btnSpinner) btnSpinner.style.display = 'none';
+}
+
+// Main comment form
+const mainForm = document.getElementById('main-comment-form');
+if (mainForm) {
+    mainForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitComment(this, document.getElementById('main-comment-message'));
+    });
+}
+
+// Reply forms
+document.querySelectorAll('.reply-comment-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const messageEl = this.closest('.reply-form-container').querySelector('.reply-form-message');
+        submitComment(this, messageEl);
+    });
+});
 </script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -105,11 +105,11 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
             '@^/author/([^/]+)$@' => ['file' => '/author.php', 'params' => ['username' => 1]],
             '@^/user/([^/]+)$@' => ['file' => '/author.php', 'params' => ['username' => 1]],
 
-            // API routes
-            '@^/api/question-search$@' => ['file' => '/api/question-search.php'],
-            '@^/api/user-preferences$@' => ['file' => '/api/user-preferences.php'],
-            '@^/api/cookie-consent$@' => ['file' => '/api/cookie-consent.php'],
-            '@^/api/newsletter-signup$@' => ['file' => '/api/newsletter-signup.php'],
+            // API routes (support both with and without .php extension)
+            '@^/api/question-search(\.php)?$@' => ['file' => '/api/question-search.php'],
+            '@^/api/user-preferences(\.php)?$@' => ['file' => '/api/user-preferences.php'],
+            '@^/api/cookie-consent(\.php)?$@' => ['file' => '/api/cookie-consent.php'],
+            '@^/api/newsletter-signup(\.php)?$@' => ['file' => '/api/newsletter-signup.php'],
             '@^/api/user-studies$@' => ['file' => '/api/user-studies.php'],
             '@^/api/cms/save$@' => ['file' => '/api/cms/save.php'],
             '@^/api/cms/upload$@' => ['file' => '/api/cms/upload.php'],
@@ -120,6 +120,52 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
 
             // Sitemap
             '@^/sitemap\.xml$@' => ['file' => '/sitemap.php'],
+
+            // Auth API routes
+            '@^/api/auth/login$@' => ['file' => '/api/auth/login.php'],
+            '@^/api/auth/register$@' => ['file' => '/api/auth/register.php'],
+
+            // Forms API
+            '@^/api/forms/submit$@' => ['file' => '/api/forms/submit.php'],
+
+            // Comments API
+            '@^/api/comments/submit$@' => ['file' => '/api/comments/submit.php'],
+
+            // Admin routes
+            '@^/admin$@' => ['file' => '/admin/index.php'],
+            '@^/admin/login$@' => ['file' => '/admin/login.php'],
+            '@^/admin/logout$@' => ['file' => '/admin/logout.php'],
+            '@^/admin/analytics$@' => ['file' => '/admin/analytics.php'],
+            '@^/admin/users$@' => ['file' => '/admin/users.php'],
+            '@^/admin/pages$@' => ['file' => '/admin/pages.php'],
+            '@^/admin/media$@' => ['file' => '/admin/media.php'],
+            '@^/admin/sermons$@' => ['file' => '/admin/sermons.php'],
+            '@^/admin/events$@' => ['file' => '/admin/events.php'],
+            '@^/admin/groups$@' => ['file' => '/admin/groups.php'],
+            '@^/admin/forms$@' => ['file' => '/admin/forms.php'],
+            '@^/admin/blog$@' => ['file' => '/admin/blog.php'],
+            '@^/admin/newsletter$@' => ['file' => '/admin/newsletter.php'],
+            '@^/admin/navigation$@' => ['file' => '/admin/navigation.php'],
+            '@^/admin/settings$@' => ['file' => '/admin/settings.php'],
+            '@^/admin/ministries$@' => ['file' => '/admin/ministries.php'],
+            '@^/admin/next-steps$@' => ['file' => '/admin/next-steps.php'],
+            '@^/admin/serve$@' => ['file' => '/admin/serve.php'],
+            '@^/admin/bible-study$@' => ['file' => '/admin/bible-study.php'],
+            '@^/admin/reading-plans$@' => ['file' => '/admin/reading-plans.php'],
+            '@^/admin/profanity-filter$@' => ['file' => '/admin/profanity-filter.php'],
+
+            // Admin sub-routes
+            '@^/admin/sermons/edit/(\d+)$@' => ['file' => '/admin/sermons/edit.php', 'params' => ['id' => 1]],
+            '@^/admin/sermons/create$@' => ['file' => '/admin/sermons/create.php'],
+            '@^/admin/blog/edit/(\d+)$@' => ['file' => '/admin/blog/edit.php', 'params' => ['id' => 1]],
+            '@^/admin/blog/create$@' => ['file' => '/admin/blog/create.php'],
+            '@^/admin/bible-study/edit/(\d+)$@' => ['file' => '/admin/bible-study/edit.php', 'params' => ['id' => 1]],
+            '@^/admin/reading-plans/edit/(\d+)$@' => ['file' => '/admin/reading-plans/edit.php', 'params' => ['id' => 1]],
+            '@^/admin/events/edit/(\d+)$@' => ['file' => '/admin/events/edit.php', 'params' => ['id' => 1]],
+
+            // Admin API routes
+            '@^/admin/api/blog$@' => ['file' => '/admin/api/blog.php'],
+            '@^/admin/api/sermons$@' => ['file' => '/admin/api/sermons.php'],
         ];
 
         // Check each rewrite rule

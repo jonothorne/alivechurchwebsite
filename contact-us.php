@@ -143,55 +143,130 @@ if (!isset($cms)) {
                 </div>
             </div>
 
-            <form class="card form-card" method="post">
+            <form class="card form-card" method="post" id="contact-form">
                 <h3>Send Us a Message</h3>
-                <?php if ($contact_notice): ?>
-                    <p class="notice notice-<?= $contact_notice['type']; ?>" role="status"><?= $contact_notice['message']; ?></p>
-                <?php endif; ?>
+                <input type="hidden" name="form_type" value="contact">
+                <div class="form-message" id="form-message" style="display: none;"></div>
 
                 <label>
                     <span>Your Name <span class="required">*</span></span>
-                    <input type="text" name="name" placeholder="First & Last"
-                           value="<?= htmlspecialchars($contact_values['name']); ?>" required>
+                    <input type="text" name="name" id="name" placeholder="First & Last" required>
+                    <span class="form-error" id="name-error"></span>
                 </label>
 
                 <label>
                     <span>Email <span class="required">*</span></span>
-                    <input type="email" name="email" placeholder="your@email.com"
-                           value="<?= htmlspecialchars($contact_values['email']); ?>" required>
+                    <input type="email" name="email" id="email" placeholder="your@email.com" required>
+                    <span class="form-error" id="email-error"></span>
                 </label>
 
                 <label>
                     <span>Phone <span class="optional">(optional)</span></span>
-                    <input type="tel" name="phone" placeholder="Your phone number"
-                           value="<?= htmlspecialchars($contact_values['phone']); ?>">
+                    <input type="tel" name="phone" id="phone" placeholder="Your phone number">
                 </label>
 
                 <label>
                     <span>Subject <span class="optional">(optional)</span></span>
-                    <select name="subject">
-                        <option value="" <?= empty($contact_values['subject']) ? 'selected' : ''; ?>>Select a topic...</option>
-                        <option value="General Enquiry" <?= $contact_values['subject'] === 'General Enquiry' ? 'selected' : ''; ?>>General Enquiry</option>
-                        <option value="First Time Visitor" <?= $contact_values['subject'] === 'First Time Visitor' ? 'selected' : ''; ?>>I'm Planning to Visit</option>
-                        <option value="Groups & Community" <?= $contact_values['subject'] === 'Groups & Community' ? 'selected' : ''; ?>>Groups & Community</option>
-                        <option value="Serving & Volunteering" <?= $contact_values['subject'] === 'Serving & Volunteering' ? 'selected' : ''; ?>>Serving & Volunteering</option>
-                        <option value="Pastoral Care" <?= $contact_values['subject'] === 'Pastoral Care' ? 'selected' : ''; ?>>Pastoral Care</option>
-                        <option value="Bible Study" <?= $contact_values['subject'] === 'Bible Study' ? 'selected' : ''; ?>>Bible Study</option>
-                        <option value="Events" <?= $contact_values['subject'] === 'Events' ? 'selected' : ''; ?>>Events</option>
-                        <option value="Website Feedback" <?= $contact_values['subject'] === 'Website Feedback' ? 'selected' : ''; ?>>Website Feedback</option>
-                        <option value="Other" <?= $contact_values['subject'] === 'Other' ? 'selected' : ''; ?>>Other</option>
+                    <select name="subject" id="subject">
+                        <option value="">Select a topic...</option>
+                        <option value="General Enquiry">General Enquiry</option>
+                        <option value="First Time Visitor">I'm Planning to Visit</option>
+                        <option value="Groups & Community">Groups & Community</option>
+                        <option value="Serving & Volunteering">Serving & Volunteering</option>
+                        <option value="Pastoral Care">Pastoral Care</option>
+                        <option value="Bible Study">Bible Study</option>
+                        <option value="Events">Events</option>
+                        <option value="Website Feedback">Website Feedback</option>
+                        <option value="Other">Other</option>
                     </select>
                 </label>
 
                 <label>
                     <span>Message <span class="required">*</span></span>
-                    <textarea rows="6" name="message"
+                    <textarea rows="6" name="message" id="message"
                               placeholder="How can we help you?"
-                              required><?= htmlspecialchars($contact_values['message']); ?></textarea>
+                              required></textarea>
+                    <span class="form-error" id="message-error"></span>
                 </label>
 
-                <button type="submit" class="btn btn-primary">Send Message</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <span class="btn-text">Send Message</span>
+                    <span class="btn-spinner" style="display: none;">
+                        <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                            </path>
+                        </svg>
+                    </span>
+                </button>
             </form>
+
+            <script>
+            document.getElementById('contact-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const form = this;
+                const btn = document.getElementById('submit-btn');
+                const btnText = btn.querySelector('.btn-text');
+                const btnSpinner = btn.querySelector('.btn-spinner');
+                const formMessage = document.getElementById('form-message');
+
+                // Clear previous errors
+                document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+                formMessage.style.display = 'none';
+
+                // Show loading state
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                btnSpinner.style.display = 'inline-block';
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('/api/forms/submit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        formMessage.className = 'form-message success';
+                        formMessage.textContent = data.message;
+                        formMessage.style.display = 'block';
+                        form.reset();
+
+                        btn.disabled = false;
+                        btnText.style.display = 'inline';
+                        btnSpinner.style.display = 'none';
+                    } else {
+                        // Show field-specific errors
+                        if (data.errors) {
+                            for (const [field, error] of Object.entries(data.errors)) {
+                                const fieldError = document.getElementById(field + '-error');
+                                if (fieldError) fieldError.textContent = error;
+                            }
+                        }
+
+                        formMessage.className = 'form-message error';
+                        formMessage.textContent = data.error || 'Please fix the errors and try again.';
+                        formMessage.style.display = 'block';
+
+                        btn.disabled = false;
+                        btnText.style.display = 'inline';
+                        btnSpinner.style.display = 'none';
+                    }
+                } catch (error) {
+                    formMessage.className = 'form-message error';
+                    formMessage.textContent = 'Something went wrong. Please try again.';
+                    formMessage.style.display = 'block';
+
+                    btn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnSpinner.style.display = 'none';
+                }
+            });
+            </script>
         </div>
     </div>
 </section>

@@ -53,30 +53,101 @@ if (!isset($cms)) {
             <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church welcoming service" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" data-cms-editable="expect_image" data-cms-page="visit" data-cms-type="image">
         </div>
         <form class="card form-card" id="visit-form" method="post">
-            <?php if ($visit_notice): ?>
-                <p class="notice notice-<?= $visit_notice['type']; ?>" role="status"><?= $visit_notice['message']; ?></p>
-            <?php endif; ?>
+            <input type="hidden" name="form_type" value="visit">
+            <div class="form-message" id="form-message" style="display: none;"></div>
+
             <label>
                 <span>Name</span>
-                <input type="text" name="name" placeholder="First & Last" value="<?= htmlspecialchars($visit_values['name']); ?>" required>
+                <input type="text" name="name" id="name" placeholder="First & Last" required>
+                <span class="form-error" id="name-error"></span>
             </label>
             <label>
                 <span>Email</span>
-                <input type="email" name="email" placeholder="you@email.com" value="<?= htmlspecialchars($visit_values['email']); ?>" required>
+                <input type="email" name="email" id="email" placeholder="you@email.com" required>
+                <span class="form-error" id="email-error"></span>
             </label>
             <label>
                 <span>Preferred Gathering</span>
-                <select name="gathering">
-                    <option <?= $visit_values['gathering'] === 'Sunday 11:00AM' ? 'selected' : ''; ?>>Sunday 11:00AM</option>
-                    <option <?= $visit_values['gathering'] === 'Alive Online' ? 'selected' : ''; ?>>Alive Online</option>
+                <select name="gathering" id="gathering">
+                    <option>Sunday 11:00AM</option>
+                    <option>Alive Online</option>
                 </select>
             </label>
             <label>
                 <span>Anything we can prepare?</span>
-                <textarea rows="4" name="notes" placeholder="Accessibility, kids, prayer..."><?= htmlspecialchars($visit_values['notes']); ?></textarea>
+                <textarea rows="4" name="notes" id="notes" placeholder="Accessibility, kids, prayer..."></textarea>
             </label>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span class="btn-text">Submit</span>
+                <span class="btn-spinner" style="display: none;">
+                    <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+                            <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                    </svg>
+                </span>
+            </button>
         </form>
+
+        <script>
+        document.getElementById('visit-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const btn = document.getElementById('submit-btn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnSpinner = btn.querySelector('.btn-spinner');
+            const formMessage = document.getElementById('form-message');
+
+            document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+            formMessage.style.display = 'none';
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('/api/forms/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    formMessage.className = 'form-message success';
+                    formMessage.textContent = data.message;
+                    formMessage.style.display = 'block';
+                    form.reset();
+                } else {
+                    if (data.errors) {
+                        for (const [field, error] of Object.entries(data.errors)) {
+                            const fieldError = document.getElementById(field + '-error');
+                            if (fieldError) fieldError.textContent = error;
+                        }
+                    }
+
+                    formMessage.className = 'form-message error';
+                    formMessage.textContent = data.error || 'Please fix the errors and try again.';
+                    formMessage.style.display = 'block';
+                }
+
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnSpinner.style.display = 'none';
+            } catch (error) {
+                formMessage.className = 'form-message error';
+                formMessage.textContent = 'Something went wrong. Please try again.';
+                formMessage.style.display = 'block';
+
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnSpinner.style.display = 'none';
+            }
+        });
+        </script>
     </div>
 </section>
 <section class="location-section">
