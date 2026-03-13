@@ -95,8 +95,15 @@ function saveSubscriber($email) {
     // Create data directory if it doesn't exist
     if (!is_dir($dataDir)) {
         if (!@mkdir($dataDir, 0755, true)) {
-            throw new Exception("Failed to create data directory: $dataDir");
+            error_log("Newsletter: Failed to create data directory: $dataDir");
+            throw new Exception("Failed to create data directory");
         }
+    }
+
+    // Check if directory is writable
+    if (!is_writable($dataDir)) {
+        error_log("Newsletter: Data directory not writable: $dataDir");
+        throw new Exception("Data directory not writable");
     }
 
     // Load existing subscribers
@@ -104,6 +111,7 @@ function saveSubscriber($email) {
     if (file_exists($dataFile)) {
         $content = file_get_contents($dataFile);
         if ($content === false) {
+            error_log("Newsletter: Failed to read subscribers file: $dataFile");
             throw new Exception("Failed to read subscribers file");
         }
         $subscribers = json_decode($content, true) ?? [];
@@ -121,6 +129,7 @@ function saveSubscriber($email) {
     // Save to file
     $result = file_put_contents($dataFile, json_encode($subscribers, JSON_PRETTY_PRINT));
     if ($result === false) {
+        error_log("Newsletter: Failed to write to subscribers file: $dataFile");
         throw new Exception("Failed to write to subscribers file");
     }
 }

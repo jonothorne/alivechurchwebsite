@@ -86,7 +86,7 @@
                 const formData = new FormData();
                 formData.append('email', email);
 
-                const response = await fetch('/api/newsletter-signup.php', {
+                const response = await fetch('/api/newsletter-signup', {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
