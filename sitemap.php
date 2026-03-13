@@ -52,6 +52,10 @@ function getAllUrls($pdo, $baseUrl) {
         ['url' => '/bible-study/search', 'priority' => '0.5', 'changefreq' => 'monthly'],
         ['url' => '/bible-study/topics', 'priority' => '0.8', 'changefreq' => 'weekly'],
         ['url' => '/reading-plans', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['url' => '/sermons', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['url' => '/sermons/series', 'priority' => '0.7', 'changefreq' => 'weekly'],
+        ['url' => '/sermons/speakers', 'priority' => '0.6', 'changefreq' => 'monthly'],
+        ['url' => '/sermons/topics', 'priority' => '0.6', 'changefreq' => 'monthly'],
         ['url' => '/login', 'priority' => '0.3', 'changefreq' => 'monthly'],
         ['url' => '/register', 'priority' => '0.3', 'changefreq' => 'monthly'],
         ['url' => '/policies', 'priority' => '0.4', 'changefreq' => 'yearly'],
@@ -269,16 +273,33 @@ function getAllUrls($pdo, $baseUrl) {
     }
 
     // =========================================
-    // SERMON SERIES (if exists)
+    // SERMON SERIES
     // =========================================
     try {
-        $stmt = $pdo->query("SELECT slug, updated_at FROM sermon_series");
+        $stmt = $pdo->query("SELECT slug, updated_at FROM sermon_series WHERE visible = 1");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $urls[] = [
-                'loc' => $baseUrl . '/watch/' . $row['slug'],
+                'loc' => $baseUrl . '/sermons/series/' . $row['slug'],
                 'lastmod' => $row['updated_at'] ? date('Y-m-d', strtotime($row['updated_at'])) : null,
                 'priority' => '0.6',
                 'changefreq' => 'weekly'
+            ];
+        }
+    } catch (PDOException $e) {
+        // Table may not exist
+    }
+
+    // =========================================
+    // INDIVIDUAL SERMONS
+    // =========================================
+    try {
+        $stmt = $pdo->query("SELECT slug, updated_at FROM sermons WHERE visible = 1 AND slug IS NOT NULL");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $urls[] = [
+                'loc' => $baseUrl . '/sermon/' . $row['slug'],
+                'lastmod' => $row['updated_at'] ? date('Y-m-d', strtotime($row['updated_at'])) : null,
+                'priority' => '0.6',
+                'changefreq' => 'monthly'
             ];
         }
     } catch (PDOException $e) {
