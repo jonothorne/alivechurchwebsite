@@ -23,6 +23,9 @@ if (!$auth->check()) {
 $userStudies = new UserStudies($pdo, $auth->id());
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+// Debug: log what we're receiving
+error_log('User studies API - Action: ' . $action . ', POST: ' . print_r($_POST, true));
+
 try {
 
 switch ($action) {
@@ -254,7 +257,7 @@ switch ($action) {
 
     default:
         http_response_code(400);
-        echo json_encode(['error' => 'Unknown action']);
+        echo json_encode(['error' => 'Unknown action: ' . $action]);
 }
 
 } catch (Throwable $e) {
