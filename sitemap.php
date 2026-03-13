@@ -54,6 +54,7 @@ function getAllUrls($pdo, $baseUrl) {
         ['url' => '/reading-plans', 'priority' => '0.8', 'changefreq' => 'weekly'],
         ['url' => '/login', 'priority' => '0.3', 'changefreq' => 'monthly'],
         ['url' => '/register', 'priority' => '0.3', 'changefreq' => 'monthly'],
+        ['url' => '/policies', 'priority' => '0.4', 'changefreq' => 'yearly'],
         ['url' => '/privacy-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
         ['url' => '/cookie-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
         ['url' => '/donation-policy', 'priority' => '0.3', 'changefreq' => 'yearly'],
