@@ -248,22 +248,65 @@
             // Store original content
             state.originalContent.set(el, el.innerHTML);
 
-            // Click to edit
-            el.addEventListener('click', (e) => {
-                // Don't allow editing if disabled
-                if (document.body.classList.contains('cms-editing-disabled')) {
-                    return;
-                }
-                if (!state.isEditing || state.currentElement !== el) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startEditing(el);
-                }
-            });
+            const type = el.dataset.cmsType || 'html';
+
+            // For images, add an edit button overlay
+            if (type === 'image' && el.tagName === 'IMG') {
+                addImageEditButton(el);
+            } else {
+                // Click to edit for non-image elements
+                el.addEventListener('click', (e) => {
+                    // Don't allow editing if disabled
+                    if (document.body.classList.contains('cms-editing-disabled')) {
+                        return;
+                    }
+                    if (!state.isEditing || state.currentElement !== el) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        startEditing(el);
+                    }
+                });
+            }
         });
 
         // Setup background image editables
         setupBackgroundEditables();
+    }
+
+    /**
+     * Add edit button overlay to CMS-editable images
+     */
+    function addImageEditButton(img) {
+        // Wrap image in a container if not already wrapped
+        let wrapper = img.parentElement;
+        if (!wrapper.classList.contains('cms-img-wrapper')) {
+            wrapper = document.createElement('div');
+            wrapper.className = 'cms-img-wrapper';
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+        }
+
+        // Add edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'cms-img-edit-btn';
+        editBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Edit
+        `;
+        editBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (document.body.classList.contains('cms-editing-disabled')) {
+                return;
+            }
+            startEditing(img);
+        });
+
+        wrapper.appendChild(editBtn);
     }
 
     /**

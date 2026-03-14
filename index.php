@@ -294,12 +294,12 @@ include __DIR__ . '/includes/header.php';
             <h2 data-cms-editable="gallery_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('gallery_headline', 'See what happens when we gather.'); ?></h2>
         </div>
         <div class="gallery-grid">
-            <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church worship service with congregation" class="gallery-img" width="800" height="516" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-drummer-worship-team.jpg" alt="Alive Church drummer during worship" class="gallery-img" width="800" height="600" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church community café outdoor gathering" class="gallery-img" width="800" height="600" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-christmas-worship-service.jpg" alt="Alive Church Christmas worship service" class="gallery-img" width="960" height="720" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church Christmas celebration service" class="gallery-img" width="960" height="720" loading="lazy">
-            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Alive Church acoustic worship and prayer" class="gallery-img" width="768" height="1024" loading="lazy">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_1', '/assets/imgs/gallery/alive-church-worship-congregation.jpg')); ?>" alt="Alive Church worship service" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_1" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_2', '/assets/imgs/gallery/alive-church-drummer-worship-team.jpg')); ?>" alt="Alive Church worship team" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_2" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_3', '/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg')); ?>" alt="Alive Church community" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_3" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_4', '/assets/imgs/gallery/alive-church-christmas-worship-service.jpg')); ?>" alt="Alive Church service" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_4" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_5', '/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg')); ?>" alt="Alive Church celebration" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_5" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_6', '/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg')); ?>" alt="Alive Church prayer" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_6" data-cms-page="home" data-cms-type="image">
         </div>
     </div>
 </section>

@@ -515,6 +515,57 @@ body.cms-editing-disabled #cms-status {
     transform: scale(1.02);
 }
 
+/* CMS Image wrapper and edit button */
+.cms-img-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.cms-img-wrapper img {
+    display: block;
+}
+
+.cms-img-edit-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    opacity: 0;
+}
+
+.cms-img-wrapper:hover .cms-img-edit-btn {
+    opacity: 1;
+}
+
+.cms-img-edit-btn:hover {
+    background: var(--cms-purple);
+    border-color: var(--cms-purple);
+    transform: scale(1.05);
+}
+
+.cms-img-edit-btn svg {
+    opacity: 0.9;
+}
+
+/* Hide image edit button when editing is disabled */
+body.cms-editing-disabled .cms-img-edit-btn {
+    display: none;
+}
+
 /* Background image edit button */
 .cms-bg-edit-btn {
     position: absolute;
