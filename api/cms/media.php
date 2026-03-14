@@ -29,7 +29,7 @@ try {
 
     // Get media files
     $stmt = $pdo->prepare("
-        SELECT id, filename, original_filename, file_url, file_type, file_size,
+        SELECT id, filename, original_filename, file_url, file_path, file_type, file_size,
                width, height, alt_text, caption, created_at
         FROM media
         ORDER BY created_at DESC
@@ -37,6 +37,32 @@ try {
     ");
     $stmt->execute([$limit, $offset]);
     $media = $stmt->fetchAll();
+
+    // Get variants for each media item
+    $mediaIds = array_column($media, 'id');
+    $variants = [];
+
+    if (!empty($mediaIds)) {
+        $placeholders = str_repeat('?,', count($mediaIds) - 1) . '?';
+        $variantStmt = $pdo->prepare("
+            SELECT media_id, variant_name, variant_path, format, width, height, file_size
+            FROM image_variants
+            WHERE media_id IN ($placeholders)
+            ORDER BY width ASC
+        ");
+        $variantStmt->execute($mediaIds);
+        $variantRows = $variantStmt->fetchAll();
+
+        // Group variants by media_id
+        foreach ($variantRows as $v) {
+            $variants[$v['media_id']][] = $v;
+        }
+    }
+
+    // Attach variants to media items
+    foreach ($media as &$item) {
+        $item['variants'] = $variants[$item['id']] ?? [];
+    }
 
     // Get total count
     $countStmt = $pdo->query("SELECT COUNT(*) FROM media");

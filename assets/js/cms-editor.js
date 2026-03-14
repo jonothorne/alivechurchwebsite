@@ -796,15 +796,25 @@
             const result = await response.json();
 
             if (result.success && result.media.length > 0) {
+                // Store media data for size picker
+                window._cmsMediaData = {};
+
                 grid.innerHTML = result.media.map(item => {
                     // Ensure file_url exists and is valid
                     const url = item.file_url || '';
                     if (!url) {
                         console.warn('Media item missing file_url:', item);
                     }
+                    // Store full item data
+                    window._cmsMediaData[item.id] = item;
+
+                    const hasVariants = item.variants && item.variants.length > 0;
+                    const variantBadge = hasVariants ? '<span class="cms-media-badge">Sizes</span>' : '';
+
                     return `
-                        <div class="cms-media-item" data-url="${url}">
+                        <div class="cms-media-item" data-url="${url}" data-id="${item.id}">
                             <img src="${url}" alt="${item.alt_text || ''}">
+                            ${variantBadge}
                             <span class="cms-media-name">${item.original_filename || 'Unknown'}</span>
                         </div>
                     `;
@@ -813,16 +823,27 @@
                 // Add click handlers
                 grid.querySelectorAll('.cms-media-item').forEach(item => {
                     item.addEventListener('click', () => {
-                        const url = item.dataset.url;
-                        console.log('Media selected, URL:', url);
-                        if (selectCallback && url) {
-                            selectCallback(url);
-                        } else if (!url) {
-                            console.error('No URL found for media item');
-                            alert('Error: This image has no valid URL');
-                            return; // Don't close modal if no URL
+                        const mediaId = item.dataset.id;
+                        const mediaData = window._cmsMediaData[mediaId];
+
+                        if (!mediaData) {
+                            console.error('No media data found');
+                            return;
                         }
-                        closeModal();
+
+                        // If variants exist, show size picker
+                        if (mediaData.variants && mediaData.variants.length > 0) {
+                            showSizePicker(mediaData, selectCallback);
+                        } else {
+                            // No variants, use original
+                            const url = mediaData.file_url || '';
+                            if (selectCallback && url) {
+                                selectCallback(url);
+                                closeModal();
+                            } else if (!url) {
+                                alert('Error: This image has no valid URL');
+                            }
+                        }
                     });
                 });
             } else {
@@ -831,6 +852,88 @@
         } catch (error) {
             grid.innerHTML = '<p>Error loading media</p>';
         }
+    }
+
+    /**
+     * Show size picker for image with variants
+     */
+    function showSizePicker(mediaData, selectCallback) {
+        const grid = document.getElementById('cms-media-grid');
+
+        // Format file size
+        const formatSize = (bytes) => {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        };
+
+        // Group variants: skip webp variants (they're served automatically via .htaccess)
+        const jpgVariants = mediaData.variants.filter(v => !v.variant_name.includes('_webp'));
+
+        // Build size options HTML
+        let sizesHtml = `
+            <div class="cms-size-picker">
+                <div class="cms-size-picker-header">
+                    <button class="cms-size-back" id="cms-size-back">← Back</button>
+                    <h4>Select Size: ${mediaData.original_filename}</h4>
+                </div>
+                <div class="cms-size-options">
+                    <div class="cms-size-option" data-url="${mediaData.file_url}">
+                        <div class="cms-size-preview">
+                            <img src="${mediaData.file_url}" alt="">
+                        </div>
+                        <div class="cms-size-info">
+                            <strong>Original</strong>
+                            <span>${mediaData.width || '?'}×${mediaData.height || '?'} · ${formatSize(mediaData.file_size)}</span>
+                        </div>
+                    </div>
+        `;
+
+        // Add variant options (sorted by width)
+        jpgVariants.sort((a, b) => (b.width || 0) - (a.width || 0));
+
+        for (const variant of jpgVariants) {
+            // Convert variant_path to URL
+            const variantUrl = '/' + variant.variant_path.replace(/^.*?uploads\//, 'uploads/');
+            const sizeName = variant.variant_name.charAt(0).toUpperCase() + variant.variant_name.slice(1);
+
+            sizesHtml += `
+                <div class="cms-size-option" data-url="${variantUrl}">
+                    <div class="cms-size-preview">
+                        <img src="${variantUrl}" alt="">
+                    </div>
+                    <div class="cms-size-info">
+                        <strong>${sizeName}</strong>
+                        <span>${variant.width || '?'}×${variant.height || '?'} · ${formatSize(variant.file_size)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        sizesHtml += '</div></div>';
+
+        // Store current grid HTML to restore on back
+        const originalGridHtml = grid.innerHTML;
+
+        grid.innerHTML = sizesHtml;
+
+        // Back button handler
+        document.getElementById('cms-size-back').addEventListener('click', () => {
+            grid.innerHTML = originalGridHtml;
+            loadMedia(selectCallback); // Re-attach handlers
+        });
+
+        // Size option handlers
+        grid.querySelectorAll('.cms-size-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const url = option.dataset.url;
+                console.log('Size selected:', url);
+                if (selectCallback && url) {
+                    selectCallback(url);
+                    closeModal();
+                }
+            });
+        });
     }
 
     /**
