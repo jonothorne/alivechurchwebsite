@@ -867,50 +867,76 @@
             return (bytes / 1048576).toFixed(1) + ' MB';
         };
 
+        // Size descriptions and recommendations
+        const sizeInfo = {
+            'thumbnail': { label: 'Thumbnail', desc: 'Icons & small previews', icon: '🔍' },
+            'small': { label: 'Small', desc: 'Sidebar images', icon: '📱' },
+            'medium': { label: 'Medium', desc: 'Content images', icon: '💻', recommended: true },
+            'large': { label: 'Large', desc: 'Featured images', icon: '🖥️' },
+            'xlarge': { label: 'Extra Large', desc: 'Hero banners', icon: '🖼️' }
+        };
+
         // Group variants: skip webp variants (they're served automatically via .htaccess)
         const jpgVariants = mediaData.variants.filter(v => !v.variant_name.includes('_webp'));
+
+        // Sort by width descending
+        jpgVariants.sort((a, b) => (b.width || 0) - (a.width || 0));
+
+        // Find the medium or best default size for preview
+        const previewVariant = jpgVariants.find(v => v.variant_name === 'medium') || jpgVariants[0];
+        const previewUrl = previewVariant
+            ? '/' + previewVariant.variant_path.replace(/^.*?uploads\//, 'uploads/')
+            : mediaData.file_url;
 
         // Build size options HTML
         let sizesHtml = `
             <div class="cms-size-picker">
-                <div class="cms-size-picker-header">
-                    <button class="cms-size-back" id="cms-size-back">← Back</button>
-                    <h4>Select Size: ${mediaData.original_filename}</h4>
+                <button class="cms-size-back" id="cms-size-back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to library
+                </button>
+
+                <div class="cms-size-preview-large">
+                    <img src="${previewUrl}" alt="${mediaData.original_filename}">
                 </div>
-                <div class="cms-size-options">
-                    <div class="cms-size-option" data-url="${mediaData.file_url}">
-                        <div class="cms-size-preview">
-                            <img src="${mediaData.file_url}" alt="">
-                        </div>
-                        <div class="cms-size-info">
-                            <strong>Original</strong>
-                            <span>${mediaData.width || '?'}×${mediaData.height || '?'} · ${formatSize(mediaData.file_size)}</span>
-                        </div>
-                    </div>
+
+                <div class="cms-size-filename">${mediaData.original_filename}</div>
+
+                <div class="cms-size-grid">
         `;
 
-        // Add variant options (sorted by width)
-        jpgVariants.sort((a, b) => (b.width || 0) - (a.width || 0));
-
+        // Add variant options
         for (const variant of jpgVariants) {
-            // Convert variant_path to URL
             const variantUrl = '/' + variant.variant_path.replace(/^.*?uploads\//, 'uploads/');
-            const sizeName = variant.variant_name.charAt(0).toUpperCase() + variant.variant_name.slice(1);
+            const info = sizeInfo[variant.variant_name] || {
+                label: variant.variant_name.charAt(0).toUpperCase() + variant.variant_name.slice(1),
+                desc: '',
+                icon: '📷'
+            };
 
             sizesHtml += `
-                <div class="cms-size-option" data-url="${variantUrl}">
-                    <div class="cms-size-preview">
-                        <img src="${variantUrl}" alt="">
-                    </div>
-                    <div class="cms-size-info">
-                        <strong>${sizeName}</strong>
-                        <span>${variant.width || '?'}×${variant.height || '?'} · ${formatSize(variant.file_size)}</span>
-                    </div>
+                <div class="cms-size-card ${info.recommended ? 'recommended' : ''}" data-url="${variantUrl}">
+                    ${info.recommended ? '<span class="cms-size-badge">Recommended</span>' : ''}
+                    <div class="cms-size-card-icon">${info.icon}</div>
+                    <div class="cms-size-card-label">${info.label}</div>
+                    <div class="cms-size-card-dims">${variant.width || '?'} × ${variant.height || '?'}</div>
+                    <div class="cms-size-card-size">${formatSize(variant.file_size)}</div>
                 </div>
             `;
         }
 
-        sizesHtml += '</div></div>';
+        // Add original as option
+        sizesHtml += `
+                <div class="cms-size-card" data-url="${mediaData.file_url}">
+                    <div class="cms-size-card-icon">📁</div>
+                    <div class="cms-size-card-label">Original</div>
+                    <div class="cms-size-card-dims">${mediaData.width || '?'} × ${mediaData.height || '?'}</div>
+                    <div class="cms-size-card-size">${formatSize(mediaData.file_size)}</div>
+                </div>
+            </div>
+        </div>`;
 
         // Store current grid HTML to restore on back
         const originalGridHtml = grid.innerHTML;
@@ -924,7 +950,7 @@
         });
 
         // Size option handlers
-        grid.querySelectorAll('.cms-size-option').forEach(option => {
+        grid.querySelectorAll('.cms-size-card').forEach(option => {
             option.addEventListener('click', () => {
                 const url = option.dataset.url;
                 console.log('Size selected:', url);
