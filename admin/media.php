@@ -2,6 +2,7 @@
 $page_title = 'Media Library';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/../includes/db-config.php';
+require_once __DIR__ . '/../includes/ImageProcessor.php';
 
 $pdo = getDbConnection();
 $success = '';
@@ -76,19 +77,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                     $file_type = 'document';
                 }
 
+                // Get image dimensions if applicable
+                $width = null;
+                $height = null;
+                if ($file_type === 'image') {
+                    $imageInfo = @getimagesize($upload_path);
+                    if ($imageInfo) {
+                        $width = $imageInfo[0];
+                        $height = $imageInfo[1];
+                    }
+                }
+
                 // Insert into database
-                $stmt = $pdo->prepare("INSERT INTO media (filename, original_filename, file_type, file_size, file_path, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)");
+                $file_path = 'uploads/' . $unique_filename;
+                $file_url = '/uploads/' . $unique_filename;
+
+                $stmt = $pdo->prepare("INSERT INTO media (filename, original_filename, file_type, file_size, file_path, file_url, width, height, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([
                     $unique_filename,
                     $original_filename,
                     $file_type,
                     $file['size'],
-                    'uploads/' . $unique_filename,
+                    $file_path,
+                    $file_url,
+                    $width,
+                    $height,
                     $_SESSION['admin_user_id']
                 ]);
 
-                log_activity($_SESSION['admin_user_id'], 'upload', 'media', $pdo->lastInsertId(), 'Uploaded: ' . $original_filename);
-                $success = 'File uploaded successfully';
+                $mediaId = $pdo->lastInsertId();
+
+                // Process image for optimization (WebP conversion + resizing)
+                if ($file_type === 'image') {
+                    $processor = new ImageProcessor(__DIR__ . '/../uploads');
+
+                    // Determine image type based on dimensions
+                    $imageType = 'general';
+                    if ($width && $height && ($width / $height) > 2) {
+                        $imageType = 'hero';
+                    }
+
+                    // Process async for large images (>500KB), sync for smaller ones
+                    $async = $file['size'] > 500 * 1024;
+                    $processingResult = $processor->process($upload_path, $imageType, $async);
+
+                    // Store variant information in database
+                    if ($processingResult['success'] && !empty($processingResult['variants'])) {
+                        $variantStmt = $pdo->prepare("
+                            INSERT INTO image_variants (media_id, original_path, variant_name, variant_path, format, width, height, file_size)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+
+                        foreach ($processingResult['variants'] as $variantName => $variant) {
+                            $variantStmt->execute([
+                                $mediaId,
+                                $upload_path,
+                                $variantName,
+                                $variant['path'],
+                                pathinfo($variant['path'], PATHINFO_EXTENSION),
+                                $variant['width'],
+                                $variant['height'],
+                                $variant['size']
+                            ]);
+                        }
+
+                        // Store WebP variants
+                        if (!empty($processingResult['webp_variants'])) {
+                            foreach ($processingResult['webp_variants'] as $variantName => $variant) {
+                                $variantStmt->execute([
+                                    $mediaId,
+                                    $upload_path,
+                                    $variantName . '_webp',
+                                    $variant['path'],
+                                    'webp',
+                                    null,
+                                    null,
+                                    $variant['size']
+                                ]);
+                            }
+                        }
+
+                        $success = 'File uploaded and optimized! Saved ' . ($processingResult['savings_formatted'] ?? '0 B');
+                    } elseif ($processingResult['queued'] ?? false) {
+                        $success = 'File uploaded! Optimization queued for background processing.';
+                    } else {
+                        $success = 'File uploaded successfully';
+                    }
+                } else {
+                    $success = 'File uploaded successfully';
+                }
+
+                log_activity($_SESSION['admin_user_id'], 'upload', 'media', $mediaId, 'Uploaded: ' . $original_filename);
             } else {
                 $error = 'Failed to save file';
             }
