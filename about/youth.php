@@ -295,13 +295,21 @@ include __DIR__ . '/../includes/header.php';
     flex-wrap: wrap;
 }
 
-.highlight-card {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: white;
+/* Fix secondary button in hero */
+.page-hero .btn-secondary {
+    background: transparent;
+    color: #ffffff !important;
+    border: 2px solid #ffffff;
+}
+
+.page-hero .btn-secondary:hover {
+    background: #ffffff;
+    color: #4b2679 !important;
+    border-color: #ffffff;
 }
 
 .highlight-card h3 {
-    color: white;
+    color: var(--primary);
     margin-bottom: 1.5rem;
 }
 
