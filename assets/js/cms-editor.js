@@ -270,33 +270,64 @@
      * Setup background image editable elements
      */
     function setupBackgroundEditables() {
-        const bgEditables = document.querySelectorAll('[data-cms-bg]');
+        // Find all hero sections - both explicit data-cms-bg and auto-detected heroes
+        const explicitBgEditables = document.querySelectorAll('[data-cms-bg]');
+        const heroSections = document.querySelectorAll('.hero, .page-hero, .block-hero');
 
-        bgEditables.forEach(el => {
-            // Add edit button overlay
-            const editBtn = document.createElement('button');
-            editBtn.className = 'cms-bg-edit-btn';
-            editBtn.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                </svg>
-                Change Background
-            `;
-            editBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (document.body.classList.contains('cms-editing-disabled')) {
-                    return;
-                }
-                openBackgroundPicker(el);
-            });
-
-            // Position the button
-            el.style.position = el.style.position || 'relative';
-            el.appendChild(editBtn);
+        // Process explicit background editables
+        explicitBgEditables.forEach(el => {
+            addBackgroundEditButton(el, el.dataset.cmsBg, el.dataset.cmsPage);
         });
+
+        // Auto-detect hero sections that don't have explicit data-cms-bg
+        heroSections.forEach(el => {
+            if (!el.hasAttribute('data-cms-bg')) {
+                // Generate a key based on the page and hero type
+                const pageSlug = getPageSlug();
+                const heroType = el.classList.contains('hero') ? 'hero' : 'page_hero';
+                const key = `${heroType}_image`;
+
+                // Add the data attribute for tracking
+                el.setAttribute('data-cms-bg', key);
+                el.setAttribute('data-cms-page', pageSlug);
+
+                addBackgroundEditButton(el, key, pageSlug);
+            }
+        });
+    }
+
+    /**
+     * Add background edit button to an element
+     */
+    function addBackgroundEditButton(el, key, pageSlug) {
+        // Don't add if already has a button
+        if (el.querySelector('.cms-bg-edit-btn')) return;
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'cms-bg-edit-btn';
+        editBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Change Background
+        `;
+        editBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (document.body.classList.contains('cms-editing-disabled')) {
+                return;
+            }
+            openBackgroundPicker(el);
+        });
+
+        // Ensure proper positioning
+        const computedPosition = window.getComputedStyle(el).position;
+        if (computedPosition === 'static') {
+            el.style.position = 'relative';
+        }
+        el.appendChild(editBtn);
     }
 
     /**

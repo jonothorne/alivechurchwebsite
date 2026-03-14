@@ -838,6 +838,23 @@ main section {
     color: #fff;
     text-align: center;
     padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Support for CMS background images on page-hero */
+.page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-bg-image, none) center/cover no-repeat;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.page-hero > * {
+    position: relative;
+    z-index: 1;
 }
 .content-section ul {
     padding-left: 1.2rem;

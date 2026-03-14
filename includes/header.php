@@ -30,6 +30,16 @@ if ($is_cms_edit_mode && !isset($cms)) {
     $cms = new ContentManager();
 }
 
+// Load hero background image from CMS (for any page)
+$_hero_bg_image = null;
+if (!isset($cms)) {
+    require_once __DIR__ . '/cms/ContentManager.php';
+    $_temp_cms = new ContentManager();
+    $_hero_bg_image = $_temp_cms->getBlockContent('hero_image', '') ?: $_temp_cms->getBlockContent('page_hero_image', '');
+} else {
+    $_hero_bg_image = $cms->getBlockContent('hero_image', '') ?: $cms->getBlockContent('page_hero_image', '');
+}
+
 // Track page visit for analytics (uses batched writes for performance)
 require_once __DIR__ . '/Analytics.php';
 $analytics = new Analytics($pdo);
@@ -226,6 +236,9 @@ if ($current_user && $is_bible_study_page) {
     })();
     </script>
     <script defer src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js'); ?>"></script>
+    <?php if (!empty($_hero_bg_image)): ?>
+    <style>.hero, .page-hero, .block-hero { --hero-bg-image: url('<?= htmlspecialchars($_hero_bg_image); ?>'); }</style>
+    <?php endif; ?>
 </head>
 <body<?php if ($is_cms_edit_mode): ?> class="cms-edit-mode"<?php endif; ?>>
 <?php if ($is_cms_edit_mode): ?>
