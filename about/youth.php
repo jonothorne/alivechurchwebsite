@@ -16,10 +16,10 @@ $cms = new ContentManager('about-youth');
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="page-hero <?= $hero_texture_class; ?>">
+<section class="page-hero youth-hero">
     <div class="container narrow">
         <?= $cms->text('hero_eyebrow', 'Ages 11-18', ['tag' => 'p', 'class' => 'eyebrow']); ?>
-        <?= $cms->image('hero_logo', 'https://youth.alivechur.ch/images/logo.png', 'Alive Youth', ['class' => 'youth-logo']); ?>
+        <?= $cms->image('hero_logo', '/assets/imgs/alive-youth-logo.png', 'Alive Youth', ['class' => 'youth-logo']); ?>
         <h1 class="visually-hidden">Alive Youth</h1>
         <?= $cms->text('hero_tagline', 'Ignite your faith, impact your world.', ['tag' => 'p', 'class' => 'tagline']); ?>
         <?= $cms->text('hero_subtext', 'A place where you can be yourself, make real friends, and discover what it means to follow Jesus. Every Saturday.', ['tag' => 'p']); ?>
@@ -249,14 +249,14 @@ include __DIR__ . '/../includes/header.php';
     <div class="container narrow text-center">
         <?= $cms->text('contact_headline', 'Questions?', ['tag' => 'h3']); ?>
         <?= $cms->html('contact_content', '<p>Get in touch with our youth team – we\'re happy to answer any questions you have.</p>
-        <p><a href="mailto:youth@alivechurch.co.uk">youth@alivechurch.co.uk</a></p>', ['tag' => 'div']); ?>
+        <p><a href="/contact-us" class="btn btn-secondary">Contact Us</a></p>', ['tag' => 'div']); ?>
     </div>
 </section>
 
 <style>
 /* Youth page specific styles */
 .youth-logo {
-    max-width: 500px;
+    max-width: 700px;
     width: 100%;
     height: auto;
     margin: 1rem auto 1rem;
@@ -306,6 +306,13 @@ include __DIR__ . '/../includes/header.php';
     background: #ffffff;
     color: #4b2679 !important;
     border-color: #ffffff;
+}
+
+.youth-hero,
+[data-theme="dark"] .youth-hero {
+    background-image: url('/assets/imgs/gallery/alive-youth-background-image.jpg') !important;
+    background-size: cover;
+    background-position: center;
 }
 
 .highlight-card h3 {
