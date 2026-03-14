@@ -78,7 +78,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="content-section alt">
     <div class="container">
         <div class="section-heading">
-            <?= $cms->text('typical_eyebrow', 'Saturdays', ['tag' => 'p', 'class' => 'eyebrow']); ?>
+            <?= $cms->text('typical_eyebrow', 'Saturdays', ['tag' => 'p', 'class' => 'eyebrow light']); ?>
             <?= $cms->text('typical_headline', 'What happens at youth?', ['tag' => 'h2']); ?>
         </div>
         <?= $cms->html('features_content', '<div class="card-grid four-col">
@@ -109,7 +109,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="content-section">
     <div class="container">
         <div class="section-heading">
-            <?= $cms->text('beyond_eyebrow', 'Beyond Saturdays', ['tag' => 'p', 'class' => 'eyebrow']); ?>
+            <?= $cms->text('beyond_eyebrow', 'Beyond Saturdays', ['tag' => 'p', 'class' => 'eyebrow light']); ?>
             <?= $cms->text('beyond_headline', 'There\'s more to youth than Saturday', ['tag' => 'h2']); ?>
         </div>
         <?= $cms->html('beyond_content', '<div class="card-grid three-col">
@@ -179,7 +179,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="content-section">
     <div class="container">
         <div class="section-heading">
-            <?= $cms->text('team_eyebrow', 'The Team', ['tag' => 'p', 'class' => 'eyebrow']); ?>
+            <?= $cms->text('team_eyebrow', 'The Team', ['tag' => 'p', 'class' => 'eyebrow light']); ?>
             <?= $cms->text('team_headline', 'Led by people who care', ['tag' => 'h2']); ?>
             <?= $cms->text('team_subtext', 'Our youth team is made up of passionate leaders who are committed to seeing young people thrive. All our leaders are DBS checked and trained in safeguarding.', ['tag' => 'p']); ?>
         </div>
