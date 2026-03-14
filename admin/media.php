@@ -117,9 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                         $imageType = 'hero';
                     }
 
-                    // Process async for large images (>500KB), sync for smaller ones
-                    $async = $file['size'] > 500 * 1024;
-                    $processingResult = $processor->process($upload_path, $imageType, $async);
+                    // Process synchronously (async requires cron job)
+                    $processingResult = $processor->process($upload_path, $imageType, false);
+                    error_log("ImageProcessor result: " . json_encode($processingResult));
 
                     // Store variant information in database
                     if ($processingResult['success'] && !empty($processingResult['variants'])) {

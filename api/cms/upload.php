@@ -148,9 +148,9 @@ try {
                 }
             }
 
-            // Process async if image is large (>500KB), sync otherwise
-            $async = $size > 500 * 1024;
-            $processingResult = $processor->process($filepath, $imageType, $async);
+            // Process synchronously (async requires cron job)
+            $processingResult = $processor->process($filepath, $imageType, false);
+            error_log("ImageProcessor result for {$filepath}: " . json_encode($processingResult));
 
             // Store variant information in database
             if ($processingResult['success'] && !empty($processingResult['variants'])) {
