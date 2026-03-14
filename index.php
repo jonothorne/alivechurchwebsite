@@ -79,7 +79,7 @@ include __DIR__ . '/includes/header.php';
                 <a class="btn btn-primary" href="/visit">Plan Your First Visit</a>
             </div>
             <div class="cta-image">
-                <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg"
+                <img src="<?= htmlspecialchars($cms->text('newhere_image', '/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg')); ?>"
                      alt="Welcoming team at Alive Church"
                      width="960" height="720"
                      fetchpriority="high"
@@ -177,7 +177,7 @@ include __DIR__ . '/includes/header.php';
                     <p class="stat-label" data-cms-editable="stat3_label" data-cms-page="home" data-cms-type="text"><?= $cms->text('stat3_label', 'meals served last month'); ?></p>
                 </div>
             </div>
-            <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" width="748" height="800" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
+            <img src="<?= htmlspecialchars($cms->text('about_image', '/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg')); ?>" alt="Alive Church community worship in Lincolnshire" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" width="748" height="800" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
         </div>
         <div class="card">
             <p class="eyebrow light">New here?</p>
