@@ -220,12 +220,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_meta'])) {
     }
 }
 
-// Fetch all media
+// Fetch all media with thumbnail variants
 $filter = $_GET['filter'] ?? 'all';
+$baseQuery = "
+    SELECT m.*, u.username,
+           COALESCE(iv.variant_path, m.file_path) as thumbnail_path
+    FROM media m
+    LEFT JOIN users u ON m.uploaded_by = u.id
+    LEFT JOIN image_variants iv ON m.id = iv.media_id AND iv.variant_name = 'thumbnail'
+";
 if ($filter === 'all') {
-    $media_files = $pdo->query("SELECT m.*, u.username FROM media m LEFT JOIN users u ON m.uploaded_by = u.id ORDER BY m.created_at DESC")->fetchAll();
+    $media_files = $pdo->query($baseQuery . " ORDER BY m.created_at DESC")->fetchAll();
 } else {
-    $stmt = $pdo->prepare("SELECT m.*, u.username FROM media m LEFT JOIN users u ON m.uploaded_by = u.id WHERE m.file_type = ? ORDER BY m.created_at DESC");
+    $stmt = $pdo->prepare($baseQuery . " WHERE m.file_type = ? ORDER BY m.created_at DESC");
     $stmt->execute([$filter]);
     $media_files = $stmt->fetchAll();
 }
@@ -474,7 +481,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- Preview with hover overlay -->
                     <div class="admin-media-preview">
                         <?php if ($media['file_type'] === 'image'): ?>
-                            <img src="/<?= htmlspecialchars($media['file_path']); ?>" alt="">
+                            <?php
+                            // Use thumbnail if available, converting full path to URL
+                            $thumbPath = $media['thumbnail_path'];
+                            if (strpos($thumbPath, '/uploads/') !== false) {
+                                $thumbPath = '/uploads/' . basename($thumbPath);
+                            } elseif (strpos($thumbPath, 'uploads/') === 0) {
+                                $thumbPath = '/' . $thumbPath;
+                            } else {
+                                $thumbPath = '/' . $media['file_path'];
+                            }
+                            ?>
+                            <img src="<?= htmlspecialchars($thumbPath); ?>" alt="" loading="lazy">
                         <?php else: ?>
                             <span class="admin-media-icon">
                                 <?= $media['file_type'] === 'video' ? '🎥' : ($media['file_type'] === 'audio' ? '🎵' : '📄'); ?>
