@@ -19,7 +19,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="page-hero youth-hero">
     <div class="container narrow">
         <?= $cms->text('hero_eyebrow', 'Ages 11-18', ['tag' => 'p', 'class' => 'eyebrow']); ?>
-        <?= $cms->image('hero_logo', '/assets/imgs/alive-youth-logo.png', 'Alive Youth', ['class' => 'youth-logo']); ?>
+        <?= $cms->image('hero_logo', '/assets/imgs/youth/alive-youth-logo.png', 'Alive Youth', ['class' => 'youth-logo']); ?>
         <h1 class="visually-hidden">Alive Youth</h1>
         <?= $cms->text('hero_tagline', 'Ignite your faith, impact your world.', ['tag' => 'p', 'class' => 'tagline']); ?>
         <?= $cms->text('hero_subtext', 'A place where you can be yourself, make real friends, and discover what it means to follow Jesus. Every Saturday.', ['tag' => 'p']); ?>
@@ -43,28 +43,28 @@ include __DIR__ . '/../includes/header.php';
             <?= $cms->text('meeting_title', 'When We Meet', ['tag' => 'h3']); ?>
             <?= $cms->html('meeting_details', '<div class="meeting-details">
                 <div class="meeting-item">
-                    <span class="meeting-icon">📅</span>
+                    <span class="meeting-icon" aria-hidden="true">📅</span>
                     <div>
                         <strong>Every Saturday</strong>
                         <span>Term time</span>
                     </div>
                 </div>
                 <div class="meeting-item">
-                    <span class="meeting-icon">🕓</span>
+                    <span class="meeting-icon" aria-hidden="true">🕓</span>
                     <div>
                         <strong>4:00pm - 7:00pm</strong>
                         <span>Doors open 3:45pm</span>
                     </div>
                 </div>
                 <div class="meeting-item">
-                    <span class="meeting-icon">📍</span>
+                    <span class="meeting-icon" aria-hidden="true">📍</span>
                     <div>
                         <strong>Alive House</strong>
                         <span>Nelson Street, Norwich</span>
                     </div>
                 </div>
                 <div class="meeting-item">
-                    <span class="meeting-icon">👥</span>
+                    <span class="meeting-icon" aria-hidden="true">👥</span>
                     <div>
                         <strong>Ages 11-18</strong>
                         <span>School years 7-13</span>
@@ -83,22 +83,22 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <?= $cms->html('features_content', '<div class="card-grid four-col">
             <div class="feature-card">
-                <div class="feature-icon">🎮</div>
+                <div class="feature-icon" aria-hidden="true">🎮</div>
                 <h3>Epic Games</h3>
                 <p>We kick off with high-energy games, competitions, and challenges. From team battles to silly relays – it\'s always a blast.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🍽️</div>
+                <div class="feature-icon" aria-hidden="true">🍽️</div>
                 <h3>Dinner Together</h3>
                 <p>We eat together as a community – a proper sit-down meal, completely free. It\'s a great time to chat and connect with friends.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">💬</div>
+                <div class="feature-icon" aria-hidden="true">💬</div>
                 <h3>Real Talk</h3>
                 <p>Short, relevant teaching that tackles the real stuff – identity, relationships, purpose, faith, and navigating life.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🎱</div>
+                <div class="feature-icon" aria-hidden="true">🎱</div>
                 <h3>Hang Time</h3>
                 <p>Tuck shop, pool table, chill zones – plenty of time to hang out with friends and make new ones.</p>
             </div>
@@ -114,27 +114,27 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <?= $cms->html('beyond_content', '<div class="card-grid three-col">
             <div class="card">
-                <h3>🏕️ Youth Weekends Away</h3>
+                <h3><span aria-hidden="true">🏕️</span> Youth Weekends Away</h3>
                 <p>Throughout the year we head off on epic residential weekends – adventure activities, late night sessions, and memories that last a lifetime.</p>
             </div>
             <div class="card">
-                <h3>🎪 Summer Events</h3>
+                <h3><span aria-hidden="true">🎪</span> Summer Events</h3>
                 <p>We take groups to Christian festivals and events – incredible times of community with thousands of other young people.</p>
             </div>
             <div class="card">
-                <h3>🙏 Small Groups</h3>
+                <h3><span aria-hidden="true">🙏</span> Small Groups</h3>
                 <p>Midweek small groups give you a chance to go deeper – exploring faith, asking questions, and building friendships in a smaller setting.</p>
             </div>
             <div class="card">
-                <h3>🎭 Creative Opportunities</h3>
+                <h3><span aria-hidden="true">🎭</span> Creative Opportunities</h3>
                 <p>Got a talent? Whether it\'s music, drama, tech, or media – there are opportunities to serve, grow your gifts, and be part of something amazing.</p>
             </div>
             <div class="card">
-                <h3>❤️ Outreach Projects</h3>
+                <h3><span aria-hidden="true">❤️</span> Outreach Projects</h3>
                 <p>We believe young people can change the world. Join us for community service projects, mission trips, and making a real difference in Norwich.</p>
             </div>
             <div class="card">
-                <h3>📱 Online Community</h3>
+                <h3><span aria-hidden="true">📱</span> Online Community</h3>
                 <p>Stay connected throughout the week through our youth social channels, group chats, and online hangouts.</p>
             </div>
         </div>', ['tag' => 'div']); ?>
@@ -185,13 +185,13 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <?= $cms->html('team_profiles', '<div class="card-grid profile-grid">
             <article class="profile-card">
-                <img src="/assets/imgs/gallery/alive-church-worship-leaders-performance.jpg" alt="Youth leadership" style="border-radius: 0.75rem; margin-bottom: 1rem; width: 100%; height: 200px; object-fit: cover;">
+                <img src="/assets/imgs/gallery/alive-church-worship-leaders-performance.jpg" alt="Youth leadership" class="profile-card-image">
                 <h3>Jono Thorne</h3>
                 <p class="role">Youth Pastor</p>
                 <p>Jono leads our youth ministry with passion and energy. He\'s all about helping young people discover their purpose and live fully alive.</p>
             </article>
             <article class="profile-card">
-                <img src="/assets/imgs/gallery/alive-church-congregation-hands-raised.jpg" alt="Youth team" style="border-radius: 0.75rem; margin-bottom: 1rem; width: 100%; height: 200px; object-fit: cover;">
+                <img src="/assets/imgs/gallery/alive-church-congregation-hands-raised.jpg" alt="Youth team" class="profile-card-image">
                 <h3>The Youth Team</h3>
                 <p class="role">Volunteers & Leaders</p>
                 <p>A brilliant team of volunteers who give their time every week to invest in the next generation. They\'re here to support, encourage, and have fun!</p>
@@ -252,192 +252,5 @@ include __DIR__ . '/../includes/header.php';
         <p><a href="/contact-us" class="btn btn-secondary">Contact Us</a></p>', ['tag' => 'div']); ?>
     </div>
 </section>
-
-<style>
-/* Youth page specific styles */
-.youth-logo {
-    max-width: 700px;
-    width: 100%;
-    height: auto;
-    margin: 1rem auto 1rem;
-    display: block;
-}
-
-.tagline {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    font-style: italic;
-}
-
-[data-theme="dark"] .tagline {
-    color: var(--accent);
-}
-
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-.hero-actions {
-    margin-top: 2rem;
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* Fix secondary button in hero */
-.page-hero .btn-secondary {
-    background: transparent;
-    color: #ffffff !important;
-    border: 2px solid #ffffff;
-}
-
-.page-hero .btn-secondary:hover {
-    background: #ffffff;
-    color: #4b2679 !important;
-    border-color: #ffffff;
-}
-
-.youth-hero,
-[data-theme="dark"] .youth-hero {
-    background-image: url('/assets/imgs/gallery/alive-youth-background-image.jpg') !important;
-    background-size: cover;
-    background-position: center;
-}
-
-.highlight-card h3 {
-    color: var(--primary);
-    margin-bottom: 1.5rem;
-}
-
-.meeting-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.meeting-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.meeting-icon {
-    font-size: 1.5rem;
-}
-
-.meeting-item strong {
-    display: block;
-}
-
-.meeting-item span {
-    opacity: 0.9;
-    font-size: 0.9rem;
-}
-
-.feature-card {
-    text-align: center;
-    padding: 2rem;
-}
-
-.feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-    margin-bottom: 0.75rem;
-}
-
-.four-col {
-    grid-template-columns: repeat(4, 1fr);
-}
-
-@media (max-width: 900px) {
-    .four-col {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .four-col {
-        grid-template-columns: 1fr;
-    }
-}
-
-.values-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-}
-
-@media (max-width: 700px) {
-    .values-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.value-item h3 {
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-}
-
-.profile-card .role {
-    color: var(--primary);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.btn-large {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-}
-
-.cta-note {
-    margin-top: 1.5rem;
-    opacity: 0.8;
-}
-
-.cta-note a {
-    color: var(--primary);
-}
-
-.youth-quote {
-    font-size: 1.5rem;
-    font-style: italic;
-    color: var(--text);
-    margin: 0;
-    padding: 2rem;
-}
-
-.youth-quote p {
-    margin-bottom: 1rem;
-    line-height: 1.6;
-}
-
-.youth-quote cite {
-    font-size: 1rem;
-    font-style: normal;
-    color: var(--primary);
-    font-weight: 600;
-}
-
-@media (max-width: 600px) {
-    .youth-quote {
-        font-size: 1.25rem;
-        padding: 1rem;
-    }
-}
-</style>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

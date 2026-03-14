@@ -53,6 +53,7 @@ $show_study_subnav = $is_bible_study_page && !$is_admin_page;
 $is_new_visitor_page = $current_url === '/visit'
     || $current_url === '/about'
     || strpos($current_url, '/about/') === 0
+    || $current_url === '/youth'
     || $current_url === '/watch'
     || $current_url === '/contact-us';
 $show_new_visitor_subnav = $is_new_visitor_page && !$is_admin_page;
@@ -112,6 +113,8 @@ if ($current_user && $is_bible_study_page) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- WebP detection - adds 'webp' class to html if supported -->
+    <script>document.documentElement.className+=' '+(function(){var e=document.createElement('canvas');return e.getContext&&e.getContext('2d')&&e.toDataURL('image/webp').indexOf('data:image/webp')===0?'webp':'no-webp'})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title); ?></title>
 
@@ -454,7 +457,7 @@ if ($current_user && $is_bible_study_page) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span>Our Vision</span>
                 </a>
-                <a href="/about/youth" class="section-subnav-item <?= $current_url === '/about/youth' ? 'active' : ''; ?>">
+                <a href="/youth" class="section-subnav-item <?= $current_url === '/youth' ? 'active' : ''; ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                     <span>Youth</span>
                 </a>

@@ -72,7 +72,7 @@ $nav_links = [
             ['label' => 'Our History', 'url' => '/about/history'],
             ['label' => 'What We Believe', 'url' => '/about/what-we-believe'],
             ['label' => 'Our Vision', 'url' => '/about/vision'],
-            ['label' => 'Youth', 'url' => '/about/youth'],
+            ['label' => 'Youth', 'url' => '/youth'],
             ['label' => 'Watch Online', 'url' => '/watch'],
         ]
     ],

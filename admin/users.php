@@ -2,6 +2,7 @@
 $page_title = 'Users';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/../includes/db-config.php';
+require_once __DIR__ . '/../includes/ImageProcessor.php';
 
 $pdo = getDbConnection();
 
@@ -30,17 +31,26 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Handle profile picture upload
+// Handle profile picture upload with automatic optimization
 function handleAvatarUpload($file, $userId) {
     $uploadDir = __DIR__ . '/../assets/uploads/avatars/';
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     $maxSize = 2 * 1024 * 1024; // 2MB
 
+    // Ensure directory exists
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['success' => false, 'error' => 'Upload failed'];
     }
 
-    if (!in_array($file['type'], $allowedTypes)) {
+    // Verify actual MIME type
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $actualType = $finfo->file($file['tmp_name']);
+
+    if (!in_array($actualType, $allowedTypes)) {
         return ['success' => false, 'error' => 'Invalid file type. Use JPG, PNG, GIF, or WebP.'];
     }
 
@@ -48,16 +58,37 @@ function handleAvatarUpload($file, $userId) {
         return ['success' => false, 'error' => 'File too large. Maximum 2MB.'];
     }
 
-    // Generate unique filename
+    // Generate unique filename - always save as optimized format
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = 'avatar_' . $userId . '_' . time() . '.' . $extension;
     $destination = $uploadDir . $filename;
 
-    if (move_uploaded_file($file['tmp_name'], $destination)) {
-        return ['success' => true, 'path' => '/assets/uploads/avatars/' . $filename];
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        return ['success' => false, 'error' => 'Failed to save file'];
     }
 
-    return ['success' => false, 'error' => 'Failed to save file'];
+    // Process avatar - creates optimized variants (small, medium, large)
+    $processor = new ImageProcessor($uploadDir);
+    $result = $processor->process($destination, 'avatar', false); // Sync processing for avatars
+
+    // Return the medium size as the default avatar
+    $webPath = '/assets/uploads/avatars/' . $filename;
+
+    // If we have a medium WebP variant, prefer that
+    if (!empty($result['webp_variants']['medium'])) {
+        $webpFilename = basename($result['webp_variants']['medium']['path']);
+        $webPath = '/assets/uploads/avatars/' . $webpFilename;
+    } elseif (!empty($result['variants']['medium'])) {
+        $mediumFilename = basename($result['variants']['medium']['path']);
+        $webPath = '/assets/uploads/avatars/' . $mediumFilename;
+    }
+
+    return [
+        'success' => true,
+        'path' => $webPath,
+        'variants' => $result['variants'] ?? [],
+        'savings' => $result['savings_formatted'] ?? null
+    ];
 }
 
 // Handle Add/Edit User

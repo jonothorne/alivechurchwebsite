@@ -28,6 +28,7 @@ function json_response($data, $code = 200) {
 try {
     require_once __DIR__ . '/../../includes/Auth.php';
     require_once __DIR__ . '/../../includes/db-config.php';
+    require_once __DIR__ . '/../../includes/ImageProcessor.php';
 } catch (Exception $e) {
     json_response(['error' => 'Server configuration error'], 500);
 }
@@ -199,6 +200,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $mediaId = $pdo->lastInsertId();
 
+        // Process image for optimization
+        $processingResult = null;
+        $processor = new ImageProcessor(dirname(__DIR__, 2) . '/uploads');
+
+        // Determine image type based on dimensions or form input
+        $imageType = $_POST['image_type'] ?? 'general';
+        if ($imageType === 'general') {
+            // Auto-detect based on dimensions
+            $imageInfo = @getimagesize($destination);
+            if ($imageInfo) {
+                $aspectRatio = $imageInfo[0] / $imageInfo[1];
+                if ($aspectRatio > 2) {
+                    $imageType = 'hero';
+                }
+            }
+        }
+
+        // Process async for large images (>500KB), sync for smaller ones
+        $async = $file['size'] > 500 * 1024;
+        $processingResult = $processor->process($destination, $imageType, $async);
+
+        // Store variant information
+        if ($processingResult['success'] && !empty($processingResult['variants'])) {
+            $variantStmt = $pdo->prepare("
+                INSERT INTO image_variants (media_id, original_path, variant_name, variant_path, format, width, height, file_size)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            foreach ($processingResult['variants'] as $variantName => $variant) {
+                $variantStmt->execute([
+                    $mediaId,
+                    $destination,
+                    $variantName,
+                    $variant['path'],
+                    pathinfo($variant['path'], PATHINFO_EXTENSION),
+                    $variant['width'],
+                    $variant['height'],
+                    $variant['size']
+                ]);
+            }
+
+            // Store WebP variants
+            if (!empty($processingResult['webp_variants'])) {
+                foreach ($processingResult['webp_variants'] as $variantName => $variant) {
+                    $variantStmt->execute([
+                        $mediaId,
+                        $destination,
+                        $variantName . '_webp',
+                        $variant['path'],
+                        'webp',
+                        null,
+                        null,
+                        $variant['size']
+                    ]);
+                }
+            }
+        }
+
         // Log activity
         if ($userId && function_exists('log_activity')) {
             try {
@@ -213,7 +272,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'data' => [
                 'id' => $mediaId,
                 'url' => '/uploads/' . $uniqueName,
-                'name' => $file['name']
+                'name' => $file['name'],
+                'optimized' => $processingResult['success'] ?? false,
+                'savings' => $processingResult['savings_formatted'] ?? null,
+                'queued' => $processingResult['queued'] ?? false
             ]
         ]);
     } catch (Exception $e) {

@@ -479,3 +479,36 @@ CREATE TABLE IF NOT EXISTS page_blocks (
     INDEX idx_page_order (page_slug, display_order),
     FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Image processing queue for background optimization
+CREATE TABLE IF NOT EXISTS image_processing_queue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    source_path VARCHAR(500) NOT NULL,
+    image_type ENUM('general', 'avatar', 'hero') DEFAULT 'general',
+    status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+    result JSON NULL,
+    error TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    started_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+    INDEX idx_status (status),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Image variants tracking (for responsive images)
+CREATE TABLE IF NOT EXISTS image_variants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    media_id INT NULL,
+    original_path VARCHAR(500) NOT NULL,
+    variant_name VARCHAR(50) NOT NULL,
+    variant_path VARCHAR(500) NOT NULL,
+    format VARCHAR(10) NOT NULL,
+    width INT NULL,
+    height INT NULL,
+    file_size INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_media (media_id),
+    INDEX idx_original (original_path(255)),
+    UNIQUE KEY unique_variant (original_path(255), variant_name, format),
+    FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

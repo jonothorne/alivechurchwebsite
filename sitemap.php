@@ -40,7 +40,7 @@ function getAllUrls($pdo, $baseUrl) {
         ['url' => '/about/history', 'priority' => '0.6', 'changefreq' => 'monthly'],
         ['url' => '/about/what-we-believe', 'priority' => '0.6', 'changefreq' => 'monthly'],
         ['url' => '/about/vision', 'priority' => '0.6', 'changefreq' => 'monthly'],
-        ['url' => '/about/youth', 'priority' => '0.7', 'changefreq' => 'weekly'],
+        ['url' => '/youth', 'priority' => '0.7', 'changefreq' => 'weekly'],
         ['url' => '/watch', 'priority' => '0.8', 'changefreq' => 'weekly'],
         ['url' => '/events', 'priority' => '0.8', 'changefreq' => 'daily'],
         ['url' => '/connect', 'priority' => '0.8', 'changefreq' => 'weekly'],

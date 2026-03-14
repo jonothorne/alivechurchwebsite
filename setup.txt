@@ -19,8 +19,13 @@ Add these cron jobs to your server (via cPanel, or edit crontab directly):
 # Flushes analytics, cleans expired sessions and cache
 */5 * * * * /usr/bin/php /path/to/alivechurchsite/cron/maintenance.php >> /path/to/alivechurchsite/logs/cron.log 2>&1
 
+# Image optimization - runs every minute
+# Processes queued images (resizing, WebP conversion, optimization)
+* * * * * /usr/bin/php /path/to/alivechurchsite/cron/process-images.php >> /path/to/alivechurchsite/logs/image-processor.log 2>&1
+
 Replace /path/to/alivechurchsite with your actual path, e.g.:
 */5 * * * * /usr/bin/php /home/username/public_html/cron/maintenance.php >> /home/username/public_html/logs/cron.log 2>&1
+* * * * * /usr/bin/php /home/username/public_html/cron/process-images.php >> /home/username/public_html/logs/image-processor.log 2>&1
 
 
 3. DIRECTORY PERMISSIONS
@@ -30,9 +35,16 @@ Ensure these directories are writable by the web server:
     chmod 755 data/
     chmod 755 data/cache/
     chmod 755 logs/
+    chmod 755 storage/uploads/
+    chmod 755 uploads/
+    chmod 755 assets/uploads/avatars/
 
-Create logs directory if it doesn't exist:
+Create required directories if they don't exist:
     mkdir -p logs
+    mkdir -p data/cache
+    mkdir -p storage/uploads
+    mkdir -p uploads
+    mkdir -p assets/uploads/avatars
 
 
 4. PHP SETTINGS (Recommended)
@@ -77,6 +89,30 @@ Ensure your site uses HTTPS. Add to .htaccess if needed:
     RewriteEngine On
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+8. IMAGE OPTIMIZATION
+--------------------------------------------------------------------------------
+The site automatically optimizes uploaded images:
+- Converts to WebP format for 25-50% smaller file sizes
+- Generates responsive variants (thumbnail, small, medium, large, xlarge)
+- Maintains original files as backup
+- Processes avatars with square cropping
+
+Requirements:
+- PHP GD extension (usually pre-installed)
+- Cron job running (see step 2)
+
+Check GD is installed:
+    php -m | grep gd
+
+If images aren't being optimized:
+1. Check cron/process-images.php is running
+2. Verify data/cache/image-processor.lock doesn't exist (stale lock)
+3. Check image_processing_queue table for failed entries
+
+To manually process queued images:
+    php cron/process-images.php
 
 
 ================================================================================

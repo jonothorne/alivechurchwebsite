@@ -3,6 +3,7 @@
  * CMS API - Upload Media
  *
  * Handles file uploads for the media library.
+ * Automatically optimizes images and generates responsive variants.
  */
 
 header('Content-Type: application/json');
@@ -11,6 +12,7 @@ header('Content-Type: application/json');
 session_start();
 require_once __DIR__ . '/../../includes/Auth.php';
 require_once __DIR__ . '/../../includes/db-config.php';
+require_once __DIR__ . '/../../includes/ImageProcessor.php';
 
 // Check if user is logged in
 if (!is_logged_in()) {
@@ -130,19 +132,80 @@ try {
             $userId
         ]);
 
+        $mediaId = $pdo->lastInsertId();
+
+        // Process image for optimization (async for large images, sync for small)
+        $processingResult = null;
+        if (strpos($detectedType, 'image/') === 0 && $detectedType !== 'image/svg+xml') {
+            $processor = new ImageProcessor();
+
+            // Determine image type based on dimensions
+            $imageType = 'general';
+            if ($width && $height) {
+                $aspectRatio = $width / $height;
+                if ($aspectRatio > 2) {
+                    $imageType = 'hero'; // Wide images are likely hero/banner
+                }
+            }
+
+            // Process async if image is large (>500KB), sync otherwise
+            $async = $size > 500 * 1024;
+            $processingResult = $processor->process($filepath, $imageType, $async);
+
+            // Store variant information in database
+            if ($processingResult['success'] && !empty($processingResult['variants'])) {
+                $variantStmt = $pdo->prepare("
+                    INSERT INTO image_variants (media_id, original_path, variant_name, variant_path, format, width, height, file_size)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+
+                foreach ($processingResult['variants'] as $variantName => $variant) {
+                    $variantStmt->execute([
+                        $mediaId,
+                        $filepath,
+                        $variantName,
+                        $variant['path'],
+                        pathinfo($variant['path'], PATHINFO_EXTENSION),
+                        $variant['width'],
+                        $variant['height'],
+                        $variant['size']
+                    ]);
+                }
+
+                // Store WebP variants
+                if (!empty($processingResult['webp_variants'])) {
+                    foreach ($processingResult['webp_variants'] as $variantName => $variant) {
+                        $variantStmt->execute([
+                            $mediaId,
+                            $filepath,
+                            $variantName,
+                            $variant['path'],
+                            'webp',
+                            null,
+                            null,
+                            $variant['size']
+                        ]);
+                    }
+                }
+            }
+        }
+
         $uploaded[] = [
-            'id' => $pdo->lastInsertId(),
+            'id' => $mediaId,
             'filename' => $filename,
             'original_filename' => $name,
             'file_url' => $webUrl,
             'file_type' => $detectedType,
             'file_size' => $size,
             'width' => $width,
-            'height' => $height
+            'height' => $height,
+            'optimized' => $processingResult['success'] ?? false,
+            'savings' => $processingResult['savings_formatted'] ?? null,
+            'variants' => array_keys($processingResult['variants'] ?? [])
         ];
 
         // Log activity
-        log_activity($userId, 'upload_media', 'media', $pdo->lastInsertId(), "Uploaded file: {$name}");
+        log_activity($userId, 'upload_media', 'media', $mediaId, "Uploaded file: {$name}");
     }
 
     echo json_encode([

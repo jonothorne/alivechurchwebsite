@@ -186,3 +186,108 @@ if (!function_exists('dd')) {
         exit;
     }
 }
+
+/**
+ * Generate responsive image HTML with WebP support
+ *
+ * @param string $src Original image URL
+ * @param string $alt Alt text
+ * @param array $options Options: class, sizes, loading, width, height
+ * @return string HTML picture element
+ */
+if (!function_exists('responsive_image')) {
+    function responsive_image(string $src, string $alt = '', array $options = []): string {
+        $class = $options['class'] ?? '';
+        $loading = $options['loading'] ?? 'lazy';
+        $width = $options['width'] ?? null;
+        $height = $options['height'] ?? null;
+        $sizes = $options['sizes'] ?? '(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 800px';
+
+        $pathInfo = pathinfo($src);
+        $dir = $pathInfo['dirname'];
+        $baseName = $pathInfo['filename'];
+        $ext = $pathInfo['extension'] ?? 'jpg';
+
+        // Check if this is an SVG (no processing needed)
+        if (strtolower($ext) === 'svg') {
+            $attrs = ['src="' . e($src) . '"', 'alt="' . e($alt) . '"'];
+            if ($class) $attrs[] = 'class="' . e($class) . '"';
+            if ($loading !== 'eager') $attrs[] = 'loading="' . e($loading) . '"';
+            return '<img ' . implode(' ', $attrs) . '>';
+        }
+
+        // Build srcset for WebP
+        $webpSrcset = [];
+        $fallbackSrcset = [];
+        $widths = [320, 640, 800, 1200, 1920];
+
+        foreach ($widths as $w) {
+            $sizeName = match(true) {
+                $w <= 320 => 'small',
+                $w <= 640 => 'medium',
+                $w <= 800 => 'medium',
+                $w <= 1200 => 'large',
+                default => 'xlarge'
+            };
+
+            $webpSrcset[] = "{$dir}/{$baseName}-{$sizeName}.webp {$w}w";
+            $fallbackSrcset[] = "{$dir}/{$baseName}-{$sizeName}.{$ext} {$w}w";
+        }
+
+        // Build picture element
+        $html = '<picture>';
+
+        // WebP source
+        $html .= '<source type="image/webp" srcset="' . e(implode(', ', $webpSrcset)) . '" sizes="' . e($sizes) . '">';
+
+        // Fallback source
+        $html .= '<source type="image/' . ($ext === 'jpg' ? 'jpeg' : $ext) . '" srcset="' . e(implode(', ', $fallbackSrcset)) . '" sizes="' . e($sizes) . '">';
+
+        // Fallback img
+        $imgAttrs = [
+            'src="' . e("{$dir}/{$baseName}-medium.{$ext}") . '"',
+            'alt="' . e($alt) . '"'
+        ];
+        if ($class) $imgAttrs[] = 'class="' . e($class) . '"';
+        if ($loading !== 'eager') $imgAttrs[] = 'loading="' . e($loading) . '"';
+        if ($width) $imgAttrs[] = 'width="' . (int)$width . '"';
+        if ($height) $imgAttrs[] = 'height="' . (int)$height . '"';
+
+        $html .= '<img ' . implode(' ', $imgAttrs) . '>';
+        $html .= '</picture>';
+
+        return $html;
+    }
+}
+
+/**
+ * Get optimized image URL (WebP if available)
+ *
+ * @param string $src Original image URL
+ * @param string $size Size variant: thumbnail, small, medium, large, xlarge
+ * @param bool $preferWebp Whether to prefer WebP format
+ * @return string Optimized image URL
+ */
+if (!function_exists('optimized_image_url')) {
+    function optimized_image_url(string $src, string $size = 'medium', bool $preferWebp = true): string {
+        $pathInfo = pathinfo($src);
+        $dir = $pathInfo['dirname'];
+        $baseName = $pathInfo['filename'];
+        $ext = $pathInfo['extension'] ?? 'jpg';
+
+        // SVGs don't need optimization
+        if (strtolower($ext) === 'svg') {
+            return $src;
+        }
+
+        // Check if browser supports WebP (this is a simple check, better done client-side)
+        $supportsWebp = $preferWebp && isset($_SERVER['HTTP_ACCEPT']) &&
+                        strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false;
+
+        if ($supportsWebp) {
+            return "{$dir}/{$baseName}-{$size}.webp";
+        }
+
+        return "{$dir}/{$baseName}-{$size}.{$ext}";
+    }
+}
