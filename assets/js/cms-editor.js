@@ -392,9 +392,11 @@
         // Get content based on type
         let content;
         if (type === 'image') {
-            content = el.src;
+            // Use getAttribute to get the raw src, not the resolved absolute URL
+            content = el.getAttribute('src') || '';
         } else if (type === 'link') {
-            content = el.href;
+            // Use getAttribute to get the raw href, not the resolved absolute URL
+            content = el.getAttribute('href') || '';
         } else if (type === 'text') {
             content = el.textContent;
         } else {
@@ -794,18 +796,31 @@
             const result = await response.json();
 
             if (result.success && result.media.length > 0) {
-                grid.innerHTML = result.media.map(item => `
-                    <div class="cms-media-item" data-url="${item.file_url}">
-                        <img src="${item.file_url}" alt="${item.alt_text || ''}">
-                        <span class="cms-media-name">${item.original_filename}</span>
-                    </div>
-                `).join('');
+                grid.innerHTML = result.media.map(item => {
+                    // Ensure file_url exists and is valid
+                    const url = item.file_url || '';
+                    if (!url) {
+                        console.warn('Media item missing file_url:', item);
+                    }
+                    return `
+                        <div class="cms-media-item" data-url="${url}">
+                            <img src="${url}" alt="${item.alt_text || ''}">
+                            <span class="cms-media-name">${item.original_filename || 'Unknown'}</span>
+                        </div>
+                    `;
+                }).join('');
 
                 // Add click handlers
                 grid.querySelectorAll('.cms-media-item').forEach(item => {
                     item.addEventListener('click', () => {
-                        if (selectCallback) {
-                            selectCallback(item.dataset.url);
+                        const url = item.dataset.url;
+                        console.log('Media selected, URL:', url);
+                        if (selectCallback && url) {
+                            selectCallback(url);
+                        } else if (!url) {
+                            console.error('No URL found for media item');
+                            alert('Error: This image has no valid URL');
+                            return; // Don't close modal if no URL
                         }
                         closeModal();
                     });
@@ -856,9 +871,15 @@
      */
     function openImagePicker(el) {
         openMediaLibrary((src) => {
-            el.src = src;
-            state.hasUnsavedChanges = true;
-            saveCurrentEdit();
+            console.log('Image picker callback, setting src to:', src);
+            if (src) {
+                el.src = src;
+                el.setAttribute('src', src); // Also set attribute directly
+                state.hasUnsavedChanges = true;
+                saveCurrentEdit();
+            } else {
+                console.error('No src provided to image picker callback');
+            }
         });
     }
 
