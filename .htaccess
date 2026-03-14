@@ -5,6 +5,39 @@ RewriteBase /
 # Disable automatic directory slash redirect (prevents /www/ exposure)
 DirectorySlash Off
 
+# === WEBP AUTO-SERVING ===
+# Serve WebP images automatically when browser supports it and WebP version exists
+# This allows URLs to stay as .jpg/.png but serve the smaller WebP file
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_ACCEPT} image/webp
+    RewriteCond %{REQUEST_URI} \.(jpe?g|png)$
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.webp -f
+    RewriteRule ^(.+)\.(jpe?g|png)$ $1.$2.webp [T=image/webp,L]
+</IfModule>
+
+# Alternative: Check for WebP file with same base name (image.jpg -> image.webp)
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_ACCEPT} image/webp
+    RewriteCond %{REQUEST_URI} ^(.+)\.(jpe?g|png)$
+    RewriteCond %{DOCUMENT_ROOT}%1.webp -f
+    RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,L]
+</IfModule>
+
+# Ensure correct content type for WebP
+<IfModule mod_headers.c>
+    <FilesMatch "\.(webp)$">
+        Header set Content-Type "image/webp"
+    </FilesMatch>
+</IfModule>
+
+# Add Vary header so CDNs/proxies cache both versions
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpe?g|png)$">
+        Header append Vary Accept
+    </FilesMatch>
+</IfModule>
+# === END WEBP AUTO-SERVING ===
+
 # === BIBLE STUDY QUESTIONS (priority route) ===
 RewriteRule ^bible-study/questions/?$ bible-study-questions.php [L,QSA]
 RewriteRule ^bible-study/questions/([a-zA-Z0-9-]+)/?$ bible-study-question.php?question=$1 [L,QSA]
