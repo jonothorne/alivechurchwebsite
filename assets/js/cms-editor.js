@@ -261,6 +261,93 @@
                 }
             });
         });
+
+        // Setup background image editables
+        setupBackgroundEditables();
+    }
+
+    /**
+     * Setup background image editable elements
+     */
+    function setupBackgroundEditables() {
+        const bgEditables = document.querySelectorAll('[data-cms-bg]');
+
+        bgEditables.forEach(el => {
+            // Add edit button overlay
+            const editBtn = document.createElement('button');
+            editBtn.className = 'cms-bg-edit-btn';
+            editBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Change Background
+            `;
+            editBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (document.body.classList.contains('cms-editing-disabled')) {
+                    return;
+                }
+                openBackgroundPicker(el);
+            });
+
+            // Position the button
+            el.style.position = el.style.position || 'relative';
+            el.appendChild(editBtn);
+        });
+    }
+
+    /**
+     * Open media picker for background image
+     */
+    function openBackgroundPicker(el) {
+        const key = el.dataset.cmsBg;
+        const pageSlug = el.dataset.cmsPage || getPageSlug();
+
+        openMediaLibrary((src) => {
+            // Update the CSS variable
+            el.style.setProperty('--hero-bg-image', `url('${src}')`);
+
+            // Save to CMS
+            saveBackgroundImage(key, pageSlug, src);
+        });
+    }
+
+    /**
+     * Save background image to CMS
+     */
+    async function saveBackgroundImage(key, pageSlug, src) {
+        updateStatus('Saving background...');
+
+        try {
+            const response = await fetch('/api/cms/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    key: key,
+                    page: pageSlug,
+                    content: src,
+                    type: 'image',
+                    isGlobal: false
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                updateStatus('Background saved!');
+            } else {
+                console.error('Save failed:', result.error);
+                updateStatus('Error: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            updateStatus('Error saving background');
+        }
     }
 
     /**

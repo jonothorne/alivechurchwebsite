@@ -34,7 +34,8 @@ $recentSermons = $sermonManager->getRecentSermons(3);
 
 include __DIR__ . '/includes/header.php';
 ?>
-<section class="hero" id="visit">
+<?php $heroImage = $cms->text('hero_image', '/assets/imgs/gallery/alive-church-worship-congregation.jpg'); ?>
+<section class="hero" id="visit" data-cms-bg="hero_image" data-cms-page="home" style="--hero-bg-image: url('<?= htmlspecialchars($heroImage); ?>')">
     <div class="container hero-content">
         <p class="hero-tag" data-cms-editable="hero_tagline" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_tagline', 'YOU BELONG HERE'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('hero_headline', 'Church for everyone, including you.'); ?></h1>
