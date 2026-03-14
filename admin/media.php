@@ -31,8 +31,8 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Handle File Upload
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
+// Handle File Upload (supports multiple files)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_FILES['files']))) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid security token';
     } else {
@@ -43,20 +43,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
             mkdir($upload_dir, 0755, true);
         }
 
-        $file = $_FILES['file'];
-        $original_filename = basename($file['name']);
-        $file_ext = strtolower(pathinfo($original_filename, PATHINFO_EXTENSION));
+        // Normalize files array (handle both single and multiple uploads)
+        $files = [];
+        if (isset($_FILES['files'])) {
+            // Multiple files uploaded
+            $fileCount = count($_FILES['files']['name']);
+            for ($i = 0; $i < $fileCount; $i++) {
+                if ($_FILES['files']['error'][$i] === UPLOAD_ERR_OK) {
+                    $files[] = [
+                        'name' => $_FILES['files']['name'][$i],
+                        'type' => $_FILES['files']['type'][$i],
+                        'tmp_name' => $_FILES['files']['tmp_name'][$i],
+                        'error' => $_FILES['files']['error'][$i],
+                        'size' => $_FILES['files']['size'][$i]
+                    ];
+                }
+            }
+        } elseif (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+            // Single file (backwards compatibility)
+            $files[] = $_FILES['file'];
+        }
 
         // Allowed file types
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'mp3', 'mp4', 'mov', 'avi', 'doc', 'docx', 'xls', 'xlsx'];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'mp3', 'mp4', 'mov', 'avi', 'doc', 'docx', 'xls', 'xlsx', 'webp'];
 
-        if (!in_array($file_ext, $allowed)) {
-            $error = 'File type not allowed';
-        } elseif ($file['size'] > 50 * 1024 * 1024) { // 50MB limit
-            $error = 'File size exceeds 50MB limit';
-        } elseif ($file['error'] !== UPLOAD_ERR_OK) {
-            $error = 'Upload error occurred';
-        } else {
+        $uploadedCount = 0;
+        $errorMessages = [];
+
+        foreach ($files as $file) {
+            $original_filename = basename($file['name']);
+            $file_ext = strtolower(pathinfo($original_filename, PATHINFO_EXTENSION));
+
+            if (!in_array($file_ext, $allowed)) {
+                $errorMessages[] = "{$original_filename}: File type not allowed";
+                continue;
+            } elseif ($file['size'] > 50 * 1024 * 1024) { // 50MB limit
+                $errorMessages[] = "{$original_filename}: File size exceeds 50MB limit";
+                continue;
+            }
+
             // Generate unique filename
             $unique_filename = time() . '_' . uniqid() . '.' . $file_ext;
             $upload_path = $upload_dir . $unique_filename;
@@ -157,20 +182,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
                             }
                         }
 
-                        $success = 'File uploaded and optimized! Saved ' . ($processingResult['savings_formatted'] ?? '0 B');
-                    } elseif ($processingResult['queued'] ?? false) {
-                        $success = 'File uploaded! Optimization queued for background processing.';
-                    } else {
-                        $success = 'File uploaded successfully';
                     }
-                } else {
-                    $success = 'File uploaded successfully';
                 }
 
                 log_activity($_SESSION['admin_user_id'], 'upload', 'media', $mediaId, 'Uploaded: ' . $original_filename);
+                $uploadedCount++;
             } else {
-                $error = 'Failed to save file';
+                $errorMessages[] = "{$original_filename}: Failed to save file";
             }
+        }
+
+        // Set success/error messages based on results
+        if ($uploadedCount > 0) {
+            $success = $uploadedCount === 1
+                ? 'File uploaded and optimized successfully'
+                : "{$uploadedCount} files uploaded and optimized successfully";
+        }
+        if (!empty($errorMessages)) {
+            $error = implode('; ', $errorMessages);
         }
     }
 }
@@ -218,17 +247,186 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     <div class="admin-alert admin-alert-error">⚠️ <?= htmlspecialchars($error); ?></div>
 <?php endif; ?>
 
-<!-- Compact Upload -->
+<!-- Upload Zone -->
 <div class="admin-card">
     <div class="admin-card-header">
         <h3>Upload</h3>
     </div>
-    <form method="post" enctype="multipart/form-data" style="display: flex; gap: 0.5rem; align-items: center;">
+    <form method="post" enctype="multipart/form-data" id="upload-form">
         <?= csrf_field(); ?>
-        <input type="file" name="file" required accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx" style="flex: 1;">
-        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+        <div class="upload-dropzone" id="upload-dropzone">
+            <input type="file" name="files[]" id="file-input" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
+            <div class="upload-dropzone-content">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p><strong>Drop files here</strong> or click to browse</p>
+                <span class="upload-hint">Supports images, videos, audio, PDFs, and documents</span>
+            </div>
+            <div class="upload-progress" id="upload-progress" style="display: none;">
+                <div class="upload-progress-bar" id="upload-progress-bar"></div>
+                <span class="upload-progress-text" id="upload-progress-text">Uploading...</span>
+            </div>
+        </div>
     </form>
 </div>
+
+<style>
+.upload-dropzone {
+    position: relative;
+    border: 2px dashed var(--admin-border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--admin-bg-subtle);
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+    border-color: var(--admin-purple);
+    background: rgba(75, 38, 121, 0.05);
+}
+
+.upload-dropzone.dragover {
+    transform: scale(1.01);
+}
+
+.upload-dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-dropzone-content {
+    pointer-events: none;
+}
+
+.upload-dropzone-content svg {
+    color: var(--admin-text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.upload-dropzone-content p {
+    margin: 0 0 0.25rem 0;
+    color: var(--admin-text);
+}
+
+.upload-dropzone-content .upload-hint {
+    font-size: 0.85rem;
+    color: var(--admin-text-muted);
+}
+
+.upload-progress {
+    margin-top: 1rem;
+}
+
+.upload-progress-bar {
+    height: 6px;
+    background: var(--admin-purple);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.upload-progress-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--admin-text-muted);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropzone = document.getElementById('upload-dropzone');
+    const fileInput = document.getElementById('file-input');
+    const form = document.getElementById('upload-form');
+    const progressDiv = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const progressText = document.getElementById('upload-progress-text');
+
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+    });
+
+    // Handle dropped files
+    dropzone.addEventListener('drop', function(e) {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            uploadFiles(files);
+        }
+    });
+
+    // Handle selected files
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            uploadFiles(this.files);
+        }
+    });
+
+    function uploadFiles(files) {
+        const formData = new FormData();
+        formData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files[]', files[i]);
+        }
+
+        progressDiv.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`;
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percent + '%';
+                progressText.textContent = `Uploading... ${percent}%`;
+            }
+        });
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Processing complete! Refreshing...';
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                progressText.textContent = 'Upload failed. Please try again.';
+                progressBar.style.background = '#ef4444';
+            }
+        });
+
+        xhr.addEventListener('error', function() {
+            progressText.textContent = 'Upload failed. Please try again.';
+            progressBar.style.background = '#ef4444';
+        });
+
+        xhr.open('POST', window.location.href);
+        xhr.send(formData);
+    }
+});
+</script>
 
 <!-- Compact Edit Form -->
 <?php if ($edit_media): ?>
