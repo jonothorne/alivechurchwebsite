@@ -86,6 +86,7 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
             '@^/about/what-we-believe$@' => ['file' => '/about/what-we-believe.php'],
             '@^/about/vision$@' => ['file' => '/about/vision.php'],
             '@^/about/dead-church$@' => ['file' => '/about/dead-church.php'],
+            '@^/about/youth$@' => ['file' => '/about/youth.php'],
 
             // My Studies
             '@^/my-studies$@' => ['file' => '/my-studies.php'],
