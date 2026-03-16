@@ -409,11 +409,30 @@ if ($current_user && $is_bible_study_page) {
 
                         $icon = $nav_icons[$link['url']] ?? $default_icon;
                     ?>
+                        <?php if ($has_dropdown): ?>
+                        <div class="mobile-nav-dropdown<?= $is_active ? ' is-active' : ''; ?>" style="--i: <?= $index; ?>">
+                            <div class="mobile-nav-link mobile-nav-link-expandable" data-href="<?= $link['url']; ?>">
+                                <span class="mobile-nav-link-icon"><?= $icon; ?></span>
+                                <span class="mobile-nav-link-text"><?= $link['label']; ?></span>
+                                <svg class="mobile-nav-link-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <div class="mobile-nav-subitems">
+                                <?php foreach ($link['dropdown'] as $sublink):
+                                    $sub_active = $sublink['url'] === $current_url || strpos($current_url, strtok($sublink['url'], '#')) === 0;
+                                ?>
+                                <a href="<?= $sublink['url']; ?>" class="mobile-nav-subitem<?= $sub_active ? ' is-active' : ''; ?>">
+                                    <?= $sublink['label']; ?>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php else: ?>
                         <a href="<?= $link['url']; ?>" class="mobile-nav-link<?= $is_active ? ' is-active' : ''; ?>" style="--i: <?= $index; ?>">
                             <span class="mobile-nav-link-icon"><?= $icon; ?></span>
                             <span class="mobile-nav-link-text"><?= $link['label']; ?></span>
                             <svg class="mobile-nav-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                         </a>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -467,6 +486,47 @@ if ($current_user && $is_bible_study_page) {
                 </div>
             </div>
         </nav>
+        <script <?= csp_nonce(); ?>>
+        // Mobile nav expandable dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            const expandables = document.querySelectorAll('.mobile-nav-link-expandable');
+            expandables.forEach(function(trigger) {
+                trigger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const dropdown = this.closest('.mobile-nav-dropdown');
+
+                    if (dropdown.classList.contains('is-expanded')) {
+                        // Already expanded - navigate to the page
+                        const href = this.getAttribute('data-href');
+                        if (href) {
+                            window.location.href = href;
+                        }
+                    } else {
+                        // Close other expanded dropdowns
+                        document.querySelectorAll('.mobile-nav-dropdown.is-expanded').forEach(function(other) {
+                            if (other !== dropdown) {
+                                other.classList.remove('is-expanded');
+                            }
+                        });
+                        // Expand this one
+                        dropdown.classList.add('is-expanded');
+                    }
+                });
+            });
+
+            // Close dropdowns when menu closes
+            const navToggle = document.getElementById('nav-toggle');
+            if (navToggle) {
+                navToggle.addEventListener('change', function() {
+                    if (!this.checked) {
+                        document.querySelectorAll('.mobile-nav-dropdown.is-expanded').forEach(function(dropdown) {
+                            dropdown.classList.remove('is-expanded');
+                        });
+                    }
+                });
+            }
+        });
+        </script>
 
         <div class="user-nav">
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
