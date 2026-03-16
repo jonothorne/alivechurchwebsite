@@ -725,8 +725,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             </span>
                         <?php endif; ?>
                         <div class="admin-media-overlay">
-                            <button onclick="navigator.clipboard.writeText('/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy URL', 1000);" class="btn btn-xs">Copy URL</button>
-                            <a href="?edit=<?= $media['id']; ?>" class="btn btn-xs">Edit</a>
+                            <button onclick="navigator.clipboard.writeText('https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy URL', 1000);" class="btn btn-xs">Copy</button>
+                            <a href="?edit=<?= $media['id']; ?>" class="btn btn-xs">🏷️ Tag</a>
                             <a href="?delete=<?= $media['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
                         </div>
                     </div>
