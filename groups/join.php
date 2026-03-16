@@ -94,27 +94,6 @@ include __DIR__ . '/../includes/header.php';
                         </ul>
                     </div>
 
-                    <?php
-                    $other_groups = array_filter($groups, fn($g) => $g['title'] !== $selected_group['title']);
-                    if (!empty($other_groups)):
-                    ?>
-                    <h3 style="margin-top: 2rem;">Other Available Groups</h3>
-                    <div class="card-grid" style="margin-top: 1rem;">
-                        <?php foreach ($other_groups as $group): ?>
-                            <div class="card">
-                                <h4><?= htmlspecialchars($group['title']); ?></h4>
-                                <p><?= htmlspecialchars($group['description']); ?></p>
-                                <p class="small-text">
-                                    <strong>📅 <?= htmlspecialchars($group['schedule']); ?></strong><br>
-                                    <strong>📍 <?= htmlspecialchars($group['location']); ?></strong>
-                                </p>
-                                <a class="btn btn-outline" href="/groups/join?group=<?= urlencode(create_slug($group['title'])); ?>" style="margin-top: 1rem;">
-                                    View Group
-                                </a>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div>
@@ -267,6 +246,36 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </section>
+
+<?php
+if ($selected_group) {
+    $other_groups = array_filter($groups, fn($g) => $g['title'] !== $selected_group['title']);
+    if (!empty($other_groups)):
+?>
+<section class="content-section">
+    <div class="container">
+        <h2>Other Available Groups</h2>
+        <div class="card-grid" style="margin-top: 1.5rem;">
+            <?php foreach ($other_groups as $group): ?>
+                <div class="card">
+                    <h4><?= htmlspecialchars($group['title']); ?></h4>
+                    <p><?= htmlspecialchars($group['description']); ?></p>
+                    <p class="small-text">
+                        <strong>📅 <?= htmlspecialchars($group['schedule']); ?></strong><br>
+                        <strong>📍 <?= htmlspecialchars($group['location']); ?></strong>
+                    </p>
+                    <a class="btn btn-outline" href="/groups/join?group=<?= urlencode(create_slug($group['title'])); ?>" style="margin-top: 1rem;">
+                        View Group
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php
+    endif;
+}
+?>
 
 <section class="content-section alt">
     <div class="container narrow center-text">
