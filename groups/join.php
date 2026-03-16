@@ -14,10 +14,17 @@ $groups = $groupsStmt->fetchAll(PDO::FETCH_ASSOC);
 $group_param = $_GET['group'] ?? '';
 $selected_group = null;
 
+// Helper function to create URL-safe slug
+function create_slug($text) {
+    $text = strtolower($text);
+    $text = preg_replace('/[^a-z0-9\s-]/', '', $text); // Remove special chars
+    $text = preg_replace('/[\s-]+/', '-', $text); // Replace spaces/multiple dashes with single dash
+    return trim($text, '-');
+}
+
 // Find the group from groups array
 foreach ($groups as $group) {
-    // Create slug from title for matching
-    $title_slug = strtolower(str_replace(' ', '-', $group['title']));
+    $title_slug = create_slug($group['title']);
     if ($title_slug === $group_param) {
         $selected_group = $group;
         break;
@@ -86,6 +93,28 @@ include __DIR__ . '/../includes/header.php';
                             <li><strong>Everyone Welcome:</strong> New to faith or been walking with Jesus for years.</li>
                         </ul>
                     </div>
+
+                    <?php
+                    $other_groups = array_filter($groups, fn($g) => $g['title'] !== $selected_group['title']);
+                    if (!empty($other_groups)):
+                    ?>
+                    <h3 style="margin-top: 2rem;">Other Available Groups</h3>
+                    <div class="card-grid" style="margin-top: 1rem;">
+                        <?php foreach ($other_groups as $group): ?>
+                            <div class="card">
+                                <h4><?= htmlspecialchars($group['title']); ?></h4>
+                                <p><?= htmlspecialchars($group['description']); ?></p>
+                                <p class="small-text">
+                                    <strong>📅 <?= htmlspecialchars($group['schedule']); ?></strong><br>
+                                    <strong>📍 <?= htmlspecialchars($group['location']); ?></strong>
+                                </p>
+                                <a class="btn btn-outline" href="/groups/join?group=<?= urlencode(create_slug($group['title'])); ?>" style="margin-top: 1rem;">
+                                    View Group
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div>
