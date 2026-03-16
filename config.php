@@ -155,17 +155,33 @@ function is_stream_live() {
 
 $is_live = is_stream_live();
 
-// Load livestream URL from database settings, fallback to YouTube channel
-$live_stream_url = 'https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxx'; // Default fallback
+// Load YouTube settings for automatic livestream detection
+$youtube_channel_id = 'UClz5KlC-Z40SC0-TF_Ssg6g'; // Default fallback
+$live_stream_url = ''; // Will be set below
 try {
-    $livestreamStmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'livestream_url'");
-    $livestreamStmt->execute();
-    $livestreamResult = $livestreamStmt->fetch(PDO::FETCH_ASSOC);
-    if ($livestreamResult && !empty($livestreamResult['setting_value'])) {
-        $live_stream_url = $livestreamResult['setting_value'];
+    // Get YouTube settings from database
+    $ytStmt = $pdo->prepare("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('youtube_channel_id', 'youtube_api_key')");
+    $ytStmt->execute();
+    $ytSettings = [];
+    while ($row = $ytStmt->fetch(PDO::FETCH_ASSOC)) {
+        $ytSettings[$row['setting_key']] = $row['setting_value'];
+    }
+
+    if (!empty($ytSettings['youtube_channel_id'])) {
+        $youtube_channel_id = $ytSettings['youtube_channel_id'];
+    }
+
+    $live_stream_url = "https://www.youtube.com/embed/live_stream?channel={$youtube_channel_id}";
+
+    // Use API for automatic detection if API key is available
+    if (!empty($ytSettings['youtube_api_key'])) {
+        require_once __DIR__ . '/includes/YouTubeLivestream.php';
+        $ytLive = new YouTubeLivestream($youtube_channel_id, $ytSettings['youtube_api_key']);
+        $live_stream_url = $ytLive->getEmbedUrl();
     }
 } catch (Exception $e) {
-    error_log('Config: Could not load livestream URL: ' . $e->getMessage());
+    error_log('Config: Could not load livestream settings: ' . $e->getMessage());
+    $live_stream_url = "https://www.youtube.com/embed/live_stream?channel={$youtube_channel_id}";
 }
 
 // Sermon series for watch page
