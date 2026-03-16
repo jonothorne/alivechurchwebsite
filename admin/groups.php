@@ -135,8 +135,22 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
 
             <div class="admin-form-row">
                 <div class="admin-form-group">
-                    <label>Image URL</label>
-                    <input type="text" name="image_url" value="<?= htmlspecialchars($edit_group['image_url'] ?? ''); ?>" placeholder="/uploads/...">
+                    <label>Image</label>
+                    <div class="image-picker-field">
+                        <input type="hidden" name="image_url" id="image_url" value="<?= htmlspecialchars($edit_group['image_url'] ?? ''); ?>">
+                        <div class="image-preview-container">
+                            <?php if (!empty($edit_group['image_url'])): ?>
+                                <img src="<?= htmlspecialchars($edit_group['image_url']); ?>" id="image_preview" class="image-preview">
+                            <?php else: ?>
+                                <div id="image_placeholder" class="image-placeholder">No image selected</div>
+                                <img src="" id="image_preview" class="image-preview" style="display: none;">
+                            <?php endif; ?>
+                        </div>
+                        <div class="image-picker-actions">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPicker()">Select Image</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearImage()" style="<?= empty($edit_group['image_url']) ? 'display:none;' : ''; ?>" id="clear_image_btn">Clear</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="admin-form-group">
                     <label>Signup URL</label>
@@ -209,5 +223,225 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Media Picker Modal -->
+<div id="media-picker-modal" class="media-picker-overlay" style="display: none;">
+    <div class="media-picker-modal">
+        <div class="media-picker-header">
+            <h3>Select Image</h3>
+            <button type="button" onclick="closeMediaPicker()" class="media-picker-close">&times;</button>
+        </div>
+        <div class="media-picker-body">
+            <div id="media-picker-loading" style="text-align: center; padding: 2rem;">Loading...</div>
+            <div id="media-picker-grid" class="media-picker-grid"></div>
+            <div id="media-picker-empty" style="display: none; text-align: center; padding: 2rem; color: var(--color-text-muted);">
+                No images in library. <a href="/admin/media">Upload one</a>.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.image-picker-field {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.image-preview-container {
+    width: 120px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+}
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+.image-picker-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.media-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.media-picker-modal {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-xl);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.media-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+.media-picker-header h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+.media-picker-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+.media-picker-close:hover {
+    color: var(--color-text);
+}
+.media-picker-body {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+}
+.media-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
+}
+.media-picker-item {
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+}
+.media-picker-item:hover {
+    border-color: var(--color-purple);
+    transform: scale(1.02);
+}
+.media-picker-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+</style>
+
+<script>
+function openMediaPicker() {
+    document.getElementById('media-picker-modal').style.display = 'flex';
+    loadMediaLibrary();
+}
+
+function closeMediaPicker() {
+    document.getElementById('media-picker-modal').style.display = 'none';
+}
+
+async function loadMediaLibrary() {
+    const grid = document.getElementById('media-picker-grid');
+    const loading = document.getElementById('media-picker-loading');
+    const empty = document.getElementById('media-picker-empty');
+
+    loading.style.display = 'block';
+    grid.innerHTML = '';
+    empty.style.display = 'none';
+
+    try {
+        const response = await fetch('/admin/api/media?type=images');
+        const result = await response.json();
+
+        loading.style.display = 'none';
+
+        if (result.data && result.data.length > 0) {
+            result.data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'media-picker-item';
+                div.innerHTML = `<img src="${item.thumbnail || item.url}" alt="${item.name || ''}" loading="lazy">`;
+                div.onclick = () => selectMedia(item.url);
+                grid.appendChild(div);
+            });
+        } else {
+            empty.style.display = 'block';
+        }
+    } catch (error) {
+        loading.style.display = 'none';
+        empty.textContent = 'Error loading media library';
+        empty.style.display = 'block';
+    }
+}
+
+function selectMedia(url) {
+    // Try to use medium size variant if available
+    let finalUrl = url;
+    const mediumUrl = url.replace(/(\.[^.]+)$/, '-medium$1');
+    const smallUrl = url.replace(/(\.[^.]+)$/, '-small$1');
+
+    // Check if medium variant exists by trying to load it
+    const img = new Image();
+    img.onload = function() {
+        finalUrl = mediumUrl;
+        setImageUrl(finalUrl);
+    };
+    img.onerror = function() {
+        // Try small variant
+        const imgSmall = new Image();
+        imgSmall.onload = function() {
+            finalUrl = smallUrl;
+            setImageUrl(finalUrl);
+        };
+        imgSmall.onerror = function() {
+            // Use original
+            setImageUrl(url);
+        };
+        imgSmall.src = smallUrl;
+    };
+    img.src = mediumUrl;
+
+    closeMediaPicker();
+}
+
+function setImageUrl(url) {
+    document.getElementById('image_url').value = url;
+    const preview = document.getElementById('image_preview');
+    const placeholder = document.getElementById('image_placeholder');
+
+    preview.src = url;
+    preview.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
+    document.getElementById('clear_image_btn').style.display = 'inline-flex';
+}
+
+function clearImage() {
+    document.getElementById('image_url').value = '';
+    const preview = document.getElementById('image_preview');
+    const placeholder = document.getElementById('image_placeholder');
+
+    preview.style.display = 'none';
+    preview.src = '';
+    if (placeholder) placeholder.style.display = 'flex';
+    document.getElementById('clear_image_btn').style.display = 'none';
+}
+
+// Close modal on overlay click
+document.getElementById('media-picker-modal').onclick = function(e) {
+    if (e.target === this) closeMediaPicker();
+};
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
