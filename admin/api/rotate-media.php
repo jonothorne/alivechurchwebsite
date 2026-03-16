@@ -132,9 +132,37 @@ switch ($extension) {
         break;
 }
 
+// Also rotate WebP version if it exists (for auto-serving)
+$webpPath = $filePath . '.webp';
+if (file_exists($webpPath)) {
+    $webpImage = @imagecreatefromwebp($webpPath);
+    if ($webpImage) {
+        $rotatedWebp = imagerotate($webpImage, $angle, 0);
+        if ($rotatedWebp) {
+            imagewebp($rotatedWebp, $webpPath, 85);
+            imagedestroy($rotatedWebp);
+        }
+        imagedestroy($webpImage);
+    }
+}
+
+// Check for alternative WebP naming (image.webp instead of image.jpg.webp)
+$altWebpPath = preg_replace('/\.(jpe?g|png|gif)$/i', '.webp', $filePath);
+if ($altWebpPath !== $filePath && file_exists($altWebpPath)) {
+    $webpImage = @imagecreatefromwebp($altWebpPath);
+    if ($webpImage) {
+        $rotatedWebp = imagerotate($webpImage, $angle, 0);
+        if ($rotatedWebp) {
+            imagewebp($rotatedWebp, $altWebpPath, 85);
+            imagedestroy($rotatedWebp);
+        }
+        imagedestroy($webpImage);
+    }
+}
+
 // Also rotate thumbnail if it exists
-$thumbPath = $basePath . $media['thumbnail_path'];
-if (file_exists($thumbPath) && $thumbPath !== $filePath) {
+$thumbPath = !empty($media['thumbnail_path']) ? $basePath . $media['thumbnail_path'] : null;
+if ($thumbPath && file_exists($thumbPath) && is_file($thumbPath) && $thumbPath !== $filePath) {
     $thumbExt = strtolower(pathinfo($thumbPath, PATHINFO_EXTENSION));
     $thumbImage = null;
 
@@ -174,6 +202,34 @@ if (file_exists($thumbPath) && $thumbPath !== $filePath) {
             imagedestroy($rotatedThumb);
         }
         imagedestroy($thumbImage);
+    }
+
+    // Also rotate WebP version of thumbnail if it exists
+    $thumbWebpPath = $thumbPath . '.webp';
+    if (file_exists($thumbWebpPath)) {
+        $webpThumb = @imagecreatefromwebp($thumbWebpPath);
+        if ($webpThumb) {
+            $rotatedWebpThumb = imagerotate($webpThumb, $angle, 0);
+            if ($rotatedWebpThumb) {
+                imagewebp($rotatedWebpThumb, $thumbWebpPath, 82);
+                imagedestroy($rotatedWebpThumb);
+            }
+            imagedestroy($webpThumb);
+        }
+    }
+
+    // Check for alternative WebP naming for thumbnail
+    $altThumbWebpPath = preg_replace('/\.(jpe?g|png|gif)$/i', '.webp', $thumbPath);
+    if ($altThumbWebpPath !== $thumbPath && file_exists($altThumbWebpPath)) {
+        $webpThumb = @imagecreatefromwebp($altThumbWebpPath);
+        if ($webpThumb) {
+            $rotatedWebpThumb = imagerotate($webpThumb, $angle, 0);
+            if ($rotatedWebpThumb) {
+                imagewebp($rotatedWebpThumb, $altThumbWebpPath, 82);
+                imagedestroy($rotatedWebpThumb);
+            }
+            imagedestroy($webpThumb);
+        }
     }
 }
 

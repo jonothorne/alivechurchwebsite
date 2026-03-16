@@ -1045,12 +1045,14 @@ async function rotateImage(mediaId, direction, btn) {
             imageRotations[mediaId] -= rotateAmount;
             img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
             console.error('Rotate error:', result.error);
+            alert('Failed to rotate: ' + (result.error || 'Unknown error'));
         }
     } catch (error) {
         // Revert visual rotation on error
         imageRotations[mediaId] -= rotateAmount;
         img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
         console.error('Rotate error:', error);
+        alert('Failed to rotate image: ' + error.message);
     }
 
     // Re-enable buttons
