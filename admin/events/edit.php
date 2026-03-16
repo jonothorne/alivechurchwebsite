@@ -3,6 +3,7 @@ $page_title = 'Edit Event Details';
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../../includes/db-config.php';
 require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../includes/media-picker.php';
 
 $pdo = getDbConnection();
 
