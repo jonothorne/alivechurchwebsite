@@ -252,6 +252,48 @@ if (empty($all_events)) {
     ];
 }
 
+// Merge event_details from database (custom images, descriptions, etc.)
+require_once __DIR__ . '/includes/db-config.php';
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT slug, image, description, cost, registration_url, custom_location FROM event_details WHERE image IS NOT NULL AND image != ''");
+    $eventDetails = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Index by slug for quick lookup
+    $detailsBySlug = [];
+    foreach ($eventDetails as $detail) {
+        $detailsBySlug[$detail['slug']] = $detail;
+    }
+
+    // Merge into all_events
+    foreach ($all_events as &$event) {
+        if (isset($detailsBySlug[$event['slug']])) {
+            $detail = $detailsBySlug[$event['slug']];
+            // Override with database values if they exist
+            if (!empty($detail['image'])) {
+                $event['image'] = $detail['image'];
+            }
+            if (!empty($detail['description'])) {
+                $event['description'] = $detail['description'];
+            }
+            if (!empty($detail['cost'])) {
+                $event['cost'] = $detail['cost'];
+            }
+            if (!empty($detail['registration_url'])) {
+                $event['registration_url'] = $detail['registration_url'];
+                $event['registration_required'] = true;
+            }
+            if (!empty($detail['custom_location'])) {
+                $event['location'] = $detail['custom_location'];
+            }
+        }
+    }
+    unset($event); // Break reference
+} catch (Exception $e) {
+    // Silently fail - events will still display with default images
+    error_log('Failed to load event_details: ' . $e->getMessage());
+}
+
 // Populate homepage event sections from calendar
 // "This Weekend" section - Next 3-4 upcoming events
 $weekend_events = [];
