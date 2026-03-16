@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db-config.php';
+require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = 'Connect | ' . $site['name'];
 
@@ -71,7 +72,7 @@ include __DIR__ . '/includes/header.php';
                              alt="<?= htmlspecialchars($group['title']); ?>">
                         <div>
                             <h3><?= htmlspecialchars($group['title']); ?></h3>
-                            <p><?= htmlspecialchars($group['description']); ?></p>
+                            <p><?= htmlspecialchars(truncate($group['description'], 120)); ?></p>
                             <div class="card-meta">
                                 <span>📅 <?= htmlspecialchars($group['schedule']); ?></span>
                                 <span>📍 <?= htmlspecialchars($group['location']); ?></span>

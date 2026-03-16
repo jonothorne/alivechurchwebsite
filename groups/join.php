@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/db-config.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require __DIR__ . '/../includes/form-handler.php';
 
 $page_title = 'Join a Group | ' . $site['name'];
@@ -110,7 +111,7 @@ include __DIR__ . '/../includes/header.php';
                         <?php foreach ($groups as $group): ?>
                             <div class="card">
                                 <h4><?= htmlspecialchars($group['title']); ?></h4>
-                                <p><?= htmlspecialchars($group['description']); ?></p>
+                                <p><?= htmlspecialchars(truncate($group['description'], 120)); ?></p>
                                 <p class="small-text">
                                     <strong>📅 <?= htmlspecialchars($group['schedule']); ?></strong><br>
                                     <strong>📍 <?= htmlspecialchars($group['location']); ?></strong>
@@ -259,7 +260,7 @@ if ($selected_group) {
             <?php foreach ($other_groups as $group): ?>
                 <div class="card">
                     <h4><?= htmlspecialchars($group['title']); ?></h4>
-                    <p><?= htmlspecialchars($group['description']); ?></p>
+                    <p><?= htmlspecialchars(truncate($group['description'], 120)); ?></p>
                     <p class="small-text">
                         <strong>📅 <?= htmlspecialchars($group['schedule']); ?></strong><br>
                         <strong>📍 <?= htmlspecialchars($group['location']); ?></strong>
