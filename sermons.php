@@ -395,7 +395,7 @@ if ($searchQuery || $speakerFilter):
 <?php endif; // end search check ?>
 
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Horizontal scroll with mouse wheel
 document.querySelectorAll('.sermon-slider').forEach(slider => {
     slider.addEventListener('wheel', (e) => {

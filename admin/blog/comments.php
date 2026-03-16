@@ -135,7 +135,7 @@ $counts = [
     <?php endif; ?>
 </div>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .filter-tabs {
     display: flex;
     gap: 0.25rem;

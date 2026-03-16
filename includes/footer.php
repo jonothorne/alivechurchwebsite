@@ -93,7 +93,7 @@ if ($is_cms_edit_mode
 }
 if ($show_blocks_btn): ?>
 <a href="?blocks=true" class="switch-to-blocks-btn" title="Switch to Block Builder">Use Block Builder</a>
-<style>
+<style <?= csp_nonce(); ?>>
 .switch-to-blocks-btn {
     position: fixed;
     bottom: 80px;
@@ -120,7 +120,7 @@ if ($show_blocks_btn): ?>
 <?php include __DIR__ . '/cookie-consent.php'; ?>
 
 <!-- Service Worker Registration -->
-<script>
+<script <?= csp_nonce(); ?>>
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')

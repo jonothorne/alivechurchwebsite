@@ -365,7 +365,7 @@ HTML is also supported for formatting."><?= htmlspecialchars($study['content'] ?
     </div>
 </form>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Update statistics as user types
 const contentField = document.getElementById('content');
 const wordCountEl = document.getElementById('word-count');

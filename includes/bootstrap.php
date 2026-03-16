@@ -11,6 +11,45 @@ if (defined('APP_BOOTSTRAPPED')) {
 }
 define('APP_BOOTSTRAPPED', true);
 
+// Generate CSP nonce for this request (used for inline scripts/styles)
+if (!defined('CSP_NONCE')) {
+    define('CSP_NONCE', base64_encode(random_bytes(16)));
+}
+
+/**
+ * Get CSP nonce attribute for inline scripts/styles
+ * Usage: <script <?= csp_nonce(); ?>>...</script>
+ */
+if (!function_exists('csp_nonce')) {
+    function csp_nonce() {
+        return 'nonce="' . CSP_NONCE . '"';
+    }
+}
+
+/**
+ * Set Content Security Policy header with nonce
+ * Called from header.php before any output
+ */
+if (!function_exists('set_csp_header')) {
+    function set_csp_header() {
+        if (headers_sent()) {
+            return;
+        }
+        $nonce = CSP_NONCE;
+        $csp = "default-src 'self'; " .
+               "script-src 'self' 'nonce-{$nonce}' https://js.stripe.com https://www.youtube.com https://www.google.com https://www.gstatic.com; " .
+               "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com; " .
+               "font-src 'self' https://fonts.gstatic.com; " .
+               "img-src 'self' data: https: blob:; " .
+               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://js.stripe.com https://www.google.com; " .
+               "connect-src 'self' https://api.stripe.com; " .
+               "object-src 'none'; " .
+               "base-uri 'self'; " .
+               "form-action 'self';";
+        header("Content-Security-Policy: {$csp}");
+    }
+}
+
 // Start session once for the entire application
 if (session_status() === PHP_SESSION_NONE) {
     // Optimize session settings

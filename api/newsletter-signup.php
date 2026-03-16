@@ -164,7 +164,7 @@ function sendConfirmationEmail($email) {
     $message = "
     <html>
     <head>
-        <style>
+        <style <?= csp_nonce(); ?>>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #2D1B4E; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: linear-gradient(135deg, #FF1493 0%, #4B2679 100%); padding: 30px; text-align: center; color: white; }

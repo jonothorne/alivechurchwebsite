@@ -187,7 +187,7 @@ include __DIR__ . '/../includes/header.php';
                 </button>
             </form>
 
-            <script>
+            <script <?= csp_nonce(); ?>>
             document.getElementById('group-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
 

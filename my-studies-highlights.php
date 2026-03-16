@@ -101,7 +101,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Search and filter state
 let currentColorFilter = 'all';
 let currentSearchTerm = '';

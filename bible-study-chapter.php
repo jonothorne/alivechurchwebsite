@@ -241,7 +241,7 @@ if (!$study) {
         </div>
     </div>
 
-    <script>
+    <script <?= csp_nonce(); ?>>
     // Mobile panel functionality for not-available page
     (function() {
         const overlay = document.querySelector('.mobile-panel-overlay');
@@ -721,7 +721,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<script>
+<script <?= csp_nonce(); ?>>
 const studyId = <?= $study['id']; ?>;
 const isLoggedIn = <?= $currentUser ? 'true' : 'false'; ?>;
 const existingHighlights = <?= json_encode($userHighlights); ?>;
@@ -1666,7 +1666,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </div>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // ==================== MOBILE BAR & PANELS ====================
 (function() {
     const overlay = document.querySelector('.mobile-panel-overlay');

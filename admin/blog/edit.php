@@ -315,7 +315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php require_once __DIR__ . '/../includes/media-picker.php'; ?>
 
-<script>
+<script <?= csp_nonce(); ?>>
 const csrfToken = '<?= $_SESSION['csrf_token'] ?? ''; ?>';
 const postId = <?= $post['id'] ?? 'null'; ?>;
 

@@ -41,7 +41,7 @@ if ($has_consent) {
     </div>
 </div>
 
-<script>
+<script <?= csp_nonce(); ?>>
 (function() {
     const popup = document.getElementById('cookie-consent');
     const acceptBtn = document.getElementById('cookie-accept');

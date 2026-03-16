@@ -113,7 +113,7 @@ function build_contact_email(array $data): string
     return "
     <html>
     <head>
-        <style>
+        <style <?= csp_nonce(); ?>>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #2D1B4E; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #fff; }
             .header { background: linear-gradient(135deg, #FF1493 0%, #4B2679 100%); padding: 20px; color: white; }
@@ -170,7 +170,7 @@ function build_prayer_email(array $data): string
     return "
     <html>
     <head>
-        <style>
+        <style <?= csp_nonce(); ?>>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #2D1B4E; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #fff; }
             .header { background: linear-gradient(135deg, #4B2679 0%, #2D1B4E 100%); padding: 20px; color: white; }
@@ -227,7 +227,7 @@ function build_visit_email(array $data): string
     return "
     <html>
     <head>
-        <style>
+        <style <?= csp_nonce(); ?>>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #2D1B4E; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #fff; }
             .header { background: linear-gradient(135deg, #FF1493 0%, #4B2679 100%); padding: 20px; color: white; }
@@ -291,7 +291,7 @@ function build_generic_email(string $type, array $data): string
     return "
     <html>
     <head>
-        <style>
+        <style <?= csp_nonce(); ?>>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #2D1B4E; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #fff; }
             .header { background: linear-gradient(135deg, #FF1493 0%, #4B2679 100%); padding: 20px; color: white; }

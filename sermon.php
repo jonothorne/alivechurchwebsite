@@ -827,7 +827,7 @@ include __DIR__ . '/includes/header.php';
 </article>
 
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Toggle Transcript
 function toggleTranscript() {
     const transcript = document.getElementById('sermon-transcript');

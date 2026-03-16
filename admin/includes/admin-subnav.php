@@ -124,7 +124,7 @@ $is_system = in_array($admin_current_page, $system_pages);
     </div>
 </nav>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Admin subnav dropdown functionality
 document.querySelectorAll('.admin-subnav-trigger').forEach(trigger => {
     trigger.addEventListener('click', function(e) {

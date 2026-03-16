@@ -354,7 +354,7 @@ foreach ($deviceBreakdown as $device) {
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<script <?= csp_nonce(); ?>>
 // Traffic Chart
 const trafficCtx = document.getElementById('trafficChart').getContext('2d');
 new Chart(trafficCtx, {

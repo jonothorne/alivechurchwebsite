@@ -90,7 +90,7 @@ if (!isset($cms)) {
             </button>
         </form>
 
-        <script>
+        <script <?= csp_nonce(); ?>>
         document.getElementById('visit-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 

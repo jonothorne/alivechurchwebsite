@@ -307,7 +307,7 @@ include __DIR__ . '/includes/header.php';
 </section>
 <?php endif; ?>
 
-<style>
+<style <?= csp_nonce(); ?>>
 /* ==================== Author Page Styles ==================== */
 
 /* Hero Section */

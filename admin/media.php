@@ -357,7 +357,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     </form>
 </div>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .upload-dropzone {
     position: relative;
     border: 2px dashed var(--admin-border);
@@ -599,7 +599,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 }
 </style>
 
-<script>
+<script <?= csp_nonce(); ?>>
 document.addEventListener('DOMContentLoaded', function() {
     const dropzone = document.getElementById('upload-dropzone');
     const fileInput = document.getElementById('file-input');
@@ -875,7 +875,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endif; ?>
 </div>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Selection state
 let selectedMedia = new Set();
 

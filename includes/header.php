@@ -52,6 +52,9 @@ $analytics->recordPageVisit(
 // Check if this is an admin page (set by admin header before including this)
 $is_admin_page = $is_admin_page ?? false;
 
+// Set Content Security Policy header with nonce (must be before any output)
+set_csp_header();
+
 // Check if on Bible study pages (for sub-nav) - disabled on admin pages
 $is_bible_study_page = strpos($current_url, '/bible-study') === 0
     || strpos($current_url, '/reading-plan') === 0
@@ -124,7 +127,7 @@ if ($current_user && $is_bible_study_page) {
 <head>
     <meta charset="UTF-8">
     <!-- WebP detection - adds 'webp' class to html if supported -->
-    <script>document.documentElement.className+=' '+(function(){var e=document.createElement('canvas');return e.getContext&&e.getContext('2d')&&e.toDataURL('image/webp').indexOf('data:image/webp')===0?'webp':'no-webp'})();</script>
+    <script <?= csp_nonce(); ?>>document.documentElement.className+=' '+(function(){var e=document.createElement('canvas');return e.getContext&&e.getContext('2d')&&e.toDataURL('image/webp').indexOf('data:image/webp')===0?'webp':'no-webp'})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title); ?></title>
 
@@ -195,7 +198,7 @@ if ($current_user && $is_bible_study_page) {
     <?php if ($is_admin_page): ?>
     <link rel="stylesheet" href="/assets/css/admin.css?v=<?= filemtime(__DIR__ . '/../assets/css/admin.css'); ?>">
     <?php endif; ?>
-    <script>
+    <script <?= csp_nonce(); ?>>
     // Apply theme immediately to prevent flash of wrong theme
     (function() {
         // Check if running as installed PWA (standalone mode)
@@ -239,7 +242,7 @@ if ($current_user && $is_bible_study_page) {
     </script>
     <script defer src="/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js'); ?>"></script>
     <?php if (!empty($_hero_bg_image)): ?>
-    <style>.hero, .page-hero, .block-hero { --hero-bg-image: url('<?= htmlspecialchars($_hero_bg_image); ?>'); }</style>
+    <style <?= csp_nonce(); ?>>.hero, .page-hero, .block-hero { --hero-bg-image: url('<?= htmlspecialchars($_hero_bg_image); ?>'); }</style>
     <?php endif; ?>
 </head>
 <body<?php if ($is_cms_edit_mode): ?> class="cms-edit-mode"<?php endif; ?>>

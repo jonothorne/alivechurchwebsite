@@ -118,7 +118,7 @@ $page_title = $id ? 'Edit Sermon' : 'Add Sermon';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .sermon-editor {
     display: grid;
     grid-template-columns: 1fr 350px;
@@ -510,7 +510,7 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </form>
 
-<script>
+<script <?= csp_nonce(); ?>>
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('input[name="csrf_token"]').value;
     const youtubeInput = document.getElementById('youtube_input');

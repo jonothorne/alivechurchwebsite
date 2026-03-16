@@ -368,7 +368,7 @@ if ($view === 'series') {
         <?php endif; ?>
     </div>
 
-    <script>
+    <script <?= csp_nonce(); ?>>
     function filterBySeries(seriesId) {
         if (seriesId) {
             window.location.href = '?view=messages&series_id=' + seriesId;

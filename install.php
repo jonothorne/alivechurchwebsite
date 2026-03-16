@@ -131,7 +131,7 @@ if ($step === 4 && !isset($_SESSION['admin_ok'])) { header('Location: ?step=3');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alive Church CMS - Installation</title>
-    <style>
+    <style <?= csp_nonce(); ?>>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, sans-serif;

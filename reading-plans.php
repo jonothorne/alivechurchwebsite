@@ -124,7 +124,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Search functionality
 const searchInput = document.getElementById('plans-search');
 const clearSearchBtn = document.getElementById('clear-search');

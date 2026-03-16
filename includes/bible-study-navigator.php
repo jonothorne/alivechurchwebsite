@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<script>
+<script <?= csp_nonce(); ?>>
 (function() {
     const toggle = document.getElementById('study-nav-toggle');
     const popup = document.getElementById('study-nav-popup');

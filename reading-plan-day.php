@@ -110,7 +110,7 @@ $page_title = $day['title'] . ' - ' . $plan['title'] . ' | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
 ?>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .study-section {
     background: #f8fafc;
     border-radius: 0.75rem;
@@ -313,7 +313,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<script>
+<script <?= csp_nonce(); ?>>
 document.getElementById('complete-day-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;

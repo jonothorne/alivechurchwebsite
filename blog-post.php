@@ -421,7 +421,7 @@ if (!isset($cms)) {
     </div>
 </section>
 
-<script>
+<script <?= csp_nonce(); ?>>
 function showReplyForm(commentId) {
     document.getElementById('reply-form-' + commentId).style.display = 'block';
 }

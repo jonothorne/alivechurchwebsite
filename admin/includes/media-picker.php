@@ -38,7 +38,7 @@
     </div>
 </div>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .image-picker-field {
     display: flex;
     gap: 1rem;
@@ -196,7 +196,7 @@
 }
 </style>
 
-<script>
+<script <?= csp_nonce(); ?>>
 (function() {
     // Media picker state
     let mediaPickerState = {
@@ -488,7 +488,7 @@ function createImagePickerField($fieldName, $currentValue = '', $label = 'Image'
 }
 ?>
 
-<script>
+<script <?= csp_nonce(); ?>>
 // Helper functions for image picker fields
 window.openMediaPickerFor = function(fieldId) {
     openMediaPicker(function(url) {

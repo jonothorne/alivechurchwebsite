@@ -278,7 +278,7 @@ if (!isset($cms)) {
 
 <!-- Stripe JavaScript Integration -->
 <script src="https://js.stripe.com/v3/"></script>
-<script>
+<script <?= csp_nonce(); ?>>
     // NOTE: User needs to add their Stripe publishable key here
     // Get your key from: https://dashboard.stripe.com/apikeys
     const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SzcpfJk18C9h8xIu6xrUQyR9ZS57dVBJaewYUHbwRamCEfqyVstjT20M8AyXXN5Oj0lrfZGWOpgxIeuhWBU6tGl00MxJvNvzZ'; // REPLACE THIS

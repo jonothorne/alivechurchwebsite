@@ -163,7 +163,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<script>
+<script <?= csp_nonce(); ?>>
 document.querySelectorAll('.start-form, .restart-form').forEach(form => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

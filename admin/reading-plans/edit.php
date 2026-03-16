@@ -219,7 +219,7 @@ foreach ($days as $day) {
 $duration = $plan['duration_days'] ?? 7;
 ?>
 
-<style>
+<style <?= csp_nonce(); ?>>
 .plan-form { display: grid; gap: 1.5rem; }
 .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
 .days-container { margin-top: 2rem; }
@@ -508,7 +508,7 @@ $duration = $plan['duration_days'] ?? 7;
     </div>
 </form>
 
-<script>
+<script <?= csp_nonce(); ?>>
 function toggleDay(dayNum) {
     const content = document.getElementById('day-' + dayNum + '-content');
     content.classList.toggle('open');
