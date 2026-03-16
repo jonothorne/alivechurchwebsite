@@ -1,13 +1,39 @@
 <?php
 require __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/db-config.php';
+
 $page_title = 'Connect | ' . $site['name'];
-include __DIR__ . '/includes/header.php';
 
 // Initialize CMS
 if (!isset($cms)) {
     require_once __DIR__ . '/includes/cms/ContentManager.php';
     $cms = new ContentManager('connect');
 }
+
+// Load connect page data from database
+$pdo = getDbConnection();
+
+// Groups
+$groupsStmt = $pdo->query("SELECT title, description, schedule, location, image_url AS image, signup_url FROM groups_list WHERE visible = 1 ORDER BY display_order, title");
+$groups = $groupsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Ministries
+$ministriesStmt = $pdo->query("SELECT title, summary FROM ministries WHERE visible = 1 ORDER BY display_order, title");
+$ministries = $ministriesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Serve opportunities
+$serveStmt = $pdo->query("SELECT title, description, commitment, areas, image_url AS image FROM serve_opportunities WHERE visible = 1 ORDER BY display_order, title");
+$serve_opportunities = [];
+while ($row = $serveStmt->fetch(PDO::FETCH_ASSOC)) {
+    $row['areas'] = json_decode($row['areas'], true) ?: [];
+    $serve_opportunities[] = $row;
+}
+
+// Next steps
+$stepsStmt = $pdo->query("SELECT title, copy, link FROM next_steps WHERE visible = 1 ORDER BY display_order, title");
+$next_steps = $stepsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">
