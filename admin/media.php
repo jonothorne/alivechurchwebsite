@@ -841,6 +841,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             </span>
                         <?php endif; ?>
                         <div class="admin-media-overlay" onclick="event.stopPropagation();">
+                            <?php if ($media['file_type'] === 'image'): ?>
+                            <button onclick="rotateImage(<?= $media['id']; ?>, 'left', this)" class="btn btn-xs" title="Rotate left">↺</button>
+                            <button onclick="rotateImage(<?= $media['id']; ?>, 'right', this)" class="btn btn-xs" title="Rotate right">↻</button>
+                            <?php endif; ?>
                             <button onclick="navigator.clipboard.writeText('https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1000);" class="btn btn-xs">Copy</button>
                             <a href="?delete=<?= $media['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
                         </div>
@@ -984,6 +988,43 @@ async function batchTag(tagId) {
     } catch (error) {
         console.error('Batch tag error:', error);
     }
+}
+
+// Rotate image
+async function rotateImage(mediaId, direction, btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+
+    try {
+        const response = await fetch('/admin/api/rotate-media', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                media_id: mediaId,
+                direction: direction
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Refresh the image with cache buster
+            const card = document.querySelector(`[data-media-id="${mediaId}"]`);
+            const img = card.querySelector('img');
+            if (img) {
+                const currentSrc = img.src.split('?')[0];
+                img.src = currentSrc + '?v=' + result.cache_buster;
+            }
+        } else {
+            alert(result.error || 'Failed to rotate image');
+        }
+    } catch (error) {
+        console.error('Rotate error:', error);
+        alert('Failed to rotate image');
+    }
+
+    btn.disabled = false;
+    btn.style.opacity = '1';
 }
 </script>
 

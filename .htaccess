@@ -113,6 +113,7 @@ RewriteRule ^admin/users/?$ admin/users.php [L,QSA]
 RewriteRule ^admin/api/blog/?$ admin/api/blog.php [L,QSA]
 RewriteRule ^admin/api/media/?$ admin/api/media.php [L,QSA]
 RewriteRule ^admin/api/tag-media/?$ admin/api/tag-media.php [L,QSA]
+RewriteRule ^admin/api/rotate-media/?$ admin/api/rotate-media.php [L,QSA]
 
 # My Studies pages
 RewriteRule ^my-studies/?$ my-studies.php [L,QSA]
