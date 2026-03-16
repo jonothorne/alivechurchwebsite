@@ -266,8 +266,8 @@ $tag_filter = $_GET['tag'] ?? '';
 $search = $_GET['search'] ?? '';
 
 $baseQuery = "
-    SELECT m.*, u.username,
-           COALESCE(iv.variant_path, m.file_path) as thumbnail_path,
+    SELECT m.*, MAX(u.username) as username,
+           COALESCE(MAX(iv.variant_path), m.file_path) as thumbnail_path,
            GROUP_CONCAT(mt.name) as tag_names,
            GROUP_CONCAT(mt.id) as tag_ids
     FROM media m
@@ -1031,14 +1031,34 @@ async function rotateImage(mediaId, direction, btn) {
 
         if (result.success) {
             // Reset visual rotation and load the actual rotated image
-            setTimeout(() => {
-                img.style.transition = 'none';
-                img.style.transform = 'rotate(0deg)';
-                imageRotations[mediaId] = 0;
-
-                // Force reload the image
+            setTimeout(async () => {
                 const currentSrc = img.src.split('?')[0];
-                img.src = currentSrc + '?v=' + result.cache_buster;
+
+                try {
+                    // Fetch the image with cache bypass
+                    const imgResponse = await fetch(currentSrc, {
+                        cache: 'reload',
+                        headers: { 'Cache-Control': 'no-cache' }
+                    });
+                    const blob = await imgResponse.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    // Update the image with blob URL (guaranteed fresh)
+                    img.style.transition = 'none';
+                    img.style.transform = 'rotate(0deg)';
+                    imageRotations[mediaId] = 0;
+                    img.src = blobUrl;
+
+                    // Clean up old blob URL after a delay
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                } catch (e) {
+                    // Fallback: use cache buster URL
+                    const newSrc = currentSrc + '?v=' + Date.now();
+                    img.style.transition = 'none';
+                    img.style.transform = 'rotate(0deg)';
+                    imageRotations[mediaId] = 0;
+                    img.src = newSrc;
+                }
             }, 300);
         } else {
             // Revert visual rotation on error

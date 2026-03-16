@@ -225,13 +225,35 @@ class ImageProcessor
         // Generate WebP of original size (if not already small)
         if ($this->generateWebp && $mimeType !== 'image/gif' && $originalWidth > 320) {
             $webpOriginalPath = "{$baseDir}/{$baseName}.webp";
-            $this->saveWebp($sourceImage, $webpOriginalPath, $this->webpQuality);
-            $results['webp_original'] = [
-                'path' => $webpOriginalPath,
-                'url' => $this->pathToUrl($webpOriginalPath),
-                'size' => filesize($webpOriginalPath)
-            ];
-            $results['total_saved'] += ($results['original_size'] - $results['webp_original']['size']);
+
+            // Create a proper copy of the image for WebP conversion
+            // (some JPEGs with certain color profiles fail when converted directly)
+            $webpCopy = imagecreatetruecolor($originalWidth, $originalHeight);
+            if ($webpCopy) {
+                // Preserve transparency
+                imagealphablending($webpCopy, false);
+                imagesavealpha($webpCopy, true);
+
+                // Copy the image data
+                imagecopy($webpCopy, $sourceImage, 0, 0, 0, 0, $originalWidth, $originalHeight);
+
+                // Save as WebP
+                $webpSaved = $this->saveWebp($webpCopy, $webpOriginalPath, $this->webpQuality);
+                imagedestroy($webpCopy);
+
+                // Only record if saved successfully with content
+                if ($webpSaved && filesize($webpOriginalPath) > 0) {
+                    $results['webp_original'] = [
+                        'path' => $webpOriginalPath,
+                        'url' => $this->pathToUrl($webpOriginalPath),
+                        'size' => filesize($webpOriginalPath)
+                    ];
+                    $results['total_saved'] += ($results['original_size'] - $results['webp_original']['size']);
+                } else {
+                    // Remove empty file if conversion failed
+                    @unlink($webpOriginalPath);
+                }
+            }
         }
 
         imagedestroy($sourceImage);
