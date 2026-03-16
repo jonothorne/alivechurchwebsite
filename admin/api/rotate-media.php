@@ -13,20 +13,35 @@ function json_response($data, $code = 200) {
 }
 
 require_once __DIR__ . '/../../includes/db-config.php';
+require_once __DIR__ . '/../../includes/Auth.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+// Check authentication - support both unified Auth and legacy admin session
+$pdo = getDbConnection();
+$auth = new Auth($pdo);
+$isAuthorized = false;
+
+// Method 1: Unified Auth system
+if ($auth->check() && $auth->isEditor()) {
+    $isAuthorized = true;
+}
+// Method 2: Legacy admin session
+elseif (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    if (isset($_SESSION['admin_user']['role']) && in_array($_SESSION['admin_user']['role'], ['admin', 'editor'])) {
+        $isAuthorized = true;
+    }
+}
+
+if (!$isAuthorized) {
     json_response(['error' => 'Authentication required'], 401);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['error' => 'Method not allowed'], 405);
 }
-
-$pdo = getDbConnection();
 
 $input = json_decode(file_get_contents('php://input'), true);
 $mediaId = $input['media_id'] ?? null;

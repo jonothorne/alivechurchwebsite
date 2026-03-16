@@ -990,10 +990,32 @@ async function batchTag(tagId) {
     }
 }
 
+// Track rotation state per image
+const imageRotations = {};
+
 // Rotate image
 async function rotateImage(mediaId, direction, btn) {
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
+    const card = document.querySelector(`[data-media-id="${mediaId}"]`);
+    const img = card.querySelector('img');
+
+    if (!img) return;
+
+    // Initialize rotation tracking
+    if (!imageRotations[mediaId]) {
+        imageRotations[mediaId] = 0;
+    }
+
+    // Calculate new rotation
+    const rotateAmount = direction === 'left' ? -90 : 90;
+    imageRotations[mediaId] += rotateAmount;
+
+    // Apply immediate visual rotation with smooth transition
+    img.style.transition = 'transform 0.3s ease';
+    img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
+
+    // Disable buttons during request
+    const buttons = card.querySelectorAll('.admin-media-overlay button');
+    buttons.forEach(b => b.disabled = true);
 
     try {
         const response = await fetch('/admin/api/rotate-media', {
@@ -1008,23 +1030,31 @@ async function rotateImage(mediaId, direction, btn) {
         const result = await response.json();
 
         if (result.success) {
-            // Refresh the image with cache buster
-            const card = document.querySelector(`[data-media-id="${mediaId}"]`);
-            const img = card.querySelector('img');
-            if (img) {
+            // Reset visual rotation and load the actual rotated image
+            setTimeout(() => {
+                img.style.transition = 'none';
+                img.style.transform = 'rotate(0deg)';
+                imageRotations[mediaId] = 0;
+
+                // Force reload the image
                 const currentSrc = img.src.split('?')[0];
                 img.src = currentSrc + '?v=' + result.cache_buster;
-            }
+            }, 300);
         } else {
-            alert(result.error || 'Failed to rotate image');
+            // Revert visual rotation on error
+            imageRotations[mediaId] -= rotateAmount;
+            img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
+            console.error('Rotate error:', result.error);
         }
     } catch (error) {
+        // Revert visual rotation on error
+        imageRotations[mediaId] -= rotateAmount;
+        img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
         console.error('Rotate error:', error);
-        alert('Failed to rotate image');
     }
 
-    btn.disabled = false;
-    btn.style.opacity = '1';
+    // Re-enable buttons
+    buttons.forEach(b => b.disabled = false);
 }
 </script>
 
