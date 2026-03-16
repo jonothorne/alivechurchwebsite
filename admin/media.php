@@ -501,6 +501,102 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     background: var(--tag-color);
     color: white;
 }
+
+/* Quick tags on cards */
+.quick-tags {
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    flex-wrap: wrap;
+}
+.quick-tag {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--color-text-muted);
+}
+.quick-tag:hover {
+    border-color: var(--tag-color);
+    color: var(--tag-color);
+}
+.quick-tag.active {
+    background: var(--tag-color);
+    border-color: var(--tag-color);
+    color: white;
+}
+
+/* Selection */
+.media-select-checkbox {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.admin-media-card:hover .media-select-checkbox,
+.admin-media-card.selected .media-select-checkbox {
+    opacity: 1;
+}
+.media-select-checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.admin-media-card {
+    position: relative;
+}
+.admin-media-card.selected {
+    outline: 2px solid var(--color-purple);
+    outline-offset: 2px;
+}
+
+/* Batch bar */
+.batch-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-purple);
+    color: white;
+    border-radius: var(--radius-md);
+    margin: 0.5rem 1rem;
+}
+.batch-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+.batch-info .btn {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+    color: white;
+}
+.batch-tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+.batch-tag-btn {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.batch-tag-btn:hover {
+    background: var(--tag-color);
+}
 </style>
 
 <script>
@@ -698,17 +794,37 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
+    <!-- Batch tagging bar -->
+    <div id="batch-bar" class="batch-bar" style="display: none;">
+        <div class="batch-info">
+            <span id="batch-count">0</span> selected
+            <button onclick="clearSelection()" class="btn btn-xs btn-outline">Clear</button>
+        </div>
+        <div class="batch-tags">
+            <?php foreach ($all_tags as $tag): ?>
+                <button type="button" class="batch-tag-btn" data-tag-id="<?= $tag['id']; ?>" style="--tag-color: <?= htmlspecialchars($tag['color']); ?>" onclick="batchTag(<?= $tag['id']; ?>)">
+                    + <?= htmlspecialchars($tag['name']); ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
     <?php if (empty($media_files)): ?>
         <p class="admin-muted-text">No files yet. Upload one above.</p>
     <?php else: ?>
         <div class="admin-media-grid">
-            <?php foreach ($media_files as $media): ?>
-                <div class="admin-media-card">
+            <?php foreach ($media_files as $media):
+                $mediaTagIds = $media['tag_ids'] ? explode(',', $media['tag_ids']) : [];
+            ?>
+                <div class="admin-media-card" data-media-id="<?= $media['id']; ?>">
+                    <!-- Selection checkbox -->
+                    <label class="media-select-checkbox">
+                        <input type="checkbox" onchange="toggleSelection(<?= $media['id']; ?>, this.checked)">
+                    </label>
                     <!-- Preview with hover overlay -->
-                    <div class="admin-media-preview">
+                    <div class="admin-media-preview" onclick="toggleSelection(<?= $media['id']; ?>)">
                         <?php if ($media['file_type'] === 'image'): ?>
                             <?php
-                            // Use thumbnail if available, converting full path to URL
                             $thumbPath = $media['thumbnail_path'];
                             if (strpos($thumbPath, '/uploads/') !== false) {
                                 $thumbPath = '/uploads/' . basename($thumbPath);
@@ -724,34 +840,151 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?= $media['file_type'] === 'video' ? '🎥' : ($media['file_type'] === 'audio' ? '🎵' : '📄'); ?>
                             </span>
                         <?php endif; ?>
-                        <div class="admin-media-overlay">
-                            <button onclick="navigator.clipboard.writeText('https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy URL', 1000);" class="btn btn-xs">Copy</button>
-                            <a href="?edit=<?= $media['id']; ?>" class="btn btn-xs">🏷️ Tag</a>
+                        <div class="admin-media-overlay" onclick="event.stopPropagation();">
+                            <button onclick="navigator.clipboard.writeText('https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1000);" class="btn btn-xs">Copy</button>
                             <a href="?delete=<?= $media['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
                         </div>
+                    </div>
+                    <!-- Quick tags -->
+                    <div class="quick-tags" onclick="event.stopPropagation();">
+                        <?php foreach ($all_tags as $tag):
+                            $isActive = in_array($tag['id'], $mediaTagIds);
+                        ?>
+                            <button type="button"
+                                    class="quick-tag <?= $isActive ? 'active' : ''; ?>"
+                                    data-tag-id="<?= $tag['id']; ?>"
+                                    data-media-id="<?= $media['id']; ?>"
+                                    style="--tag-color: <?= htmlspecialchars($tag['color']); ?>"
+                                    onclick="quickTag(<?= $media['id']; ?>, <?= $tag['id']; ?>, this)"
+                                    title="<?= htmlspecialchars($tag['name']); ?>">
+                                <?= htmlspecialchars(substr($tag['name'], 0, 1)); ?>
+                            </button>
+                        <?php endforeach; ?>
                     </div>
                     <!-- Compact info -->
                     <div class="admin-media-info">
                         <span class="admin-media-name" title="<?= htmlspecialchars($media['original_filename']); ?>"><?= htmlspecialchars($media['original_filename']); ?></span>
-                        <span class="admin-media-meta"><?= number_format($media['file_size'] / 1024, 0); ?>KB</span>
-                        <?php if (!empty($media['tag_names'])): ?>
-                        <div class="admin-media-tags">
-                            <?php
-                            $tagNames = explode(',', $media['tag_names']);
-                            $tagColors = [];
-                            foreach ($all_tags as $t) $tagColors[$t['name']] = $t['color'];
-                            foreach ($tagNames as $tagName):
-                                $color = $tagColors[$tagName] ?? '#6b7280';
-                            ?>
-                                <span class="mini-tag" style="--tag-color: <?= htmlspecialchars($color); ?>"><?= htmlspecialchars($tagName); ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+// Selection state
+let selectedMedia = new Set();
+
+function toggleSelection(mediaId, checked) {
+    const card = document.querySelector(`[data-media-id="${mediaId}"]`);
+    const checkbox = card.querySelector('.media-select-checkbox input');
+
+    if (checked === undefined) {
+        checked = !checkbox.checked;
+        checkbox.checked = checked;
+    }
+
+    if (checked) {
+        selectedMedia.add(mediaId);
+        card.classList.add('selected');
+    } else {
+        selectedMedia.delete(mediaId);
+        card.classList.remove('selected');
+    }
+
+    updateBatchBar();
+}
+
+function clearSelection() {
+    selectedMedia.forEach(id => {
+        const card = document.querySelector(`[data-media-id="${id}"]`);
+        if (card) {
+            card.classList.remove('selected');
+            card.querySelector('.media-select-checkbox input').checked = false;
+        }
+    });
+    selectedMedia.clear();
+    updateBatchBar();
+}
+
+function updateBatchBar() {
+    const bar = document.getElementById('batch-bar');
+    const count = document.getElementById('batch-count');
+
+    if (selectedMedia.size > 0) {
+        bar.style.display = 'flex';
+        count.textContent = selectedMedia.size;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+// Quick tag single image
+async function quickTag(mediaId, tagId, btn) {
+    const isActive = btn.classList.contains('active');
+    const action = isActive ? 'remove' : 'add';
+
+    btn.style.opacity = '0.5';
+
+    try {
+        const response = await fetch('/admin/api/tag-media.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                media_ids: [mediaId],
+                tag_id: tagId,
+                action: action
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            btn.classList.toggle('active');
+        }
+    } catch (error) {
+        console.error('Tag error:', error);
+    }
+
+    btn.style.opacity = '1';
+}
+
+// Batch tag selected images
+async function batchTag(tagId) {
+    if (selectedMedia.size === 0) return;
+
+    const mediaIds = Array.from(selectedMedia);
+
+    try {
+        const response = await fetch('/admin/api/tag-media.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                media_ids: mediaIds,
+                tag_id: tagId,
+                action: 'add'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update UI for all selected cards
+            mediaIds.forEach(id => {
+                const card = document.querySelector(`[data-media-id="${id}"]`);
+                const tagBtn = card.querySelector(`[data-tag-id="${tagId}"]`);
+                if (tagBtn) tagBtn.classList.add('active');
+            });
+
+            // Flash success
+            const bar = document.getElementById('batch-bar');
+            bar.style.background = '#10b981';
+            setTimeout(() => bar.style.background = '', 300);
+        }
+    } catch (error) {
+        console.error('Batch tag error:', error);
+    }
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
