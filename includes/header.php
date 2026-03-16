@@ -134,7 +134,9 @@ if ($current_user && $is_bible_study_page) {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Alive Church">
-    <link rel="apple-touch-icon" href="/assets/imgs/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/assets/imgs/icons/icon-192x192.png?v=2">
+    <link rel="icon" type="image/x-icon" href="/assets/imgs/icons/favicon.ico?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/imgs/icons/icon-192x192.png?v=2">
     <meta name="description" content="<?= htmlspecialchars($page_description ?? 'You Belong Here - Alive Church Norwich. Bible studies, reading plans, events, and community.'); ?>">
 
     <!-- Open Graph / Facebook -->
