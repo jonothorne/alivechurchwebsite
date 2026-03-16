@@ -292,23 +292,17 @@ if ($current_user && $is_bible_study_page) {
             <span></span>
         </label>
         <label class="nav-overlay" for="nav-toggle" aria-hidden="true"></label>
-        <nav class="primary-nav" aria-label="Main navigation">
-            <label class="nav-close-btn" for="nav-toggle" aria-label="Close navigation">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </label>
+
+        <!-- Desktop Navigation -->
+        <nav class="primary-nav desktop-nav" aria-label="Main navigation">
             <?php foreach ($nav_links as $link):
                 $is_active = $link['url'] === $current_url;
                 $has_dropdown = isset($link['dropdown']) && !empty($link['dropdown']);
 
-                // For non-home links, also check if current URL starts with the link URL
                 if (!$is_active && $link['url'] !== '/' && strpos($current_url, $link['url']) === 0) {
                     $is_active = true;
                 }
 
-                // Bible Study link should be active for all study-related pages
                 if (!$is_active && $link['url'] === '/bible-study') {
                     if (strpos($current_url, '/reading-plan') === 0
                         || strpos($current_url, '/my-studies') === 0) {
@@ -316,7 +310,6 @@ if ($current_user && $is_bible_study_page) {
                     }
                 }
 
-                // Check if any dropdown item is active
                 if ($has_dropdown) {
                     foreach ($link['dropdown'] as $sublink) {
                         if (strpos($current_url, strtok($sublink['url'], '#')) === 0) {
@@ -344,6 +337,135 @@ if ($current_user && $is_bible_study_page) {
                     <a<?= $class_attr ? ' class="' . $class_attr . '"' : ''; ?> href="<?= $link['url']; ?>"><?= $link['label']; ?></a>
                 <?php endif; ?>
             <?php endforeach; ?>
+        </nav>
+
+        <!-- Mobile Full-Screen Navigation -->
+        <nav class="mobile-nav" aria-label="Mobile navigation">
+            <div class="mobile-nav-header">
+                <img src="/assets/imgs/logo-dark.png" alt="<?= htmlspecialchars($site['name']); ?>" class="mobile-nav-logo">
+                <label class="mobile-nav-close" for="nav-toggle" aria-label="Close menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </label>
+            </div>
+
+            <div class="mobile-nav-content">
+                <!-- Quick Actions -->
+                <div class="mobile-nav-actions">
+                    <a href="/give" class="mobile-nav-action">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <span>Give</span>
+                    </a>
+                    <a href="/events" class="mobile-nav-action">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <span>Events</span>
+                    </a>
+                    <a href="/contact-us" class="mobile-nav-action">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <span>Contact</span>
+                    </a>
+                </div>
+
+                <!-- Main Navigation Links -->
+                <div class="mobile-nav-links">
+                    <?php
+                    $nav_icons = [
+                        '/' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+                        '/visit' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+                        '/about' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                        '/sermons' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                        '/bible-study' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+                        '/connect' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="M12 8v4M8.5 14.5L5.5 16.5M15.5 14.5l3 2"/></svg>',
+                        '/blog' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+                        '/events' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+                        '/give' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+                    ];
+                    $default_icon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+                    foreach ($nav_links as $index => $link):
+                        $is_active = $link['url'] === $current_url;
+                        $has_dropdown = isset($link['dropdown']) && !empty($link['dropdown']);
+
+                        if (!$is_active && $link['url'] !== '/' && strpos($current_url, $link['url']) === 0) {
+                            $is_active = true;
+                        }
+
+                        if (!$is_active && $link['url'] === '/bible-study') {
+                            if (strpos($current_url, '/reading-plan') === 0 || strpos($current_url, '/my-studies') === 0) {
+                                $is_active = true;
+                            }
+                        }
+
+                        if ($has_dropdown) {
+                            foreach ($link['dropdown'] as $sublink) {
+                                if (strpos($current_url, strtok($sublink['url'], '#')) === 0) {
+                                    $is_active = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        $icon = $nav_icons[$link['url']] ?? $default_icon;
+                    ?>
+                        <a href="<?= $link['url']; ?>" class="mobile-nav-link<?= $is_active ? ' is-active' : ''; ?>" style="--i: <?= $index; ?>">
+                            <span class="mobile-nav-link-icon"><?= $icon; ?></span>
+                            <span class="mobile-nav-link-text"><?= $link['label']; ?></span>
+                            <svg class="mobile-nav-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <div class="mobile-nav-footer">
+                <?php if ($current_user): ?>
+                <div class="mobile-nav-user">
+                    <?php if (!empty($current_user['avatar'])): ?>
+                        <img src="<?= htmlspecialchars($current_user['avatar']); ?>" alt="" class="mobile-nav-avatar">
+                    <?php else: ?>
+                        <span class="mobile-nav-avatar" style="background-color: <?= htmlspecialchars($current_user['avatar_color'] ?? '#4b2679'); ?>;"><?= strtoupper(substr($current_user['full_name'], 0, 1)); ?></span>
+                    <?php endif; ?>
+                    <div class="mobile-nav-user-info">
+                        <span class="mobile-nav-user-name"><?= htmlspecialchars($current_user['full_name']); ?></span>
+                        <div class="mobile-nav-user-links">
+                            <a href="/user/<?= htmlspecialchars($current_user['username']); ?>">Profile</a>
+                            <a href="/settings">Settings</a>
+                            <a href="/logout">Log Out</a>
+                        </div>
+                    </div>
+                </div>
+                <?php else: ?>
+                <div class="mobile-nav-auth">
+                    <a href="/login" class="mobile-nav-auth-btn mobile-nav-login">Log In</a>
+                    <a href="/register" class="mobile-nav-auth-btn mobile-nav-register">Sign Up</a>
+                </div>
+                <?php endif; ?>
+
+                <div class="mobile-nav-info">
+                    <p class="mobile-nav-service-times">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <?= htmlspecialchars($site['service_times']); ?>
+                    </p>
+                    <p class="mobile-nav-location">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <?= htmlspecialchars($site['location']); ?>
+                    </p>
+                </div>
+
+                <div class="mobile-nav-social">
+                    <a href="<?= htmlspecialchars($site['social']['facebook']); ?>" target="_blank" rel="noopener" aria-label="Facebook">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                    </a>
+                    <a href="<?= htmlspecialchars($site['social']['instagram']); ?>" target="_blank" rel="noopener" aria-label="Instagram">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                    </a>
+                    <a href="<?= htmlspecialchars($site['social']['youtube']); ?>" target="_blank" rel="noopener" aria-label="YouTube">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#fff"/></svg>
+                    </a>
+                </div>
+            </div>
         </nav>
 
         <div class="user-nav">
