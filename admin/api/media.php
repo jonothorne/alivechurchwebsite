@@ -53,20 +53,12 @@ try {
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $type = $_GET['type'] ?? 'image';
-        $limit = min((int)($_GET['limit'] ?? 50), 100);
+        $limit = min((int)($_GET['limit'] ?? 50), 200); // Allow up to 200 per page
+        $offset = max(0, (int)($_GET['offset'] ?? 0));
         $tag = $_GET['tag'] ?? '';
         $search = $_GET['search'] ?? '';
 
-        $query = "
-            SELECT m.*,
-                   COALESCE(iv.variant_path, m.file_path) as thumbnail_path,
-                   GROUP_CONCAT(mt.name) as tag_names
-            FROM media m
-            LEFT JOIN image_variants iv ON m.id = iv.media_id AND iv.variant_name = 'thumbnail'
-            LEFT JOIN media_tag_assignments mta ON m.id = mta.media_id
-            LEFT JOIN media_tags mt ON mta.tag_id = mt.id
-        ";
-
+        // Base conditions for both count and data queries
         $conditions = [];
         $params = [];
 
@@ -76,23 +68,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         if (!empty($tag)) {
-            $conditions[] = "mt.slug = ?";
+            // Need subquery for tag filtering with GROUP BY
+            $conditions[] = "m.id IN (SELECT mta2.media_id FROM media_tag_assignments mta2 JOIN media_tags mt2 ON mta2.tag_id = mt2.id WHERE mt2.slug = ?)";
             $params[] = $tag;
         }
 
         if (!empty($search)) {
-            $conditions[] = "(m.original_filename LIKE ? OR m.alt_text LIKE ? OR mt.name LIKE ?)";
+            $conditions[] = "(m.original_filename LIKE ? OR m.alt_text LIKE ? OR m.id IN (SELECT mta3.media_id FROM media_tag_assignments mta3 JOIN media_tags mt3 ON mta3.tag_id = mt3.id WHERE mt3.name LIKE ?))";
             $searchTerm = '%' . $search . '%';
             $params[] = $searchTerm;
             $params[] = $searchTerm;
             $params[] = $searchTerm;
         }
 
-        if (!empty($conditions)) {
-            $query .= " WHERE " . implode(" AND ", $conditions);
-        }
+        $whereClause = !empty($conditions) ? " WHERE " . implode(" AND ", $conditions) : "";
 
-        $query .= " GROUP BY m.id ORDER BY m.created_at DESC LIMIT " . $limit;
+        // Get total count
+        $countQuery = "SELECT COUNT(DISTINCT m.id) as total FROM media m" . $whereClause;
+        $countStmt = $pdo->prepare($countQuery);
+        $countStmt->execute($params);
+        $totalCount = (int)$countStmt->fetch()['total'];
+
+        // Main data query
+        $query = "
+            SELECT m.*,
+                   COALESCE(MAX(iv.variant_path), m.file_path) as thumbnail_path,
+                   GROUP_CONCAT(DISTINCT mt.name) as tag_names
+            FROM media m
+            LEFT JOIN image_variants iv ON m.id = iv.media_id AND iv.variant_name = 'thumbnail'
+            LEFT JOIN media_tag_assignments mta ON m.id = mta.media_id
+            LEFT JOIN media_tags mt ON mta.tag_id = mt.id
+        " . $whereClause . " GROUP BY m.id ORDER BY m.created_at DESC LIMIT " . $limit . " OFFSET " . $offset;
 
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
@@ -142,7 +148,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $tagsStmt = $pdo->query("SELECT slug, name, color FROM media_tags ORDER BY name");
         $tags = $tagsStmt->fetchAll();
 
-        json_response(['success' => true, 'data' => $items, 'tags' => $tags]);
+        json_response([
+            'success' => true,
+            'data' => $items,
+            'tags' => $tags,
+            'total' => $totalCount,
+            'limit' => $limit,
+            'offset' => $offset
+        ]);
     } catch (Exception $e) {
         json_response(['error' => 'Failed to fetch media: ' . $e->getMessage()], 500);
     }

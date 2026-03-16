@@ -371,8 +371,22 @@ $duration = $plan['duration_days'] ?? 7;
             </div>
 
             <div class="form-group">
-                <label for="cover_image">Cover Image URL</label>
-                <input type="text" id="cover_image" name="cover_image" value="<?= htmlspecialchars($plan['cover_image'] ?? ''); ?>" placeholder="/assets/imgs/...">
+                <label>Cover Image</label>
+                <div class="image-picker-field">
+                    <input type="hidden" name="cover_image" id="cover_image" value="<?= htmlspecialchars($plan['cover_image'] ?? ''); ?>">
+                    <div class="image-preview-container">
+                        <?php if (!empty($plan['cover_image'])): ?>
+                            <img src="<?= htmlspecialchars($plan['cover_image']); ?>" id="cover_image_preview" class="image-preview">
+                        <?php else: ?>
+                            <img src="" id="cover_image_preview" class="image-preview" style="display: none;">
+                            <div id="cover_image_placeholder" class="image-placeholder">No image</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="image-picker-actions">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('cover_image')">Select</button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('cover_image')" id="cover_image_clear" style="<?= empty($plan['cover_image']) ? 'display:none;' : ''; ?>">Clear</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -630,4 +644,5 @@ function createDayCard(dayNum) {
 }
 </script>
 
+<?php require_once __DIR__ . '/../includes/media-picker.php'; ?>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

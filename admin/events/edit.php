@@ -179,11 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea id="description" name="description" rows="3" placeholder="Brief description shown in event cards..."><?= htmlspecialchars($event['description'] ?? ''); ?></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="image">Image URL</label>
-                <input type="text" id="image" name="image" value="<?= htmlspecialchars($event['image'] ?? ''); ?>" placeholder="/assets/imgs/gallery/...">
-                <div class="form-help">Path to event image. Leave blank to use default.</div>
-            </div>
+            <?= createImagePickerField('image', $event['image'] ?? '', 'Event Image', 'Select an image for this event. Leave blank to use default.'); ?>
 
             <h3 style="margin: 2rem 0 1rem; color: #475569;">Logistics</h3>
 
@@ -259,4 +255,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </form>
 
+<?php require_once __DIR__ . '/../includes/media-picker.php'; ?>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

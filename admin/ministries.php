@@ -101,8 +101,22 @@ $visible_count = count(array_filter($ministries, fn($m) => $m['visible']));
                     <input type="text" name="title" value="<?= htmlspecialchars($edit_ministry['title'] ?? ''); ?>" required placeholder="e.g., Youth Ministry">
                 </div>
                 <div class="admin-form-group">
-                    <label>Image URL</label>
-                    <input type="text" name="image_url" value="<?= htmlspecialchars($edit_ministry['image_url'] ?? ''); ?>" placeholder="/uploads/...">
+                    <label>Image</label>
+                    <div class="image-picker-field">
+                        <input type="hidden" name="image_url" id="image_url" value="<?= htmlspecialchars($edit_ministry['image_url'] ?? ''); ?>">
+                        <div class="image-preview-container">
+                            <?php if (!empty($edit_ministry['image_url'])): ?>
+                                <img src="<?= htmlspecialchars($edit_ministry['image_url']); ?>" id="image_url_preview" class="image-preview">
+                            <?php else: ?>
+                                <img src="" id="image_url_preview" class="image-preview" style="display: none;">
+                                <div id="image_url_placeholder" class="image-placeholder">No image</div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="image-picker-actions">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('image_url')" id="image_url_clear" style="<?= empty($edit_ministry['image_url']) ? 'display:none;' : ''; ?>">Clear</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -174,4 +188,5 @@ $visible_count = count(array_filter($ministries, fn($m) => $m['visible']));
     <?php endif; ?>
 </div>
 
+<?php require_once __DIR__ . '/includes/media-picker.php'; ?>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

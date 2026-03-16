@@ -163,9 +163,23 @@ if ($view === 'series') {
             </div>
 
             <div class="form-group">
-                <label>Cover Image URL</label>
-                <input type="text" name="image_url" value="<?= htmlspecialchars($edit_series['image_url'] ?? ''); ?>">
-                <div class="form-help">URL to series artwork/cover image</div>
+                <label>Cover Image</label>
+                <div class="image-picker-field">
+                    <input type="hidden" name="image_url" id="image_url" value="<?= htmlspecialchars($edit_series['image_url'] ?? ''); ?>">
+                    <div class="image-preview-container">
+                        <?php if (!empty($edit_series['image_url'])): ?>
+                            <img src="<?= htmlspecialchars($edit_series['image_url']); ?>" id="image_url_preview" class="image-preview">
+                        <?php else: ?>
+                            <img src="" id="image_url_preview" class="image-preview" style="display: none;">
+                            <div id="image_url_placeholder" class="image-placeholder">No image</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="image-picker-actions">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select Image</button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('image_url')" id="image_url_clear" style="<?= empty($edit_series['image_url']) ? 'display:none;' : ''; ?>">Clear</button>
+                    </div>
+                </div>
+                <div class="form-help">Series artwork/cover image from media library</div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -366,4 +380,5 @@ if ($view === 'series') {
 
 <?php endif; ?>
 
+<?php require_once __DIR__ . '/includes/media-picker.php'; ?>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
