@@ -68,6 +68,7 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
     </div>
 </footer>
 <?php if ($is_cms_edit_mode): ?>
+<script src="/assets/js/media-picker.js?v=<?= filemtime(__DIR__ . '/../assets/js/media-picker.js'); ?>"></script>
 <script src="/assets/js/cms-editor.js?v=<?= filemtime(__DIR__ . '/../assets/js/cms-editor.js'); ?>"></script>
 <?php endif; ?>
 <?php if ($is_cms_edit_mode && !empty($is_block_builder_page)): ?>

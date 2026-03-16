@@ -917,8 +917,19 @@
 
     /**
      * Open media library modal
+     * Uses unified MediaPicker if available, falls back to built-in picker
      */
     function openMediaLibrary(callback) {
+        // Use unified MediaPicker if available
+        if (typeof window.MediaPicker !== 'undefined') {
+            window.MediaPicker.open(callback, {
+                apiEndpoint: '/api/cms/media',
+                showSizePicker: true
+            });
+            return;
+        }
+
+        // Fallback to built-in picker
         const modal = createModal('Media Library', `
             <div class="cms-media-library">
                 <div class="cms-media-upload">

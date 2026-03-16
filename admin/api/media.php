@@ -104,8 +104,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute($params);
         $media = $stmt->fetchAll();
 
+        // Get variants for all media items
+        $mediaIds = array_column($media, 'id');
+        $variants = [];
+
+        if (!empty($mediaIds)) {
+            $placeholders = str_repeat('?,', count($mediaIds) - 1) . '?';
+            $variantStmt = $pdo->prepare("
+                SELECT media_id, variant_name, variant_path, format, width, height, file_size
+                FROM image_variants
+                WHERE media_id IN ($placeholders)
+                ORDER BY width ASC
+            ");
+            $variantStmt->execute($mediaIds);
+            $variantRows = $variantStmt->fetchAll();
+
+            // Group variants by media_id
+            foreach ($variantRows as $v) {
+                $variants[$v['media_id']][] = $v;
+            }
+        }
+
         // Format for picker
-        $items = array_map(function($item) {
+        $items = array_map(function($item) use ($variants) {
             // Helper to convert any path to web-relative URL
             $toWebPath = function($path) {
                 if (empty($path)) return null;
@@ -132,6 +153,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $url = $toWebPath($item['file_path']);
             $thumbPath = $toWebPath($item['thumbnail_path'] ?? $item['file_path']);
 
+            // Get variants for this item and convert paths
+            $itemVariants = $variants[$item['id']] ?? [];
+            $formattedVariants = array_map(function($v) use ($toWebPath) {
+                return [
+                    'variant_name' => $v['variant_name'],
+                    'variant_path' => $toWebPath($v['variant_path']),
+                    'format' => $v['format'],
+                    'width' => $v['width'],
+                    'height' => $v['height'],
+                    'file_size' => $v['file_size']
+                ];
+            }, $itemVariants);
+
             return [
                 'id' => $item['id'],
                 'url' => $url,
@@ -140,7 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'alt' => $item['alt_text'] ?? '',
                 'type' => $item['file_type'],
                 'size' => $item['file_size'],
-                'tags' => $item['tag_names'] ? explode(',', $item['tag_names']) : []
+                'width' => $item['width'] ?? null,
+                'height' => $item['height'] ?? null,
+                'tags' => $item['tag_names'] ? explode(',', $item['tag_names']) : [],
+                'variants' => $formattedVariants
             ];
         }, $media);
 
