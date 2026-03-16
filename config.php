@@ -154,7 +154,19 @@ function is_stream_live() {
 }
 
 $is_live = is_stream_live();
-$live_stream_url = 'https://www.youtube.com/embed/dQw4w9WgXcQ'; // Placeholder
+
+// Load livestream URL from database settings, fallback to YouTube channel
+$live_stream_url = 'https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxx'; // Default fallback
+try {
+    $livestreamStmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'livestream_url'");
+    $livestreamStmt->execute();
+    $livestreamResult = $livestreamStmt->fetch(PDO::FETCH_ASSOC);
+    if ($livestreamResult && !empty($livestreamResult['setting_value'])) {
+        $live_stream_url = $livestreamResult['setting_value'];
+    }
+} catch (Exception $e) {
+    error_log('Config: Could not load livestream URL: ' . $e->getMessage());
+}
 
 // Sermon series for watch page
 $sermon_series = [
