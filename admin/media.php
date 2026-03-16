@@ -8,6 +8,9 @@ $pdo = getDbConnection();
 $success = '';
 $error = '';
 
+// Fetch all tags for display
+$all_tags = $pdo->query("SELECT * FROM media_tags ORDER BY name")->fetchAll();
+
 // Handle Delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
@@ -212,37 +215,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_meta'])) {
         $id = $_POST['id'];
         $alt_text = $_POST['alt_text'];
         $caption = $_POST['caption'];
+        $tags = $_POST['tags'] ?? [];
 
         $stmt = $pdo->prepare("UPDATE media SET alt_text = ?, caption = ? WHERE id = ?");
         $stmt->execute([$alt_text, $caption, $id]);
+
+        // Update tags
+        $pdo->prepare("DELETE FROM media_tag_assignments WHERE media_id = ?")->execute([$id]);
+        if (!empty($tags)) {
+            $tagStmt = $pdo->prepare("INSERT INTO media_tag_assignments (media_id, tag_id) VALUES (?, ?)");
+            foreach ($tags as $tagId) {
+                $tagStmt->execute([$id, $tagId]);
+            }
+        }
+
         log_activity($_SESSION['admin_user_id'], 'update', 'media', $id, 'Updated media metadata');
         $success = 'Media information updated';
     }
 }
 
+// Handle Add New Tag
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_tag'])) {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid security token';
+    } else {
+        $tagName = trim($_POST['tag_name']);
+        $tagColor = $_POST['tag_color'] ?? '#6b7280';
+        if (!empty($tagName)) {
+            $tagSlug = strtolower(preg_replace('/[^a-z0-9]+/', '-', $tagName));
+            $stmt = $pdo->prepare("INSERT IGNORE INTO media_tags (name, slug, color) VALUES (?, ?, ?)");
+            $stmt->execute([$tagName, $tagSlug, $tagColor]);
+            $success = 'Tag created successfully';
+            // Refresh tags
+            $all_tags = $pdo->query("SELECT * FROM media_tags ORDER BY name")->fetchAll();
+        }
+    }
+}
+
+// Handle Delete Tag
+if (isset($_GET['delete_tag']) && is_numeric($_GET['delete_tag'])) {
+    $tagId = (int)$_GET['delete_tag'];
+    $pdo->prepare("DELETE FROM media_tags WHERE id = ?")->execute([$tagId]);
+    $success = 'Tag deleted';
+    $all_tags = $pdo->query("SELECT * FROM media_tags ORDER BY name")->fetchAll();
+}
+
 // Fetch all media with thumbnail variants
 $filter = $_GET['filter'] ?? 'all';
+$tag_filter = $_GET['tag'] ?? '';
+$search = $_GET['search'] ?? '';
+
 $baseQuery = "
     SELECT m.*, u.username,
-           COALESCE(iv.variant_path, m.file_path) as thumbnail_path
+           COALESCE(iv.variant_path, m.file_path) as thumbnail_path,
+           GROUP_CONCAT(mt.name) as tag_names,
+           GROUP_CONCAT(mt.id) as tag_ids
     FROM media m
     LEFT JOIN users u ON m.uploaded_by = u.id
     LEFT JOIN image_variants iv ON m.id = iv.media_id AND iv.variant_name = 'thumbnail'
+    LEFT JOIN media_tag_assignments mta ON m.id = mta.media_id
+    LEFT JOIN media_tags mt ON mta.tag_id = mt.id
 ";
-if ($filter === 'all') {
-    $media_files = $pdo->query($baseQuery . " ORDER BY m.created_at DESC")->fetchAll();
-} else {
-    $stmt = $pdo->prepare($baseQuery . " WHERE m.file_type = ? ORDER BY m.created_at DESC");
-    $stmt->execute([$filter]);
-    $media_files = $stmt->fetchAll();
+
+$conditions = [];
+$params = [];
+
+if ($filter !== 'all') {
+    $conditions[] = "m.file_type = ?";
+    $params[] = $filter;
 }
+
+if (!empty($tag_filter)) {
+    $conditions[] = "mta.tag_id = ?";
+    $params[] = $tag_filter;
+}
+
+if (!empty($search)) {
+    $conditions[] = "(m.original_filename LIKE ? OR m.alt_text LIKE ? OR m.caption LIKE ?)";
+    $searchTerm = '%' . $search . '%';
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+    $params[] = $searchTerm;
+}
+
+if (!empty($conditions)) {
+    $baseQuery .= " WHERE " . implode(" AND ", $conditions);
+}
+
+$baseQuery .= " GROUP BY m.id ORDER BY m.created_at DESC";
+
+$stmt = $pdo->prepare($baseQuery);
+$stmt->execute($params);
+$media_files = $stmt->fetchAll();
 
 // Get media for editing
 $edit_media = null;
+$edit_media_tags = [];
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     $stmt = $pdo->prepare("SELECT * FROM media WHERE id = ?");
     $stmt->execute([$_GET['edit']]);
     $edit_media = $stmt->fetch();
+
+    // Get tags for this media
+    $tagStmt = $pdo->prepare("SELECT tag_id FROM media_tag_assignments WHERE media_id = ?");
+    $tagStmt->execute([$_GET['edit']]);
+    $edit_media_tags = array_column($tagStmt->fetchAll(), 'tag_id');
 }
 ?>
 
@@ -346,6 +423,84 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     font-size: 0.85rem;
     color: var(--admin-text-muted);
 }
+
+/* Tag styles */
+.tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.tag-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    transition: all 0.15s;
+}
+.tag-checkbox:has(input:checked) {
+    background: var(--tag-color);
+    color: white;
+    border-color: var(--tag-color);
+}
+.tag-checkbox input {
+    display: none;
+}
+.media-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    background: var(--tag-color);
+    color: white;
+}
+.media-tag .tag-delete {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 0.25rem;
+}
+.media-tag .tag-delete:hover {
+    color: white;
+}
+.media-tag-filter {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-decoration: none;
+    background: var(--color-bg-subtle);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    transition: all 0.15s;
+}
+.media-tag-filter:hover {
+    border-color: var(--tag-color);
+}
+.media-tag-filter.active {
+    background: var(--tag-color);
+    color: white;
+    border-color: var(--tag-color);
+}
+.admin-media-tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+.admin-media-tags .mini-tag {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    background: var(--tag-color);
+    color: white;
+}
 </style>
 
 <script>
@@ -440,35 +595,106 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="admin-card">
     <div class="admin-card-header">
         <h3>Edit: <?= htmlspecialchars($edit_media['original_filename']); ?></h3>
-        <a href="/admin/media.php" class="btn btn-xs btn-outline">Cancel</a>
+        <a href="/admin/media" class="btn btn-xs btn-outline">Cancel</a>
     </div>
-    <form method="post" style="display: flex; gap: 0.5rem; align-items: end;">
+    <form method="post">
         <?= csrf_field(); ?>
         <input type="hidden" name="edit_meta" value="1">
         <input type="hidden" name="id" value="<?= $edit_media['id']; ?>">
-        <div class="form-group" style="flex: 1;">
-            <label>Alt Text</label>
-            <input type="text" name="alt_text" value="<?= htmlspecialchars($edit_media['alt_text'] ?? ''); ?>" placeholder="Image description">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Alt Text</label>
+                <input type="text" name="alt_text" value="<?= htmlspecialchars($edit_media['alt_text'] ?? ''); ?>" placeholder="Image description">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Caption</label>
+                <input type="text" name="caption" value="<?= htmlspecialchars($edit_media['caption'] ?? ''); ?>" placeholder="Optional caption">
+            </div>
         </div>
-        <div class="form-group" style="flex: 1;">
-            <label>Caption</label>
-            <input type="text" name="caption" value="<?= htmlspecialchars($edit_media['caption'] ?? ''); ?>" placeholder="Optional caption">
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Tags</label>
+            <div class="tag-selector">
+                <?php foreach ($all_tags as $tag): ?>
+                    <label class="tag-checkbox" style="--tag-color: <?= htmlspecialchars($tag['color']); ?>">
+                        <input type="checkbox" name="tags[]" value="<?= $tag['id']; ?>" <?= in_array($tag['id'], $edit_media_tags) ? 'checked' : ''; ?>>
+                        <span><?= htmlspecialchars($tag['name']); ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
         </div>
         <button type="submit" class="btn btn-sm btn-primary">Save</button>
     </form>
 </div>
 <?php endif; ?>
 
+<!-- Tag Management -->
+<div class="admin-card">
+    <details>
+        <summary class="admin-card-header" style="cursor: pointer;">
+            <h3>Manage Tags</h3>
+        </summary>
+        <div style="padding: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+            <form method="post" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                <?= csrf_field(); ?>
+                <input type="hidden" name="add_tag" value="1">
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 0.8rem;">New Tag</label>
+                    <input type="text" name="tag_name" placeholder="Tag name" required style="width: 120px;">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 0.8rem;">Color</label>
+                    <input type="color" name="tag_color" value="#6b7280" style="width: 40px; height: 34px; padding: 2px;">
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline">Add</button>
+            </form>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <?php foreach ($all_tags as $tag): ?>
+                    <span class="media-tag" style="--tag-color: <?= htmlspecialchars($tag['color']); ?>">
+                        <?= htmlspecialchars($tag['name']); ?>
+                        <a href="?delete_tag=<?= $tag['id']; ?>" class="tag-delete" title="Delete tag">&times;</a>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </details>
+</div>
+
 <!-- Filter + Grid -->
 <div class="admin-card">
-    <div class="admin-card-header">
+    <div class="admin-card-header" style="flex-wrap: wrap; gap: 1rem;">
         <h3>Library</h3>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <!-- Search -->
+            <form method="get" style="display: flex; gap: 0.5rem;">
+                <input type="hidden" name="filter" value="<?= htmlspecialchars($filter); ?>">
+                <?php if ($tag_filter): ?><input type="hidden" name="tag" value="<?= htmlspecialchars($tag_filter); ?>"><?php endif; ?>
+                <input type="text" name="search" value="<?= htmlspecialchars($search); ?>" placeholder="Search files..." style="width: 150px;">
+                <button type="submit" class="btn btn-sm btn-outline">Search</button>
+                <?php if ($search): ?><a href="?filter=<?= $filter; ?><?= $tag_filter ? '&tag=' . $tag_filter : ''; ?>" class="btn btn-sm btn-outline">Clear</a><?php endif; ?>
+            </form>
+        </div>
+    </div>
+    <!-- Type filters -->
+    <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <div class="admin-filter-tabs" style="margin: 0;">
-            <a href="?filter=all" class="admin-filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">All</a>
-            <a href="?filter=image" class="admin-filter-tab <?= $filter === 'image' ? 'active' : ''; ?>">Images</a>
-            <a href="?filter=video" class="admin-filter-tab <?= $filter === 'video' ? 'active' : ''; ?>">Video</a>
-            <a href="?filter=audio" class="admin-filter-tab <?= $filter === 'audio' ? 'active' : ''; ?>">Audio</a>
-            <a href="?filter=document" class="admin-filter-tab <?= $filter === 'document' ? 'active' : ''; ?>">Docs</a>
+            <a href="?filter=all<?= $tag_filter ? '&tag=' . $tag_filter : ''; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="admin-filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">All</a>
+            <a href="?filter=image<?= $tag_filter ? '&tag=' . $tag_filter : ''; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="admin-filter-tab <?= $filter === 'image' ? 'active' : ''; ?>">Images</a>
+            <a href="?filter=video<?= $tag_filter ? '&tag=' . $tag_filter : ''; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="admin-filter-tab <?= $filter === 'video' ? 'active' : ''; ?>">Video</a>
+            <a href="?filter=audio<?= $tag_filter ? '&tag=' . $tag_filter : ''; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="admin-filter-tab <?= $filter === 'audio' ? 'active' : ''; ?>">Audio</a>
+            <a href="?filter=document<?= $tag_filter ? '&tag=' . $tag_filter : ''; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="admin-filter-tab <?= $filter === 'document' ? 'active' : ''; ?>">Docs</a>
+        </div>
+        <!-- Tag filters -->
+        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+            <?php foreach ($all_tags as $tag): ?>
+                <a href="?filter=<?= $filter; ?>&tag=<?= $tag['id']; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"
+                   class="media-tag-filter <?= $tag_filter == $tag['id'] ? 'active' : ''; ?>"
+                   style="--tag-color: <?= htmlspecialchars($tag['color']); ?>">
+                    <?= htmlspecialchars($tag['name']); ?>
+                </a>
+            <?php endforeach; ?>
+            <?php if ($tag_filter): ?>
+                <a href="?filter=<?= $filter; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" class="btn btn-xs btn-outline">Clear tag</a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -508,6 +734,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="admin-media-info">
                         <span class="admin-media-name" title="<?= htmlspecialchars($media['original_filename']); ?>"><?= htmlspecialchars($media['original_filename']); ?></span>
                         <span class="admin-media-meta"><?= number_format($media['file_size'] / 1024, 0); ?>KB</span>
+                        <?php if (!empty($media['tag_names'])): ?>
+                        <div class="admin-media-tags">
+                            <?php
+                            $tagNames = explode(',', $media['tag_names']);
+                            $tagColors = [];
+                            foreach ($all_tags as $t) $tagColors[$t['name']] = $t['color'];
+                            foreach ($tagNames as $tagName):
+                                $color = $tagColors[$tagName] ?? '#6b7280';
+                            ?>
+                                <span class="mini-tag" style="--tag-color: <?= htmlspecialchars($color); ?>"><?= htmlspecialchars($tagName); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

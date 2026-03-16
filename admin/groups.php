@@ -231,11 +231,15 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
             <h3>Select Image</h3>
             <button type="button" onclick="closeMediaPicker()" class="media-picker-close">&times;</button>
         </div>
+        <div class="media-picker-filters">
+            <input type="text" id="media-search" placeholder="Search images..." oninput="filterMedia()">
+            <div id="media-tags" class="media-tag-filters"></div>
+        </div>
         <div class="media-picker-body">
             <div id="media-picker-loading" style="text-align: center; padding: 2rem;">Loading...</div>
             <div id="media-picker-grid" class="media-picker-grid"></div>
             <div id="media-picker-empty" style="display: none; text-align: center; padding: 2rem; color: var(--color-text-muted);">
-                No images in library. <a href="/admin/media">Upload one</a>.
+                No images found. <a href="/admin/media">Upload one</a>.
             </div>
         </div>
     </div>
@@ -314,6 +318,41 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
 .media-picker-close:hover {
     color: var(--color-text);
 }
+.media-picker-filters {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.media-picker-filters input {
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+}
+.media-tag-filters {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+.media-tag-btn {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.media-tag-btn:hover {
+    border-color: var(--tag-color, var(--color-purple));
+}
+.media-tag-btn.active {
+    background: var(--tag-color, var(--color-purple));
+    color: white;
+    border-color: var(--tag-color, var(--color-purple));
+}
 .media-picker-body {
     padding: 1rem;
     overflow-y: auto;
@@ -344,8 +383,14 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
 </style>
 
 <script>
+let allMediaItems = [];
+let availableTags = [];
+let activeTag = '';
+
 function openMediaPicker() {
     document.getElementById('media-picker-modal').style.display = 'flex';
+    document.getElementById('media-search').value = '';
+    activeTag = '';
     loadMediaLibrary();
 }
 
@@ -357,25 +402,28 @@ async function loadMediaLibrary() {
     const grid = document.getElementById('media-picker-grid');
     const loading = document.getElementById('media-picker-loading');
     const empty = document.getElementById('media-picker-empty');
+    const tagsContainer = document.getElementById('media-tags');
 
     loading.style.display = 'block';
     grid.innerHTML = '';
     empty.style.display = 'none';
 
     try {
-        const response = await fetch('/admin/api/media?type=image');
+        const response = await fetch('/admin/api/media?type=image&limit=100');
         const result = await response.json();
 
         loading.style.display = 'none';
 
+        if (result.tags) {
+            availableTags = result.tags;
+            tagsContainer.innerHTML = result.tags.map(tag =>
+                `<button type="button" class="media-tag-btn" data-tag="${tag.slug}" style="--tag-color: ${tag.color}" onclick="filterByTag('${tag.slug}')">${tag.name}</button>`
+            ).join('');
+        }
+
         if (result.data && result.data.length > 0) {
-            result.data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'media-picker-item';
-                div.innerHTML = `<img src="${item.thumbnail || item.url}" alt="${item.name || ''}" loading="lazy">`;
-                div.onclick = () => selectMedia(item.url);
-                grid.appendChild(div);
-            });
+            allMediaItems = result.data;
+            renderMediaGrid(allMediaItems);
         } else {
             empty.style.display = 'block';
         }
@@ -384,6 +432,62 @@ async function loadMediaLibrary() {
         empty.textContent = 'Error loading media library';
         empty.style.display = 'block';
     }
+}
+
+function renderMediaGrid(items) {
+    const grid = document.getElementById('media-picker-grid');
+    const empty = document.getElementById('media-picker-empty');
+
+    grid.innerHTML = '';
+
+    if (items.length === 0) {
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'media-picker-item';
+        div.innerHTML = `<img src="${item.thumbnail || item.url}" alt="${item.name || ''}" loading="lazy">`;
+        div.onclick = () => selectMedia(item.url);
+        grid.appendChild(div);
+    });
+}
+
+function filterMedia() {
+    const search = document.getElementById('media-search').value.toLowerCase();
+    let filtered = allMediaItems;
+
+    if (search) {
+        filtered = filtered.filter(item =>
+            (item.name && item.name.toLowerCase().includes(search)) ||
+            (item.alt && item.alt.toLowerCase().includes(search)) ||
+            (item.tags && item.tags.some(t => t.toLowerCase().includes(search)))
+        );
+    }
+
+    if (activeTag) {
+        filtered = filtered.filter(item =>
+            item.tags && item.tags.some(t => t.toLowerCase() === activeTag.toLowerCase())
+        );
+    }
+
+    renderMediaGrid(filtered);
+}
+
+function filterByTag(tag) {
+    const buttons = document.querySelectorAll('.media-tag-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    if (activeTag === tag) {
+        activeTag = '';
+    } else {
+        activeTag = tag;
+        document.querySelector(`[data-tag="${tag}"]`)?.classList.add('active');
+    }
+
+    filterMedia();
 }
 
 function selectMedia(url) {

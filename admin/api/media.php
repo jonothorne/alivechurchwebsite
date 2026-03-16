@@ -54,30 +54,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $type = $_GET['type'] ?? 'image';
         $limit = min((int)($_GET['limit'] ?? 50), 100);
+        $tag = $_GET['tag'] ?? '';
+        $search = $_GET['search'] ?? '';
 
-        if ($type === 'all') {
-            $stmt = $pdo->prepare("SELECT * FROM media ORDER BY created_at DESC LIMIT ?");
-            $stmt->execute([$limit]);
-        } else {
-            $stmt = $pdo->prepare("SELECT * FROM media WHERE file_type = ? ORDER BY created_at DESC LIMIT ?");
-            $stmt->execute([$type, $limit]);
+        $query = "
+            SELECT m.*,
+                   COALESCE(iv.variant_path, m.file_path) as thumbnail_path,
+                   GROUP_CONCAT(mt.name) as tag_names
+            FROM media m
+            LEFT JOIN image_variants iv ON m.id = iv.media_id AND iv.variant_name = 'thumbnail'
+            LEFT JOIN media_tag_assignments mta ON m.id = mta.media_id
+            LEFT JOIN media_tags mt ON mta.tag_id = mt.id
+        ";
+
+        $conditions = [];
+        $params = [];
+
+        if ($type !== 'all') {
+            $conditions[] = "m.file_type = ?";
+            $params[] = $type;
         }
 
+        if (!empty($tag)) {
+            $conditions[] = "mt.slug = ?";
+            $params[] = $tag;
+        }
+
+        if (!empty($search)) {
+            $conditions[] = "(m.original_filename LIKE ? OR m.alt_text LIKE ? OR mt.name LIKE ?)";
+            $searchTerm = '%' . $search . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        if (!empty($conditions)) {
+            $query .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $query .= " GROUP BY m.id ORDER BY m.created_at DESC LIMIT " . $limit;
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
         $media = $stmt->fetchAll();
 
         // Format for picker
         $items = array_map(function($item) {
+            $thumbPath = $item['thumbnail_path'] ?? $item['file_path'];
+            if (strpos($thumbPath, 'uploads/') === 0) {
+                $thumbPath = '/' . $thumbPath;
+            }
             return [
                 'id' => $item['id'],
                 'url' => '/' . $item['file_path'],
+                'thumbnail' => $thumbPath,
                 'name' => $item['original_filename'],
                 'alt' => $item['alt_text'] ?? '',
                 'type' => $item['file_type'],
-                'size' => $item['file_size']
+                'size' => $item['file_size'],
+                'tags' => $item['tag_names'] ? explode(',', $item['tag_names']) : []
             ];
         }, $media);
 
-        json_response(['success' => true, 'data' => $items]);
+        // Also return available tags
+        $tagsStmt = $pdo->query("SELECT slug, name, color FROM media_tags ORDER BY name");
+        $tags = $tagsStmt->fetchAll();
+
+        json_response(['success' => true, 'data' => $items, 'tags' => $tags]);
     } catch (Exception $e) {
         json_response(['error' => 'Failed to fetch media: ' . $e->getMessage()], 500);
     }
