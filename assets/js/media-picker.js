@@ -471,10 +471,12 @@ window.MediaPicker = (function() {
         state.isLoading = true;
 
         try {
+            // Send both page and offset to support both admin API and CMS API
             const params = new URLSearchParams({
                 type: 'image',
                 limit: state.perPage,
-                offset: (state.page - 1) * state.perPage
+                offset: (state.page - 1) * state.perPage,
+                page: state.page
             });
 
             if (state.activeTag) {
