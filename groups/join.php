@@ -1,8 +1,14 @@
 <?php
 require __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/db-config.php';
 require __DIR__ . '/../includes/form-handler.php';
 
 $page_title = 'Join a Group | ' . $site['name'];
+
+// Load groups from database
+$pdo = getDbConnection();
+$groupsStmt = $pdo->query("SELECT title, description, schedule, location, image_url AS image, signup_url FROM groups_list WHERE visible = 1 ORDER BY display_order, title");
+$groups = $groupsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get group from query parameter
 $group_param = $_GET['group'] ?? '';
@@ -135,9 +141,9 @@ include __DIR__ . '/../includes/header.php';
                     <span>Which group interests you?</span>
                     <select name="group_interest" id="group_interest" required>
                         <option value="">Select a group...</option>
-                        <option <?= ($selected_group['title'] ?? '') === 'Gateway Group' ? 'selected' : ''; ?>>Gateway Group</option>
-                        <option <?= ($selected_group['title'] ?? '') === "Men's Breakfast" ? 'selected' : ''; ?>>Men's Breakfast</option>
-                        <option <?= ($selected_group['title'] ?? '') === "Women's Evening" ? 'selected' : ''; ?>>Women's Evening</option>
+                        <?php foreach ($groups as $group): ?>
+                            <option <?= ($selected_group['title'] ?? '') === $group['title'] ? 'selected' : ''; ?>><?= htmlspecialchars($group['title']); ?></option>
+                        <?php endforeach; ?>
                         <option>Not sure - help me find one</option>
                     </select>
                 </label>
