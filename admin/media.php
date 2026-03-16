@@ -927,7 +927,7 @@ async function quickTag(mediaId, tagId, btn) {
     btn.style.opacity = '0.5';
 
     try {
-        const response = await fetch('/admin/api/tag-media.php', {
+        const response = await fetch('/admin/api/tag-media', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -956,7 +956,7 @@ async function batchTag(tagId) {
     const mediaIds = Array.from(selectedMedia);
 
     try {
-        const response = await fetch('/admin/api/tag-media.php', {
+        const response = await fetch('/admin/api/tag-media', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
