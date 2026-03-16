@@ -76,8 +76,42 @@ RewriteRule ^events/([a-zA-Z0-9-]+)/?$ events/detail.php?slug=$1 [L,QSA]
 # Sermons index page
 RewriteRule ^sermons/?$ sermons.php [L,QSA]
 
-# Admin panel
+# Admin panel - index
 RewriteRule ^admin/?$ admin/index.php [L,QSA]
+
+# Admin panel - all subpages (clean URLs to .php files)
+RewriteRule ^admin/analytics/?$ admin/analytics.php [L,QSA]
+RewriteRule ^admin/bible-study/edit/?$ admin/bible-study/edit.php [L,QSA]
+RewriteRule ^admin/bible-study/?$ admin/bible-study.php [L,QSA]
+RewriteRule ^admin/blog/categories/?$ admin/blog/categories.php [L,QSA]
+RewriteRule ^admin/blog/comments/?$ admin/blog/comments.php [L,QSA]
+RewriteRule ^admin/blog/edit/?$ admin/blog/edit.php [L,QSA]
+RewriteRule ^admin/blog/?$ admin/blog.php [L,QSA]
+RewriteRule ^admin/events/edit/?$ admin/events/edit.php [L,QSA]
+RewriteRule ^admin/events/?$ admin/events.php [L,QSA]
+RewriteRule ^admin/forms/?$ admin/forms.php [L,QSA]
+RewriteRule ^admin/groups/?$ admin/groups.php [L,QSA]
+RewriteRule ^admin/login/?$ admin/login.php [L,QSA]
+RewriteRule ^admin/logout/?$ admin/logout.php [L,QSA]
+RewriteRule ^admin/media/?$ admin/media.php [L,QSA]
+RewriteRule ^admin/ministries/?$ admin/ministries.php [L,QSA]
+RewriteRule ^admin/navigation/?$ admin/navigation.php [L,QSA]
+RewriteRule ^admin/newsletter/?$ admin/newsletter.php [L,QSA]
+RewriteRule ^admin/next-steps/?$ admin/next-steps.php [L,QSA]
+RewriteRule ^admin/pages/?$ admin/pages.php [L,QSA]
+RewriteRule ^admin/profanity-filter/?$ admin/profanity-filter.php [L,QSA]
+RewriteRule ^admin/reading-plans/edit/?$ admin/reading-plans/edit.php [L,QSA]
+RewriteRule ^admin/reading-plans/?$ admin/reading-plans.php [L,QSA]
+RewriteRule ^admin/sermons/comments/?$ admin/sermons/comments.php [L,QSA]
+RewriteRule ^admin/sermons/edit/?$ admin/sermons/edit.php [L,QSA]
+RewriteRule ^admin/sermons/?$ admin/sermons.php [L,QSA]
+RewriteRule ^admin/serve/?$ admin/serve.php [L,QSA]
+RewriteRule ^admin/settings/?$ admin/settings.php [L,QSA]
+RewriteRule ^admin/users/?$ admin/users.php [L,QSA]
+
+# Admin API endpoints
+RewriteRule ^admin/api/blog/?$ admin/api/blog.php [L,QSA]
+RewriteRule ^admin/api/media/?$ admin/api/media.php [L,QSA]
 
 # My Studies pages
 RewriteRule ^my-studies/?$ my-studies.php [L,QSA]
