@@ -2660,11 +2660,12 @@ textarea {
         background: rgba(255, 255, 255, 0.25);
     }
     .mobile-nav-register {
-        background: #fff;
-        color: #4b2679; /* Fixed purple - mobile nav bg is always purple gradient */
+        background: transparent;
+        color: #fff;
+        border: 2px solid #fff;
     }
     .mobile-nav-register:hover {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.15);
         transform: translateY(-2px);
     }
 
