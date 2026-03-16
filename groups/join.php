@@ -85,8 +85,8 @@ include __DIR__ . '/../includes/header.php';
                              style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
                     <?php endif; ?>
 
-                    <div style="margin-top: 2rem; padding: 1.5rem; background: #f9fafb; border-radius: 0.75rem;">
-                        <h3 style="margin-bottom: 1rem;">Why Join a Group?</h3>
+                    <div class="info-box">
+                        <h3>Why Join a Group?</h3>
                         <ul class="info-list">
                             <li><strong>Authentic Community:</strong> Real relationships with people who care about you.</li>
                             <li><strong>Grow Together:</strong> Study the Bible, pray together, and support each other.</li>
