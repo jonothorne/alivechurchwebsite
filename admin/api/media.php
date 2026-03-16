@@ -100,13 +100,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Format for picker
         $items = array_map(function($item) {
-            $thumbPath = $item['thumbnail_path'] ?? $item['file_path'];
-            if (strpos($thumbPath, 'uploads/') === 0) {
-                $thumbPath = '/' . $thumbPath;
-            }
+            // Helper to convert any path to web-relative URL
+            $toWebPath = function($path) {
+                if (empty($path)) return null;
+
+                // Handle /storage/uploads/ paths (old CMS)
+                if (preg_match('/\/storage\/uploads\/(.+)$/', $path, $matches)) {
+                    return '/storage/uploads/' . $matches[1];
+                }
+                // Handle /uploads/ paths (current)
+                if (preg_match('/\/uploads\/([^\/]+)$/', $path, $matches)) {
+                    return '/uploads/' . $matches[1];
+                }
+                // Handle relative uploads/ paths
+                if (strpos($path, 'uploads/') === 0) {
+                    return '/' . $path;
+                }
+                // Already a web path
+                if (strpos($path, '/') === 0) {
+                    return $path;
+                }
+                return '/' . $path;
+            };
+
+            $url = $toWebPath($item['file_path']);
+            $thumbPath = $toWebPath($item['thumbnail_path'] ?? $item['file_path']);
+
             return [
                 'id' => $item['id'],
-                'url' => '/' . $item['file_path'],
+                'url' => $url,
                 'thumbnail' => $thumbPath,
                 'name' => $item['original_filename'],
                 'alt' => $item['alt_text'] ?? '',
