@@ -229,10 +229,19 @@ Options -Indexes
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 
-    # Content Security Policy - adjust as needed for your site
-    # Note: 'unsafe-inline' needed for inline styles/scripts, consider using nonces in future
+    # HSTS - enforce HTTPS for 1 year, include subdomains
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Content Security Policy
+    # Note: 'unsafe-inline' needed for inline styles/scripts until nonce system is implemented
     Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.youtube.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://js.stripe.com https://www.google.com; connect-src 'self' https://api.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self';"
 </IfModule>
+
+# Hide PHP version (also set expose_php = Off in php.ini on server)
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+</IfModule>
+php_flag expose_php Off
 
 # Compression (optional - improves performance)
 <IfModule mod_deflate.c>
