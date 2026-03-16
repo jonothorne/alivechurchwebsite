@@ -363,7 +363,7 @@ async function loadMediaLibrary() {
     empty.style.display = 'none';
 
     try {
-        const response = await fetch('/admin/api/media?type=images');
+        const response = await fetch('/admin/api/media?type=image');
         const result = await response.json();
 
         loading.style.display = 'none';
