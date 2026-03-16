@@ -3,7 +3,7 @@
  * Enables offline access and caching for PWA functionality
  */
 
-const CACHE_VERSION = 'alive-church-v25';
+const CACHE_VERSION = 'alive-church-v26';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const STUDY_CACHE = `${CACHE_VERSION}-studies`;
