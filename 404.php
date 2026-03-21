@@ -16,32 +16,64 @@ include __DIR__ . '/includes/header.php';
 <section class="content-section">
     <div class="container narrow center-text">
         <h2>Where would you like to go?</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
-            <a href="/" class="card" style="text-decoration: none; padding: 2rem;">
+        <div class="error-links">
+            <a href="/" class="error-link-card">
                 <h3>🏠 Home</h3>
                 <p>Start from the beginning</p>
             </a>
-            <a href="/visit" class="card" style="text-decoration: none; padding: 2rem;">
+            <a href="/visit" class="error-link-card">
                 <h3>👋 Plan a Visit</h3>
                 <p>Join us this Sunday</p>
             </a>
-            <a href="/watch" class="card" style="text-decoration: none; padding: 2rem;">
+            <a href="/watch" class="error-link-card">
                 <h3>📺 Watch</h3>
                 <p>Latest messages & sermons</p>
             </a>
-            <a href="/events" class="card" style="text-decoration: none; padding: 2rem;">
+            <a href="/events" class="error-link-card">
                 <h3>📅 Events</h3>
                 <p>See what's happening</p>
             </a>
-            <a href="/connect" class="card" style="text-decoration: none; padding: 2rem;">
+            <a href="/connect" class="error-link-card">
                 <h3>🤝 Connect</h3>
                 <p>Join a group or serve team</p>
             </a>
-            <a href="/give" class="card" style="text-decoration: none; padding: 2rem;">
+            <a href="/give" class="error-link-card">
                 <h3>💝 Give</h3>
                 <p>Make an impact</p>
             </a>
         </div>
+
+        <style <?= csp_nonce(); ?>>
+        .error-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .error-link-card {
+            display: block;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--color-text);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .error-link-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px var(--color-shadow);
+        }
+        .error-link-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--color-text);
+        }
+        .error-link-card p {
+            margin: 0;
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+        </style>
 
         <div style="margin-top: 3rem;">
             <p>Still can't find what you're looking for?</p>
