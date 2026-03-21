@@ -5404,7 +5404,18 @@ body.cms-edit-mode [data-cms-editable]:hover {
 }
 
 .bible-study-hero .study-search-form input {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.bible-study-hero .study-search-form input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.bible-study-hero .study-search-form input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .hero-topics-link {
