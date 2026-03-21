@@ -9509,6 +9509,7 @@ body.cms-edit-mode [data-cms-editable]:hover {
 /* User Menu Dropdown */
 .user-menu {
     position: relative;
+    z-index: 9999;
 }
 
 .user-menu-trigger {
