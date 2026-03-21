@@ -1151,6 +1151,9 @@ textarea {
     margin: 0 0 0.5rem;
     font-size: 1.5rem;
 }
+.sermon-feature .hero-ctas {
+    justify-content: center;
+}
 
 /* Weekend Preview Section */
 .weekend-preview {
