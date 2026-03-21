@@ -1141,7 +1141,7 @@ class Analytics {
             SELECT
                 s.title,
                 s.slug,
-                ss.name as series_name,
+                ss.title as series_name,
                 COUNT(pv.id) as views
             FROM sermons s
             LEFT JOIN sermon_series ss ON s.series_id = ss.id
@@ -1156,7 +1156,7 @@ class Analytics {
         // Most viewed series
         $topSeries = $this->safeQueryAll("
             SELECT
-                ss.name,
+                ss.title as name,
                 ss.slug,
                 COUNT(pv.id) as views
             FROM sermon_series ss
