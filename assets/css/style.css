@@ -531,7 +531,10 @@ img {
     transform: translateY(-2px);
     box-shadow: var(--shadow-btn-hover);
 }
-.btn-primary {
+.btn-primary,
+a.btn-primary,
+a.btn-primary:link,
+a.btn-primary:visited {
     background: var(--color-magenta);
     color: #fff;
 }
