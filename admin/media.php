@@ -568,6 +568,9 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     border-radius: var(--radius-md);
     margin: 0.5rem 1rem;
 }
+.batch-bar-hidden {
+    display: none;
+}
 .batch-info {
     display: flex;
     align-items: center;
@@ -795,14 +798,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     <!-- Batch tagging bar -->
-    <div id="batch-bar" class="batch-bar" style="display: none;">
+    <div id="batch-bar" class="batch-bar batch-bar-hidden">
         <div class="batch-info">
             <span id="batch-count">0</span> selected
-            <button onclick="clearSelection()" class="btn btn-xs btn-outline">Clear</button>
+            <button id="clear-selection-btn" class="btn btn-xs btn-outline">Clear</button>
         </div>
         <div class="batch-tags">
             <?php foreach ($all_tags as $tag): ?>
-                <button type="button" class="batch-tag-btn" data-tag-id="<?= $tag['id']; ?>" style="--tag-color: <?= htmlspecialchars($tag['color']); ?>" onclick="batchTag(<?= $tag['id']; ?>)">
+                <button type="button" class="batch-tag-btn" data-tag-id="<?= $tag['id']; ?>" style="--tag-color: <?= htmlspecialchars($tag['color']); ?>">
                     + <?= htmlspecialchars($tag['name']); ?>
                 </button>
             <?php endforeach; ?>
@@ -819,10 +822,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="admin-media-card" data-media-id="<?= $media['id']; ?>">
                     <!-- Selection checkbox -->
                     <label class="media-select-checkbox">
-                        <input type="checkbox" onchange="toggleSelection(<?= $media['id']; ?>, this.checked)">
+                        <input type="checkbox" class="media-checkbox" data-media-id="<?= $media['id']; ?>">
                     </label>
                     <!-- Preview with hover overlay -->
-                    <div class="admin-media-preview" onclick="toggleSelection(<?= $media['id']; ?>)">
+                    <div class="admin-media-preview" data-media-id="<?= $media['id']; ?>">
                         <?php if ($media['file_type'] === 'image'): ?>
                             <?php
                             $thumbPath = $media['thumbnail_path'];
@@ -840,17 +843,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?= $media['file_type'] === 'video' ? '🎥' : ($media['file_type'] === 'audio' ? '🎵' : '📄'); ?>
                             </span>
                         <?php endif; ?>
-                        <div class="admin-media-overlay" onclick="event.stopPropagation();">
+                        <div class="admin-media-overlay">
                             <?php if ($media['file_type'] === 'image'): ?>
-                            <button onclick="rotateImage(<?= $media['id']; ?>, 'left', this)" class="btn btn-xs" title="Rotate left">↺</button>
-                            <button onclick="rotateImage(<?= $media['id']; ?>, 'right', this)" class="btn btn-xs" title="Rotate right">↻</button>
+                            <button class="btn btn-xs rotate-btn" data-media-id="<?= $media['id']; ?>" data-direction="left" title="Rotate left">↺</button>
+                            <button class="btn btn-xs rotate-btn" data-media-id="<?= $media['id']; ?>" data-direction="right" title="Rotate right">↻</button>
                             <?php endif; ?>
-                            <button onclick="navigator.clipboard.writeText('https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>'); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1000);" class="btn btn-xs">Copy</button>
+                            <button class="btn btn-xs copy-url-btn" data-url="https://alivechur.ch/<?= htmlspecialchars($media['file_path']); ?>">Copy</button>
                             <a href="?delete=<?= $media['id']; ?>" class="btn btn-xs btn-danger" data-confirm-delete>×</a>
                         </div>
                     </div>
                     <!-- Quick tags -->
-                    <div class="quick-tags" onclick="event.stopPropagation();">
+                    <div class="quick-tags">
                         <?php foreach ($all_tags as $tag):
                             $isActive = in_array($tag['id'], $mediaTagIds);
                         ?>
@@ -859,7 +862,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     data-tag-id="<?= $tag['id']; ?>"
                                     data-media-id="<?= $media['id']; ?>"
                                     style="--tag-color: <?= htmlspecialchars($tag['color']); ?>"
-                                    onclick="quickTag(<?= $media['id']; ?>, <?= $tag['id']; ?>, this)"
                                     title="<?= htmlspecialchars($tag['name']); ?>">
                                 <?= htmlspecialchars(substr($tag['name'], 0, 1)); ?>
                             </button>
@@ -916,10 +918,10 @@ function updateBatchBar() {
     const count = document.getElementById('batch-count');
 
     if (selectedMedia.size > 0) {
-        bar.style.display = 'flex';
+        bar.classList.remove('batch-bar-hidden');
         count.textContent = selectedMedia.size;
     } else {
-        bar.style.display = 'none';
+        bar.classList.add('batch-bar-hidden');
     }
 }
 
@@ -1078,6 +1080,95 @@ async function rotateImage(mediaId, direction, btn) {
     // Re-enable buttons
     buttons.forEach(b => b.disabled = false);
 }
+
+// Event delegation for all media grid interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const mediaGrid = document.querySelector('.admin-media-grid');
+
+    if (mediaGrid) {
+        // Handle clicks within media grid
+        mediaGrid.addEventListener('click', function(e) {
+            // Copy URL button
+            const copyBtn = e.target.closest('.copy-url-btn');
+            if (copyBtn) {
+                e.stopPropagation();
+                const url = copyBtn.dataset.url;
+                navigator.clipboard.writeText(url).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+                });
+                return;
+            }
+
+            // Rotate button
+            const rotateBtn = e.target.closest('.rotate-btn');
+            if (rotateBtn) {
+                e.stopPropagation();
+                const mediaId = parseInt(rotateBtn.dataset.mediaId);
+                const direction = rotateBtn.dataset.direction;
+                rotateImage(mediaId, direction, rotateBtn);
+                return;
+            }
+
+            // Quick tag button
+            const quickTagBtn = e.target.closest('.quick-tag');
+            if (quickTagBtn) {
+                e.stopPropagation();
+                const mediaId = parseInt(quickTagBtn.dataset.mediaId);
+                const tagId = parseInt(quickTagBtn.dataset.tagId);
+                quickTag(mediaId, tagId, quickTagBtn);
+                return;
+            }
+
+            // Media overlay - stop propagation
+            if (e.target.closest('.admin-media-overlay')) {
+                e.stopPropagation();
+                return;
+            }
+
+            // Quick tags container - stop propagation
+            if (e.target.closest('.quick-tags')) {
+                e.stopPropagation();
+                return;
+            }
+
+            // Media preview click - toggle selection
+            const preview = e.target.closest('.admin-media-preview');
+            if (preview) {
+                const mediaId = parseInt(preview.dataset.mediaId);
+                toggleSelection(mediaId);
+                return;
+            }
+        });
+
+        // Handle checkbox changes
+        mediaGrid.addEventListener('change', function(e) {
+            const checkbox = e.target.closest('.media-checkbox');
+            if (checkbox) {
+                const mediaId = parseInt(checkbox.dataset.mediaId);
+                toggleSelection(mediaId, checkbox.checked);
+            }
+        });
+    }
+
+    // Clear selection button
+    const clearBtn = document.getElementById('clear-selection-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSelection);
+    }
+
+    // Batch tag buttons
+    const batchTags = document.querySelector('.batch-tags');
+    if (batchTags) {
+        batchTags.addEventListener('click', function(e) {
+            const btn = e.target.closest('.batch-tag-btn');
+            if (btn) {
+                const tagId = parseInt(btn.dataset.tagId);
+                batchTag(tagId);
+            }
+        });
+    }
+});
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
