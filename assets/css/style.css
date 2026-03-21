@@ -306,6 +306,7 @@ img {
     padding: 1rem 0;
     gap: 1rem;
     position: relative; /* For absolute positioning of user-nav on mobile */
+    z-index: 100; /* Above subnavs for dropdown visibility */
 }
 .logo {
     font-weight: 700;
