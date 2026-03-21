@@ -56,9 +56,14 @@ include __DIR__ . '/includes/header.php';
             border: 1px solid var(--color-border);
             border-radius: var(--radius-xl);
             padding: 2rem;
-            text-decoration: none;
+            text-decoration: none !important;
+            background-image: none !important;
             color: var(--color-text);
             transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .error-link-card * {
+            text-decoration: none !important;
+            background-image: none !important;
         }
         .error-link-card:hover {
             transform: translateY(-4px);
@@ -72,6 +77,8 @@ include __DIR__ . '/includes/header.php';
             margin: 0;
             color: var(--color-text-muted);
             font-size: 0.9rem;
+            text-decoration: none;
+            background-image: none;
         }
         </style>
 
