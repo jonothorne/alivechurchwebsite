@@ -606,18 +606,22 @@ if ($isCli) {
                 updateCount();
             });
 
-            // Select needs rename button
+            // Select needs rename button (additive)
             document.getElementById('select-needs-rename').addEventListener('click', function() {
                 checkboxes.forEach(cb => {
-                    cb.checked = cb.dataset.status === 'needs_rename';
+                    if (cb.dataset.status === 'needs_rename') {
+                        cb.checked = true;
+                    }
                 });
                 updateCount();
             });
 
-            // Select poor names button
+            // Select poor names button (additive)
             document.getElementById('select-poor').addEventListener('click', function() {
                 checkboxes.forEach(cb => {
-                    cb.checked = cb.dataset.status === 'poor';
+                    if (cb.dataset.status === 'poor') {
+                        cb.checked = true;
+                    }
                 });
                 updateCount();
             });
