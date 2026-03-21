@@ -381,7 +381,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     <form method="post" enctype="multipart/form-data" id="upload-form">
         <?= csrf_field(); ?>
         <div class="upload-dropzone" id="upload-dropzone">
-            <input type="file" name="files[]" id="file-input" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
+            <input type="file" name="files[]" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi,.mp3,.pdf,.doc,.docx,.xls,.xlsx">
             <div class="upload-dropzone-content">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
