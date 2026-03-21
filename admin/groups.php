@@ -143,12 +143,12 @@ $visible_count = count(array_filter($groups, fn($g) => $g['visible']));
                                 <img src="<?= htmlspecialchars($edit_group['image_url']); ?>" id="image_url_preview" class="image-preview">
                             <?php else: ?>
                                 <div id="image_url_placeholder" class="image-placeholder">No image selected</div>
-                                <img src="" id="image_url_preview" class="image-preview" style="display: none;">
+                                <img src="" id="image_url_preview" class="image-preview image-preview-hidden">
                             <?php endif; ?>
                         </div>
                         <div class="image-picker-actions">
-                            <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select Image</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('image_url')" style="<?= empty($edit_group['image_url']) ? 'display:none;' : ''; ?>" id="image_url_clear">Clear</button>
+                            <button type="button" class="btn btn-sm btn-outline media-picker-select-btn" data-field="image_url">Select Image</button>
+                            <button type="button" class="btn btn-sm btn-outline media-picker-clear-btn <?= empty($edit_group['image_url']) ? 'media-picker-clear-hidden' : ''; ?>" data-field="image_url" id="image_url_clear">Clear</button>
                         </div>
                     </div>
                 </div>
