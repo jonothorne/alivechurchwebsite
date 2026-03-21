@@ -798,7 +798,7 @@ class Analytics {
      * Get session statistics (bounce rate, duration, pages per session)
      */
     public function getSessionStats(string $period = 'month'): array {
-        $conditions = $this->getPeriodCondition($period, 'started_at');
+        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
         // Total sessions
         $totalSessions = $this->pdo->query("
@@ -839,7 +839,7 @@ class Analytics {
      * Get exit pages (where visitors leave the site)
      */
     public function getExitPages(string $period = 'month', int $limit = 10): array {
-        $conditions = $this->getPeriodCondition($period, 'started_at');
+        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
         $stmt = $this->pdo->prepare("
             SELECT
@@ -860,7 +860,7 @@ class Analytics {
      * Get entry pages (where visitors land)
      */
     public function getEntryPages(string $period = 'month', int $limit = 10): array {
-        $conditions = $this->getPeriodCondition($period, 'started_at');
+        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
         $stmt = $this->pdo->prepare("
             SELECT
@@ -1012,7 +1012,7 @@ class Analytics {
      * Get top search terms
      */
     public function getTopSearchTerms(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodCondition($period, 'searched_at');
+        $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
 
         $stmt = $this->pdo->prepare("
             SELECT
@@ -1034,7 +1034,7 @@ class Analytics {
      * Get searches with no results (opportunity for content)
      */
     public function getZeroResultSearches(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodCondition($period, 'searched_at');
+        $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
 
         $stmt = $this->pdo->prepare("
             SELECT
