@@ -4,19 +4,6 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
 ?>
 </main>
 <footer class="site-footer">
-    <!-- Footer CTA Banner -->
-    <div class="footer-cta">
-        <div class="container">
-            <div class="footer-cta-content">
-                <div class="footer-cta-text">
-                    <h3>New here? We'd love to meet you.</h3>
-                    <p>Plan your visit and let us know you're coming - we'll save you a seat and have someone ready to welcome you.</p>
-                </div>
-                <a href="/visit" class="btn btn-primary btn-large">Plan Your Visit</a>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Footer Content -->
     <div class="footer-main">
         <div class="container">
