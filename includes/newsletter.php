@@ -7,7 +7,7 @@
                     <p>Get weekly updates, event invites, and encouragement delivered to your inbox.</p>
                 </div>
 
-                <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
+                <div class="newsletter-message hidden" id="newsletter-message"></div>
 
                 <form class="newsletter-form" id="newsletter-form" action="/api/newsletter-signup.php" method="post">
                     <input type="email" name="email" placeholder="Your email" required class="newsletter-input" id="newsletter-email">

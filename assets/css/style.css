@@ -1279,6 +1279,11 @@ textarea {
     color: #DC2626;
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
+.newsletter-message:empty {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
 
 /* Social Links */
 .social-links {
