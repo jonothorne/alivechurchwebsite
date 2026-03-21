@@ -408,6 +408,8 @@ if ($isCli) {
 .filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
 .filter-tab { padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; border-radius: 4px; }
 .filter-tab.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
 <div class="admin-card">
@@ -624,6 +626,25 @@ if ($isCli) {
                     }
                 });
                 updateCount();
+            });
+
+            // Form submission - show loading state
+            document.getElementById('rename-form').addEventListener('submit', function(e) {
+                const btn = this.querySelector('button[type="submit"]');
+                const count = document.querySelectorAll('.image-checkbox:checked').length;
+
+                if (count === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one image to rename.');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Processing ' + count + ' images... Please wait';
+                btn.style.opacity = '0.7';
+
+                // Disable all checkboxes to prevent changes
+                checkboxes.forEach(cb => cb.disabled = true);
             });
 
             // Filter tabs
