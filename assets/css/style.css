@@ -877,6 +877,11 @@ main section {
 .content-section ul {
     padding-left: 1.2rem;
 }
+.content-section img:not(.logo img):not([class]) {
+    border-radius: var(--radius-lg);
+    margin: 1.5rem 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
 .profile-grid {
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
@@ -2999,6 +3004,12 @@ textarea {
 
 .page-content-full {
     padding: 0;
+}
+
+.page-content img:not([class]) {
+    border-radius: var(--radius-lg);
+    margin: 1.5rem 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .content-main {
