@@ -10,6 +10,7 @@ $page_title = 'Media Library';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/../includes/db-config.php';
 require_once __DIR__ . '/../includes/ImageProcessor.php';
+require_once __DIR__ . '/../includes/ImageNameGenerator.php';
 
 $pdo = getDbConnection();
 $success = '';
@@ -127,13 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_
                 continue;
             }
 
-            // Generate unique filename
-            $unique_filename = time() . '_' . uniqid() . '.' . $file_ext;
-            $upload_path = $upload_dir . $unique_filename;
+            // Generate temporary filename for initial upload
+            $temp_filename = 'temp_' . time() . '_' . uniqid() . '.' . $file_ext;
+            $temp_path = $upload_dir . $temp_filename;
 
-            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+            if (move_uploaded_file($file['tmp_name'], $temp_path)) {
                 // Determine file type category
-                $image_types = ['jpg', 'jpeg', 'png', 'gif'];
+                $image_types = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
                 $video_types = ['mp4', 'mov', 'avi'];
                 $audio_types = ['mp3'];
 
@@ -146,6 +147,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_
                 } else {
                     $file_type = 'document';
                 }
+
+                // Generate SEO-friendly filename using AI (for images)
+                $nameGenerator = new ImageNameGenerator();
+                if ($file_type === 'image' && $nameGenerator->isConfigured()) {
+                    $seo_name = $nameGenerator->generateName($temp_path, $original_filename);
+                } else {
+                    $seo_name = $nameGenerator->sanitizeFilename($original_filename);
+                }
+
+                // Ensure unique filename
+                $unique_filename = $nameGenerator->ensureUnique($seo_name, $file_ext, $upload_dir) . '.' . $file_ext;
+                $upload_path = $upload_dir . $unique_filename;
+
+                // Rename from temp to final filename
+                rename($temp_path, $upload_path);
 
                 // Get image dimensions if applicable
                 $width = null;
