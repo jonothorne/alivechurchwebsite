@@ -432,7 +432,18 @@ if ($isCli) {
                 <?= $dryRun ? 'Dry run completed' : 'Rename completed'; ?>: <?= $processed; ?> images processed
             </div>
 
-            <a href="" class="btn btn-outline" style="margin-bottom: 1rem;">Back to Selection</a>
+            <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+                <?php if ($dryRun && $processed > 0): ?>
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="action" value="rename">
+                        <?php foreach ($selectedIds as $id): ?>
+                            <input type="hidden" name="selected_ids[]" value="<?= (int)$id; ?>">
+                        <?php endforeach; ?>
+                        <button type="submit" class="btn btn-primary">Apply These Changes</button>
+                    </form>
+                <?php endif; ?>
+                <a href="" class="btn btn-outline">Back to Selection</a>
+            </div>
 
             <table class="admin-table" style="margin-top: 1rem;">
                 <thead>
