@@ -3611,7 +3611,7 @@ body.cms-edit-mode [data-cms-editable]:hover {
    ============================================ */
 
 .event-hero {
-    background-size: cover;
+    background-size: 100% auto;
     background-position: center;
     padding: 6rem 0 4rem;
     color: #fff;
