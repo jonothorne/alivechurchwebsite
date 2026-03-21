@@ -569,7 +569,7 @@ if ($isCli) {
             </form>
         </div>
 
-        <script>
+        <script <?= csp_nonce(); ?>>
         (function() {
             const checkboxes = document.querySelectorAll('.image-checkbox');
             const checkAll = document.getElementById('check-all');
