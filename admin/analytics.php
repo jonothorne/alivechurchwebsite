@@ -3,6 +3,7 @@ $page_title = 'Analytics';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/../includes/db-config.php';
 require_once __DIR__ . '/../includes/Analytics.php';
+require_once __DIR__ . '/../includes/GeoIP.php';
 
 $pdo = getDbConnection();
 $analytics = new Analytics($pdo);
@@ -14,55 +15,18 @@ if (!in_array($period, $validPeriods)) {
     $period = 'month';
 }
 
-// Fetch all analytics data
+// Fetch overview data
 $visitCounts = $analytics->getVisitCounts();
 $dailyVisits = $analytics->getDailyVisits(30);
-$popularPages = $analytics->getPopularPages(10, $period);
-$trafficSources = $analytics->getTrafficSources(10, $period);
-$deviceBreakdown = $analytics->getDeviceBreakdown($period);
-$browserBreakdown = $analytics->getBrowserBreakdown($period);
+$realTimeStats = $analytics->getRealTimeStats();
+$newVsReturning = $analytics->getNewVsReturning($period);
+$topCountries = $analytics->getVisitorsByCountry($period, 5);
+$popularPages = $analytics->getPopularPages(5, $period);
+$userStats = $analytics->getUserStats();
 $engagementStats = $analytics->getUserEngagementStats();
 $planStats = $analytics->getReadingPlanStats();
-$userStats = $analytics->getUserStats();
 $formStats = $analytics->getFormStats();
 $newsletterStats = $analytics->getNewsletterStats();
-$mostReadStudies = $analytics->getMostReadStudies(5);
-
-// Bible coverage stats
-$totalChaptersStmt = $pdo->query("SELECT SUM(chapters) as total FROM bible_books");
-$totalChapters = (int)$totalChaptersStmt->fetch()['total'];
-
-$coveredChaptersStmt = $pdo->query("
-    SELECT COUNT(DISTINCT CONCAT(book_id, '-', chapter)) as covered
-    FROM bible_studies
-    WHERE status = 'published'
-");
-$coveredChapters = (int)$coveredChaptersStmt->fetch()['covered'];
-
-$coveragePercent = $totalChapters > 0 ? round(($coveredChapters / $totalChapters) * 100, 1) : 0;
-
-// Get coverage by testament
-$otCoverageStmt = $pdo->query("
-    SELECT
-        (SELECT SUM(chapters) FROM bible_books WHERE testament = 'old') as total,
-        (SELECT COUNT(DISTINCT CONCAT(bs.book_id, '-', bs.chapter))
-         FROM bible_studies bs
-         JOIN bible_books bb ON bs.book_id = bb.id
-         WHERE bs.status = 'published' AND bb.testament = 'old') as covered
-");
-$otCoverage = $otCoverageStmt->fetch();
-$otPercent = $otCoverage['total'] > 0 ? round(($otCoverage['covered'] / $otCoverage['total']) * 100, 1) : 0;
-
-$ntCoverageStmt = $pdo->query("
-    SELECT
-        (SELECT SUM(chapters) FROM bible_books WHERE testament = 'new') as total,
-        (SELECT COUNT(DISTINCT CONCAT(bs.book_id, '-', bs.chapter))
-         FROM bible_studies bs
-         JOIN bible_books bb ON bs.book_id = bb.id
-         WHERE bs.status = 'published' AND bb.testament = 'new') as covered
-");
-$ntCoverage = $ntCoverageStmt->fetch();
-$ntPercent = $ntCoverage['total'] > 0 ? round(($ntCoverage['covered'] / $ntCoverage['total']) * 100, 1) : 0;
 
 // Prepare chart data
 $chartLabels = [];
@@ -73,18 +37,13 @@ foreach ($dailyVisits as $day) {
     $chartVisits[] = (int)$day['visits'];
     $chartUnique[] = (int)$day['unique_visitors'];
 }
-
-$deviceLabels = [];
-$deviceData = [];
-foreach ($deviceBreakdown as $device) {
-    $deviceLabels[] = ucfirst($device['device_type']);
-    $deviceData[] = (int)$device['count'];
-}
 ?>
 
-<!-- Header with Period Filter -->
-<div class="analytics-header">
-    <div class="analytics-title">Analytics</div>
+<?php require_once __DIR__ . '/includes/analytics-subnav.php'; ?>
+
+<!-- Period Filter -->
+<div class="analytics-header" style="margin-bottom: 1.5rem;">
+    <h2 style="margin: 0;">Overview</h2>
     <div class="admin-filter-tabs" style="margin: 0;">
         <a href="?period=today" class="admin-filter-tab <?= $period === 'today' ? 'active' : ''; ?>">Today</a>
         <a href="?period=week" class="admin-filter-tab <?= $period === 'week' ? 'active' : ''; ?>">7d</a>
@@ -94,27 +53,29 @@ foreach ($deviceBreakdown as $device) {
     </div>
 </div>
 
-<!-- Key Metrics Row -->
+<!-- Key Metrics -->
 <div class="analytics-metrics">
-    <div class="analytics-metric">
+    <a href="/admin/analytics/realtime" class="analytics-metric analytics-metric-clickable analytics-metric-realtime">
+        <div class="analytics-metric-value"><?= $realTimeStats['active_now']; ?></div>
+        <div class="analytics-metric-label">Active Now</div>
+        <div class="analytics-metric-sub">
+            <span class="realtime-indicator"></span> Live
+        </div>
+    </a>
+    <a href="/admin/analytics/traffic" class="analytics-metric analytics-metric-clickable">
         <div class="analytics-metric-value"><?= number_format($visitCounts[$period]['total_visits']); ?></div>
         <div class="analytics-metric-label">Page Views</div>
         <div class="analytics-metric-sub">Today: <?= number_format($visitCounts['today']['total_visits']); ?></div>
-    </div>
-    <div class="analytics-metric">
+    </a>
+    <a href="/admin/analytics/traffic" class="analytics-metric analytics-metric-clickable">
         <div class="analytics-metric-value"><?= number_format($visitCounts[$period]['unique_visitors']); ?></div>
         <div class="analytics-metric-label">Unique Visitors</div>
         <div class="analytics-metric-sub">Today: <?= number_format($visitCounts['today']['unique_visitors']); ?></div>
-    </div>
+    </a>
     <div class="analytics-metric">
         <div class="analytics-metric-value"><?= number_format($userStats['total_users']); ?></div>
-        <div class="analytics-metric-label">Users</div>
+        <div class="analytics-metric-label">Registered Users</div>
         <div class="analytics-metric-sub">+<?= $userStats['new_this_month']; ?> this month</div>
-    </div>
-    <div class="analytics-metric">
-        <div class="analytics-metric-value"><?= number_format($planStats['active_plans']); ?></div>
-        <div class="analytics-metric-label">Active Plans</div>
-        <div class="analytics-metric-sub"><?= $planStats['completed_plans']; ?> completed</div>
     </div>
     <div class="analytics-metric <?= $formStats['unprocessed'] > 0 ? 'analytics-metric-alert' : ''; ?>">
         <div class="analytics-metric-value"><?= number_format($formStats['total']); ?></div>
@@ -131,21 +92,48 @@ foreach ($deviceBreakdown as $device) {
 <div class="admin-card">
     <div class="admin-card-header">
         <h3>Traffic (30 days)</h3>
+        <a href="/admin/analytics/traffic" class="admin-link">View Details &rarr;</a>
     </div>
     <div class="analytics-chart">
         <canvas id="trafficChart" height="180"></canvas>
     </div>
 </div>
 
-<!-- Two Column Grid -->
+<!-- Overview Grid -->
 <div class="analytics-grid">
     <!-- Left Column -->
     <div class="analytics-col">
 
-        <!-- Popular Pages -->
+        <!-- Geographic Quick View -->
         <div class="admin-card">
             <div class="admin-card-header">
+                <h3>Top Countries</h3>
+                <a href="/admin/analytics/geographic" class="admin-link">View All &rarr;</a>
+            </div>
+            <?php if (empty($topCountries)): ?>
+                <div class="admin-empty-state">
+                    <p>Geographic data will appear as visitors browse your site.</p>
+                </div>
+            <?php else: ?>
+                <div class="analytics-list">
+                    <?php foreach ($topCountries as $country): ?>
+                        <div class="analytics-list-item">
+                            <span>
+                                <?= GeoIP::getCountryFlag($country['country_code']); ?>
+                                <?= htmlspecialchars($country['country_name'] ?: $country['country_code']); ?>
+                            </span>
+                            <span class="admin-muted"><?= number_format($country['unique_visitors']); ?> visitors</span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Popular Pages Quick View -->
+        <div class="admin-card" style="margin-top: 1.5rem;">
+            <div class="admin-card-header">
                 <h3>Popular Pages</h3>
+                <a href="/admin/analytics/content" class="admin-link">View All &rarr;</a>
             </div>
             <?php if (empty($popularPages)): ?>
                 <p class="admin-muted-text">No data yet</p>
@@ -156,206 +144,93 @@ foreach ($deviceBreakdown as $device) {
                             <a href="<?= htmlspecialchars($page['page_url']); ?>" target="_blank" class="analytics-list-title">
                                 <?= htmlspecialchars(strlen($page['page_url']) > 35 ? substr($page['page_url'], 0, 35) . '...' : $page['page_url']); ?>
                             </a>
-                            <div class="analytics-list-stats">
-                                <span><?= number_format($page['visits']); ?></span>
-                                <span class="admin-muted"><?= number_format($page['unique_visitors']); ?> unique</span>
-                            </div>
+                            <span class="admin-muted"><?= number_format($page['visits']); ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </div>
-
-        <!-- Traffic Sources -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>Traffic Sources</h3>
-            </div>
-            <?php if (empty($trafficSources)): ?>
-                <p class="admin-muted-text">No data yet</p>
-            <?php else: ?>
-                <div class="analytics-bars">
-                    <?php $maxVisits = $trafficSources[0]['visits']; ?>
-                    <?php foreach ($trafficSources as $source): ?>
-                        <div class="analytics-bar-row">
-                            <span class="analytics-bar-label"><?= htmlspecialchars($source['source']); ?></span>
-                            <div class="analytics-bar-track">
-                                <div class="analytics-bar-fill" style="width: <?= ($source['visits'] / $maxVisits) * 100; ?>%;"></div>
-                            </div>
-                            <span class="analytics-bar-value"><?= number_format($source['visits']); ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Devices & Browsers -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>Devices</h3>
-            </div>
-            <div class="analytics-split">
-                <div class="analytics-chart-small">
-                    <canvas id="deviceChart"></canvas>
-                </div>
-                <div class="analytics-browser-list">
-                    <?php foreach ($browserBreakdown as $browser): ?>
-                        <div class="analytics-browser-item">
-                            <span><?= htmlspecialchars($browser['browser'] ?? 'Unknown'); ?></span>
-                            <span class="admin-muted"><?= number_format($browser['count']); ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <!-- Right Column -->
     <div class="analytics-col">
 
-        <!-- User Engagement -->
+        <!-- New vs Returning -->
         <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Visitors</h3>
+                <a href="/admin/analytics/behavior" class="admin-link">View Details &rarr;</a>
+            </div>
+            <div class="analytics-visitors-split">
+                <div class="analytics-visitors-item">
+                    <div class="analytics-visitors-value"><?= $newVsReturning['new_percent']; ?>%</div>
+                    <div class="analytics-visitors-label">New</div>
+                    <div class="analytics-visitors-count"><?= number_format($newVsReturning['new_visitors']); ?></div>
+                </div>
+                <div class="analytics-visitors-divider"></div>
+                <div class="analytics-visitors-item">
+                    <div class="analytics-visitors-value"><?= $newVsReturning['returning_percent']; ?>%</div>
+                    <div class="analytics-visitors-label">Returning</div>
+                    <div class="analytics-visitors-count"><?= number_format($newVsReturning['returning_visitors']); ?></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engagement Stats -->
+        <div class="admin-card" style="margin-top: 1.5rem;">
             <div class="admin-card-header">
                 <h3>Engagement</h3>
             </div>
-            <div class="analytics-engagement">
+            <div class="analytics-engagement-grid">
                 <div class="analytics-engagement-item">
-                    <span class="analytics-engagement-icon">✨</span>
                     <span class="analytics-engagement-value"><?= number_format($engagementStats['total_highlights']); ?></span>
                     <span class="analytics-engagement-label">Highlights</span>
                 </div>
                 <div class="analytics-engagement-item">
-                    <span class="analytics-engagement-icon">🔖</span>
                     <span class="analytics-engagement-value"><?= number_format($engagementStats['total_saved']); ?></span>
                     <span class="analytics-engagement-label">Saved</span>
                 </div>
                 <div class="analytics-engagement-item">
-                    <span class="analytics-engagement-icon">⏱️</span>
-                    <span class="analytics-engagement-value"><?= number_format($engagementStats['total_reading_time']); ?></span>
-                    <span class="analytics-engagement-label">Min Read</span>
+                    <span class="analytics-engagement-value"><?= number_format($planStats['active_plans']); ?></span>
+                    <span class="analytics-engagement-label">Active Plans</span>
                 </div>
                 <div class="analytics-engagement-item">
-                    <span class="analytics-engagement-icon">✅</span>
-                    <span class="analytics-engagement-value"><?= number_format($engagementStats['studies_completed']); ?></span>
-                    <span class="analytics-engagement-label">Completed</span>
+                    <span class="analytics-engagement-value"><?= number_format($newsletterStats['active']); ?></span>
+                    <span class="analytics-engagement-label">Subscribers</span>
                 </div>
             </div>
         </div>
 
-        <!-- Reading Plans -->
-        <div class="admin-card">
+        <!-- Quick Actions -->
+        <div class="admin-card" style="margin-top: 1.5rem;">
             <div class="admin-card-header">
-                <h3>Reading Plans</h3>
+                <h3>Quick Access</h3>
             </div>
-            <div class="analytics-plan-stats">
-                <div><strong><?= $planStats['active_plans']; ?></strong> Active</div>
-                <div><strong><?= $planStats['paused_plans']; ?></strong> Paused</div>
-                <div><strong><?= $planStats['completed_plans']; ?></strong> Done</div>
-                <div><strong><?= $planStats['completion_rate']; ?>%</strong> Rate</div>
-            </div>
-            <?php if (!empty($planStats['popular_plans'])): ?>
-                <div class="analytics-list" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border);">
-                    <?php foreach ($planStats['popular_plans'] as $plan): ?>
-                        <div class="analytics-list-item">
-                            <span><?= $plan['icon'] ?: '📖'; ?> <?= htmlspecialchars($plan['title']); ?></span>
-                            <span class="admin-muted"><?= $plan['user_count']; ?> users</span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- User Stats -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>User Activity</h3>
-            </div>
-            <div class="analytics-user-stats">
-                <div><strong><?= $userStats['active_this_week']; ?></strong> active this week</div>
-                <div><strong><?= $userStats['with_streaks']; ?></strong> with streaks</div>
-                <div><strong><?= $userStats['longest_streak']; ?></strong> day longest streak</div>
-                <div><strong><?= $userStats['new_this_week']; ?></strong> new this week</div>
+            <div class="analytics-quick-links">
+                <a href="/admin/analytics/geographic" class="analytics-quick-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span>Geographic Map</span>
+                </a>
+                <a href="/admin/analytics/behavior" class="analytics-quick-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Traffic Heatmap</span>
+                </a>
+                <a href="/admin/analytics/content" class="analytics-quick-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>Content Analytics</span>
+                </a>
+                <a href="/admin/analytics/realtime" class="analytics-quick-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Live Activity</span>
+                </a>
             </div>
         </div>
-
-        <!-- Most Read Studies -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>Top Studies</h3>
-            </div>
-            <?php if (empty($mostReadStudies)): ?>
-                <p class="admin-muted-text">No data yet</p>
-            <?php else: ?>
-                <div class="analytics-list">
-                    <?php foreach ($mostReadStudies as $study): ?>
-                        <div class="analytics-list-item">
-                            <span><?= htmlspecialchars($study['book_name']); ?> <?= $study['chapter']; ?></span>
-                            <span class="admin-muted"><?= number_format($study['read_count']); ?> reads</span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Bible Coverage -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>Bible Coverage</h3>
-            </div>
-            <div class="bible-coverage">
-                <div class="bible-coverage-main">
-                    <div class="bible-coverage-header">
-                        <span class="bible-coverage-percent"><?= $coveragePercent; ?>%</span>
-                        <span class="bible-coverage-chapters"><?= $coveredChapters; ?> / <?= $totalChapters; ?> chapters</span>
-                    </div>
-                    <div class="bible-coverage-bar">
-                        <div class="bible-coverage-fill" style="width: <?= $coveragePercent; ?>%;"></div>
-                    </div>
-                </div>
-                <div class="bible-coverage-testaments">
-                    <div class="bible-coverage-testament">
-                        <div class="bible-coverage-testament-header">
-                            <span>Old Testament</span>
-                            <span><?= $otPercent; ?>%</span>
-                        </div>
-                        <div class="bible-coverage-bar bible-coverage-bar-sm">
-                            <div class="bible-coverage-fill bible-coverage-fill-ot" style="width: <?= $otPercent; ?>%;"></div>
-                        </div>
-                        <span class="bible-coverage-sub"><?= $otCoverage['covered']; ?> / <?= $otCoverage['total']; ?></span>
-                    </div>
-                    <div class="bible-coverage-testament">
-                        <div class="bible-coverage-testament-header">
-                            <span>New Testament</span>
-                            <span><?= $ntPercent; ?>%</span>
-                        </div>
-                        <div class="bible-coverage-bar bible-coverage-bar-sm">
-                            <div class="bible-coverage-fill bible-coverage-fill-nt" style="width: <?= $ntPercent; ?>%;"></div>
-                        </div>
-                        <span class="bible-coverage-sub"><?= $ntCoverage['covered']; ?> / <?= $ntCoverage['total']; ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Newsletter -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h3>Newsletter</h3>
-            </div>
-            <div class="analytics-newsletter">
-                <div><strong><?= number_format($newsletterStats['active']); ?></strong> subscribers</div>
-                <div><strong>+<?= number_format($newsletterStats['new_this_month']); ?></strong> this month</div>
-            </div>
-        </div>
-
     </div>
 </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script <?= csp_nonce(); ?>>
-// Traffic Chart
 const trafficCtx = document.getElementById('trafficChart').getContext('2d');
 new Chart(trafficCtx, {
     type: 'line',
@@ -365,8 +240,8 @@ new Chart(trafficCtx, {
             {
                 label: 'Page Views',
                 data: <?= json_encode($chartVisits); ?>,
-                borderColor: 'var(--color-purple)',
-                backgroundColor: 'rgba(107, 52, 165, 0.1)',
+                borderColor: '#4b2679',
+                backgroundColor: 'rgba(75, 38, 121, 0.1)',
                 fill: true,
                 tension: 0.3,
                 borderWidth: 2
@@ -374,7 +249,7 @@ new Chart(trafficCtx, {
             {
                 label: 'Unique',
                 data: <?= json_encode($chartUnique); ?>,
-                borderColor: 'var(--color-magenta)',
+                borderColor: '#cd0077',
                 backgroundColor: 'rgba(205, 0, 119, 0.1)',
                 fill: true,
                 tension: 0.3,
@@ -394,28 +269,126 @@ new Chart(trafficCtx, {
         }
     }
 });
-
-// Device Chart
-const deviceCtx = document.getElementById('deviceChart').getContext('2d');
-new Chart(deviceCtx, {
-    type: 'doughnut',
-    data: {
-        labels: <?= json_encode($deviceLabels); ?>,
-        datasets: [{
-            data: <?= json_encode($deviceData); ?>,
-            backgroundColor: ['var(--color-purple)', 'var(--color-magenta)', 'var(--color-cyan)'],
-            borderWidth: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '60%',
-        plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } }
-        }
-    }
-});
 </script>
+
+<style <?= csp_nonce(); ?>>
+.analytics-metric-clickable {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.analytics-metric-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.analytics-metric-realtime {
+    background: linear-gradient(135deg, var(--color-purple), var(--color-magenta));
+    color: #fff;
+}
+.analytics-metric-realtime .analytics-metric-label,
+.analytics-metric-realtime .analytics-metric-sub {
+    color: rgba(255, 255, 255, 0.8);
+}
+.realtime-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    margin-right: 4px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Visitors Split */
+.analytics-visitors-split {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+.analytics-visitors-item {
+    text-align: center;
+}
+.analytics-visitors-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-purple);
+}
+.analytics-visitors-label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+}
+.analytics-visitors-count {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+.analytics-visitors-divider {
+    width: 1px;
+    height: 60px;
+    background: var(--color-border);
+}
+
+/* Engagement Grid */
+.analytics-engagement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+.analytics-engagement-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+}
+.analytics-engagement-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+.analytics-engagement-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* Quick Links */
+.analytics-quick-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+.analytics-quick-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--transition-base);
+}
+.analytics-quick-link:hover {
+    background: var(--color-purple);
+    color: #fff;
+}
+.analytics-quick-link svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+.analytics-quick-link:hover svg {
+    opacity: 1;
+}
+</style>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

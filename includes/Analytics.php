@@ -56,12 +56,26 @@ class Analytics {
             return;
         }
 
-        // Generate or retrieve session ID
+        // Generate or retrieve session ID and track new vs returning
+        $isNewVisitor = 0;
         if (!isset($_COOKIE['analytics_session'])) {
-            $sessionId = bin2hex(random_bytes(16)); // Reduced from 32 bytes
+            $sessionId = bin2hex(random_bytes(16));
             setcookie('analytics_session', $sessionId, time() + (86400 * 30), '/', '', false, true);
+            $isNewVisitor = 1;
         } else {
             $sessionId = $_COOKIE['analytics_session'];
+        }
+
+        // Check for returning visitor cookie (longer-term)
+        if (!isset($_COOKIE['analytics_visitor'])) {
+            setcookie('analytics_visitor', '1', time() + (86400 * 365), '/', '', false, true);
+            $isNewVisitor = 1;
+        }
+
+        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+        // Clean IP if it contains multiple addresses
+        if ($ipAddress && strpos($ipAddress, ',') !== false) {
+            $ipAddress = trim(explode(',', $ipAddress)[0]);
         }
 
         $visit = [
@@ -70,14 +84,22 @@ class Analytics {
             'referrer' => $_SERVER['HTTP_REFERER'] ?? null,
             'user_id' => $userId,
             'session_id' => $sessionId,
-            'ip_address' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? null,
+            'ip_address' => $ipAddress,
             'user_agent' => substr($userAgent, 0, 500),
             'device_type' => $this->detectDeviceType($userAgent),
             'browser' => $this->detectBrowser($userAgent),
+            'is_new_visitor' => $isNewVisitor,
             'timestamp' => date('Y-m-d H:i:s')
         ];
 
         $this->addToBatch($visit);
+
+        // Update session tracking (non-blocking)
+        try {
+            $this->updateSession($sessionId, $pageUrl, []);
+        } catch (Exception $e) {
+            // Silently fail - don't break page load
+        }
     }
 
     /**
@@ -150,25 +172,44 @@ class Analytics {
         }
 
         try {
+            // Geo lookup for unique IPs in batch
+            $geoData = [];
+            $uniqueIPs = array_unique(array_filter(array_column($batch, 'ip_address')));
+            if (!empty($uniqueIPs)) {
+                require_once __DIR__ . '/GeoIP.php';
+                $geoIP = new GeoIP();
+                $geoData = $geoIP->batchLookup($uniqueIPs);
+            }
+
             // Batch insert for efficiency
             $placeholders = [];
             $values = [];
 
             foreach ($batch as $visit) {
-                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                $ip = $visit['ip_address'];
+                $geo = $geoData[$ip] ?? null;
+
+                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
                 $values[] = $visit['page_url'];
                 $values[] = $visit['page_title'];
                 $values[] = $visit['referrer'];
                 $values[] = $visit['user_id'];
                 $values[] = $visit['session_id'];
-                $values[] = $visit['ip_address'];
+                $values[] = $ip;
                 $values[] = $visit['user_agent'];
                 $values[] = $visit['device_type'];
                 $values[] = $visit['browser'];
+                $values[] = $geo['country_code'] ?? null;
+                $values[] = $geo['country_name'] ?? null;
+                $values[] = $geo['city'] ?? null;
+                $values[] = $geo['region'] ?? null;
+                $values[] = $geo['latitude'] ?? null;
+                $values[] = $geo['longitude'] ?? null;
+                $values[] = $visit['is_new_visitor'] ?? 0;
                 $values[] = $visit['timestamp'];
             }
 
-            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, visited_at) VALUES " . implode(', ', $placeholders);
+            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at) VALUES " . implode(', ', $placeholders);
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($values);
         } catch (PDOException $e) {
@@ -670,6 +711,594 @@ class Analytics {
                     'where' => '1=1',
                     'params' => []
                 ];
+        }
+    }
+
+    // ========================================
+    // GEOGRAPHIC ANALYTICS
+    // ========================================
+
+    /**
+     * Get visitors by country
+     */
+    public function getVisitorsByCountry(string $period = 'month', int $limit = 20): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                country_code,
+                country_name,
+                COUNT(*) as visits,
+                COUNT(DISTINCT session_id) as unique_visitors
+            FROM page_visits
+            WHERE {$conditions['where']} AND country_code IS NOT NULL
+            GROUP BY country_code, country_name
+            ORDER BY unique_visitors DESC
+            LIMIT ?
+        ");
+        $params = array_merge($conditions['params'], [$limit]);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get visitors by city
+     */
+    public function getVisitorsByCity(string $period = 'month', int $limit = 20): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                city,
+                region,
+                country_code,
+                country_name,
+                COUNT(*) as visits,
+                COUNT(DISTINCT session_id) as unique_visitors
+            FROM page_visits
+            WHERE {$conditions['where']} AND city IS NOT NULL AND city != ''
+            GROUP BY city, region, country_code, country_name
+            ORDER BY unique_visitors DESC
+            LIMIT ?
+        ");
+        $params = array_merge($conditions['params'], [$limit]);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get visitor locations for map (with lat/lng)
+     */
+    public function getVisitorLocationsForMap(string $period = 'month', int $limit = 100): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                city,
+                country_code,
+                latitude,
+                longitude,
+                COUNT(DISTINCT session_id) as visitors
+            FROM page_visits
+            WHERE {$conditions['where']} AND latitude IS NOT NULL AND longitude IS NOT NULL
+            GROUP BY city, country_code, latitude, longitude
+            ORDER BY visitors DESC
+            LIMIT ?
+        ");
+        $params = array_merge($conditions['params'], [$limit]);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    // ========================================
+    // BEHAVIOR ANALYTICS
+    // ========================================
+
+    /**
+     * Get session statistics (bounce rate, duration, pages per session)
+     */
+    public function getSessionStats(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period, 'started_at');
+
+        // Total sessions
+        $totalSessions = $this->pdo->query("
+            SELECT COUNT(*) FROM analytics_sessions
+            WHERE {$conditions['where']}
+        ")->fetchColumn() ?: 0;
+
+        // Bounces (sessions with only 1 page)
+        $bounces = $this->pdo->query("
+            SELECT COUNT(*) FROM analytics_sessions
+            WHERE {$conditions['where']} AND is_bounce = 1
+        ")->fetchColumn() ?: 0;
+
+        // Average session duration
+        $avgDuration = $this->pdo->query("
+            SELECT AVG(total_duration) FROM analytics_sessions
+            WHERE {$conditions['where']} AND total_duration > 0
+        ")->fetchColumn() ?: 0;
+
+        // Average pages per session
+        $avgPages = $this->pdo->query("
+            SELECT AVG(page_count) FROM analytics_sessions
+            WHERE {$conditions['where']}
+        ")->fetchColumn() ?: 0;
+
+        $bounceRate = $totalSessions > 0 ? round(($bounces / $totalSessions) * 100, 1) : 0;
+
+        return [
+            'total_sessions' => (int)$totalSessions,
+            'bounce_rate' => $bounceRate,
+            'avg_duration' => round((float)$avgDuration, 0), // seconds
+            'avg_duration_formatted' => $this->formatDuration((float)$avgDuration),
+            'avg_pages_per_session' => round((float)$avgPages, 1)
+        ];
+    }
+
+    /**
+     * Get exit pages (where visitors leave the site)
+     */
+    public function getExitPages(string $period = 'month', int $limit = 10): array {
+        $conditions = $this->getPeriodCondition($period, 'started_at');
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                exit_page,
+                COUNT(*) as exits,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) as exit_rate
+            FROM analytics_sessions
+            WHERE {$conditions['where']} AND exit_page IS NOT NULL
+            GROUP BY exit_page
+            ORDER BY exits DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get entry pages (where visitors land)
+     */
+    public function getEntryPages(string $period = 'month', int $limit = 10): array {
+        $conditions = $this->getPeriodCondition($period, 'started_at');
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                entry_page,
+                COUNT(*) as entries,
+                SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) as bounces,
+                ROUND(SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as bounce_rate
+            FROM analytics_sessions
+            WHERE {$conditions['where']} AND entry_page IS NOT NULL
+            GROUP BY entry_page
+            ORDER BY entries DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get new vs returning visitors
+     */
+    public function getNewVsReturning(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                is_new_visitor,
+                COUNT(DISTINCT session_id) as visitors
+            FROM page_visits
+            WHERE {$conditions['where']}
+            GROUP BY is_new_visitor
+        ");
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        $new = (int)($results[1] ?? 0);
+        $returning = (int)($results[0] ?? 0);
+        $total = $new + $returning;
+
+        return [
+            'new_visitors' => $new,
+            'returning_visitors' => $returning,
+            'new_percent' => $total > 0 ? round(($new / $total) * 100, 1) : 0,
+            'returning_percent' => $total > 0 ? round(($returning / $total) * 100, 1) : 0
+        ];
+    }
+
+    // ========================================
+    // TIME ANALYTICS (HEATMAP)
+    // ========================================
+
+    /**
+     * Get traffic by hour of day and day of week (for heatmap)
+     */
+    public function getTrafficHeatmap(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                DAYOFWEEK(visited_at) as day_of_week,
+                HOUR(visited_at) as hour,
+                COUNT(*) as visits
+            FROM page_visits
+            WHERE {$conditions['where']}
+            GROUP BY DAYOFWEEK(visited_at), HOUR(visited_at)
+            ORDER BY day_of_week, hour
+        ");
+        $stmt->execute();
+        $results = $stmt->fetchAll();
+
+        // Build heatmap matrix (7 days x 24 hours)
+        $heatmap = [];
+        $maxValue = 0;
+
+        // Initialize with zeros
+        for ($day = 1; $day <= 7; $day++) {
+            for ($hour = 0; $hour < 24; $hour++) {
+                $heatmap[$day][$hour] = 0;
+            }
+        }
+
+        // Fill with actual values
+        foreach ($results as $row) {
+            $heatmap[$row['day_of_week']][$row['hour']] = (int)$row['visits'];
+            if ($row['visits'] > $maxValue) {
+                $maxValue = (int)$row['visits'];
+            }
+        }
+
+        return [
+            'heatmap' => $heatmap,
+            'max_value' => $maxValue
+        ];
+    }
+
+    /**
+     * Get peak traffic times
+     */
+    public function getPeakTrafficTimes(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        // Peak hour
+        $peakHour = $this->pdo->query("
+            SELECT HOUR(visited_at) as hour, COUNT(*) as visits
+            FROM page_visits
+            WHERE {$conditions['where']}
+            GROUP BY HOUR(visited_at)
+            ORDER BY visits DESC
+            LIMIT 1
+        ")->fetch();
+
+        // Peak day
+        $peakDay = $this->pdo->query("
+            SELECT DAYOFWEEK(visited_at) as day, COUNT(*) as visits
+            FROM page_visits
+            WHERE {$conditions['where']}
+            GROUP BY DAYOFWEEK(visited_at)
+            ORDER BY visits DESC
+            LIMIT 1
+        ")->fetch();
+
+        $days = ['', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        return [
+            'peak_hour' => $peakHour ? sprintf('%02d:00', $peakHour['hour']) : 'N/A',
+            'peak_hour_visits' => $peakHour ? (int)$peakHour['visits'] : 0,
+            'peak_day' => $peakDay ? $days[$peakDay['day']] : 'N/A',
+            'peak_day_visits' => $peakDay ? (int)$peakDay['visits'] : 0
+        ];
+    }
+
+    // ========================================
+    // SEARCH ANALYTICS
+    // ========================================
+
+    /**
+     * Record a search term
+     */
+    public function recordSearch(string $term, int $resultsCount = 0, string $type = 'site', ?int $userId = null): void {
+        $sessionId = $_COOKIE['analytics_session'] ?? null;
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO analytics_searches (search_term, results_count, search_type, user_id, session_id)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([$term, $resultsCount, $type, $userId, $sessionId]);
+    }
+
+    /**
+     * Get top search terms
+     */
+    public function getTopSearchTerms(string $period = 'month', int $limit = 20): array {
+        $conditions = $this->getPeriodCondition($period, 'searched_at');
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                search_term,
+                search_type,
+                COUNT(*) as searches,
+                AVG(results_count) as avg_results
+            FROM analytics_searches
+            WHERE {$conditions['where']}
+            GROUP BY search_term, search_type
+            ORDER BY searches DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get searches with no results (opportunity for content)
+     */
+    public function getZeroResultSearches(string $period = 'month', int $limit = 20): array {
+        $conditions = $this->getPeriodCondition($period, 'searched_at');
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                search_term,
+                COUNT(*) as searches
+            FROM analytics_searches
+            WHERE {$conditions['where']} AND results_count = 0
+            GROUP BY search_term
+            ORDER BY searches DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    // ========================================
+    // REAL-TIME ANALYTICS
+    // ========================================
+
+    /**
+     * Get currently active visitors (last 5 minutes)
+     */
+    public function getActiveVisitors(): int {
+        return (int)$this->pdo->query("
+            SELECT COUNT(DISTINCT session_id)
+            FROM page_visits
+            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+        ")->fetchColumn();
+    }
+
+    /**
+     * Get recent page views (last 30 minutes)
+     */
+    public function getRecentPageViews(int $limit = 50): array {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                page_url,
+                page_title,
+                device_type,
+                country_code,
+                city,
+                visited_at,
+                session_id
+            FROM page_visits
+            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+            ORDER BY visited_at DESC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get real-time stats
+     */
+    public function getRealTimeStats(): array {
+        // Active visitors (last 5 min)
+        $activeNow = $this->getActiveVisitors();
+
+        // Last 30 minutes
+        $last30Min = $this->pdo->query("
+            SELECT COUNT(DISTINCT session_id)
+            FROM page_visits
+            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+        ")->fetchColumn();
+
+        // Page views last 30 minutes
+        $pageViewsLast30 = $this->pdo->query("
+            SELECT COUNT(*)
+            FROM page_visits
+            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+        ")->fetchColumn();
+
+        // Top pages right now
+        $topPagesNow = $this->pdo->query("
+            SELECT page_url, COUNT(*) as views
+            FROM page_visits
+            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+            GROUP BY page_url
+            ORDER BY views DESC
+            LIMIT 5
+        ")->fetchAll();
+
+        return [
+            'active_now' => (int)$activeNow,
+            'visitors_30min' => (int)$last30Min,
+            'pageviews_30min' => (int)$pageViewsLast30,
+            'top_pages_now' => $topPagesNow
+        ];
+    }
+
+    // ========================================
+    // CONTENT ANALYTICS
+    // ========================================
+
+    /**
+     * Get sermon analytics
+     */
+    public function getSermonStats(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        // Most viewed sermons (by page visits)
+        $topSermons = $this->safeQueryAll("
+            SELECT
+                s.title,
+                s.slug,
+                ss.name as series_name,
+                COUNT(pv.id) as views
+            FROM sermons s
+            LEFT JOIN sermon_series ss ON s.series_id = ss.id
+            LEFT JOIN page_visits pv ON pv.page_url LIKE CONCAT('/sermon/', s.slug, '%')
+                AND {$conditions['where']}
+            WHERE s.visible = 1
+            GROUP BY s.id
+            ORDER BY views DESC
+            LIMIT 10
+        ");
+
+        // Most viewed series
+        $topSeries = $this->safeQueryAll("
+            SELECT
+                ss.name,
+                ss.slug,
+                COUNT(pv.id) as views
+            FROM sermon_series ss
+            LEFT JOIN page_visits pv ON pv.page_url LIKE CONCAT('/sermons/series/', ss.slug, '%')
+                AND {$conditions['where']}
+            WHERE ss.visible = 1
+            GROUP BY ss.id
+            ORDER BY views DESC
+            LIMIT 5
+        ");
+
+        return [
+            'top_sermons' => $topSermons,
+            'top_series' => $topSeries
+        ];
+    }
+
+    /**
+     * Get event analytics
+     */
+    public function getEventStats(string $period = 'month'): array {
+        $conditions = $this->getPeriodCondition($period);
+
+        // Most viewed events
+        $topEvents = $this->safeQueryAll("
+            SELECT
+                page_url,
+                COUNT(*) as views
+            FROM page_visits
+            WHERE page_url LIKE '/events/%' AND {$conditions['where']}
+            GROUP BY page_url
+            ORDER BY views DESC
+            LIMIT 10
+        ");
+
+        return [
+            'top_events' => $topEvents
+        ];
+    }
+
+    // ========================================
+    // SESSION TRACKING HELPERS
+    // ========================================
+
+    /**
+     * Update or create session record
+     */
+    public function updateSession(string $sessionId, string $pageUrl, array $geoData = []): void {
+        // Check if session exists
+        $stmt = $this->pdo->prepare("SELECT id, page_count FROM analytics_sessions WHERE session_id = ?");
+        $stmt->execute([$sessionId]);
+        $session = $stmt->fetch();
+
+        if ($session) {
+            // Update existing session
+            $stmt = $this->pdo->prepare("
+                UPDATE analytics_sessions
+                SET page_count = page_count + 1,
+                    exit_page = ?,
+                    is_bounce = 0,
+                    last_activity_at = NOW()
+                WHERE session_id = ?
+            ");
+            $stmt->execute([$pageUrl, $sessionId]);
+        } else {
+            // Create new session
+            $deviceType = $this->detectDeviceType($_SERVER['HTTP_USER_AGENT'] ?? '');
+            $browser = $this->detectBrowser($_SERVER['HTTP_USER_AGENT'] ?? '');
+            $referrer = $_SERVER['HTTP_REFERER'] ?? null;
+            $referrerSource = $this->parseReferrerSource($referrer);
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO analytics_sessions
+                (session_id, entry_page, exit_page, device_type, browser, country_code, country_name, city, referrer_source, referrer_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $sessionId,
+                $pageUrl,
+                $pageUrl,
+                $deviceType,
+                $browser,
+                $geoData['country_code'] ?? null,
+                $geoData['country_name'] ?? null,
+                $geoData['city'] ?? null,
+                $referrerSource,
+                $referrer
+            ]);
+        }
+    }
+
+    /**
+     * Parse referrer to determine source
+     */
+    private function parseReferrerSource(?string $referrer): string {
+        if (empty($referrer)) {
+            return 'Direct';
+        }
+
+        $referrer = strtolower($referrer);
+
+        if (strpos($referrer, 'google') !== false) return 'Google';
+        if (strpos($referrer, 'facebook') !== false || strpos($referrer, 'fb.') !== false) return 'Facebook';
+        if (strpos($referrer, 'instagram') !== false) return 'Instagram';
+        if (strpos($referrer, 'youtube') !== false) return 'YouTube';
+        if (strpos($referrer, 'twitter') !== false || strpos($referrer, 'x.com') !== false) return 'X/Twitter';
+        if (strpos($referrer, 'bing') !== false) return 'Bing';
+        if (strpos($referrer, 'linkedin') !== false) return 'LinkedIn';
+
+        // Extract domain
+        $parsed = parse_url($referrer);
+        return $parsed['host'] ?? 'Other';
+    }
+
+    /**
+     * Format duration in seconds to human readable
+     */
+    private function formatDuration(float $seconds): string {
+        if ($seconds < 60) {
+            return round($seconds) . 's';
+        }
+        if ($seconds < 3600) {
+            return round($seconds / 60, 1) . 'm';
+        }
+        return round($seconds / 3600, 1) . 'h';
+    }
+
+    /**
+     * Helper for period condition with custom column
+     */
+    private function getPeriodConditionForColumn(string $period, string $column): array {
+        switch ($period) {
+            case 'today':
+                return ['where' => "DATE({$column}) = CURDATE()", 'params' => []];
+            case 'week':
+                return ['where' => "{$column} >= DATE_SUB(NOW(), INTERVAL 7 DAY)", 'params' => []];
+            case 'month':
+                return ['where' => "{$column} >= DATE_SUB(NOW(), INTERVAL 30 DAY)", 'params' => []];
+            case 'year':
+                return ['where' => "{$column} >= DATE_SUB(NOW(), INTERVAL 1 YEAR)", 'params' => []];
+            default:
+                return ['where' => '1=1', 'params' => []];
         }
     }
 }

@@ -109,7 +109,15 @@ RewriteRule ^admin/serve/?$ admin/serve.php [L,QSA]
 RewriteRule ^admin/settings/?$ admin/settings.php [L,QSA]
 RewriteRule ^admin/users/?$ admin/users.php [L,QSA]
 
+# Admin Analytics sub-pages
+RewriteRule ^admin/analytics/traffic/?$ admin/analytics/traffic.php [L,QSA]
+RewriteRule ^admin/analytics/geographic/?$ admin/analytics/geographic.php [L,QSA]
+RewriteRule ^admin/analytics/behavior/?$ admin/analytics/behavior.php [L,QSA]
+RewriteRule ^admin/analytics/content/?$ admin/analytics/content.php [L,QSA]
+RewriteRule ^admin/analytics/realtime/?$ admin/analytics/realtime.php [L,QSA]
+
 # Admin API endpoints
+RewriteRule ^admin/api/analytics-realtime/?$ admin/api/analytics-realtime.php [L,QSA]
 RewriteRule ^admin/api/blog/?$ admin/api/blog.php [L,QSA]
 RewriteRule ^admin/api/media/?$ admin/api/media.php [L,QSA]
 RewriteRule ^admin/api/tag-media/?$ admin/api/tag-media.php [L,QSA]
