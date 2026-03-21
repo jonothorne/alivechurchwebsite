@@ -14395,6 +14395,8 @@ a.study-nav-chapter:hover {
 @media (max-width: 640px) {
     .youth-hero {
         background-image: url('/assets/imgs/youth/alive-youth-background-image-mobile.jpg');
+        background-size: cover;
+        background-position: center;
     }
     .webp .youth-hero {
         background-image: url('/assets/imgs/youth/alive-youth-background-image-mobile.webp');
@@ -14404,6 +14406,8 @@ a.study-nav-chapter:hover {
 @media (min-width: 641px) and (max-width: 1024px) {
     .youth-hero {
         background-image: url('/assets/imgs/youth/alive-youth-background-image-tablet.jpg');
+        background-size: cover;
+        background-position: center;
     }
     .webp .youth-hero {
         background-image: url('/assets/imgs/youth/alive-youth-background-image-tablet.webp');
@@ -14412,6 +14416,8 @@ a.study-nav-chapter:hover {
 
 [data-theme="dark"] .youth-hero {
     background-image: url('/assets/imgs/youth/alive-youth-background-image.jpg');
+    background-size: cover;
+    background-position: center;
 }
 
 [data-theme="dark"] .webp .youth-hero {
