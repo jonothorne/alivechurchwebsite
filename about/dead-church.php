@@ -16,7 +16,9 @@ $cms = new ContentManager('about-dead-church');
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="page-hero page-hero-image" style="background-image: url('/assets/imgs/gallery/dead-church.png');">
+<style <?= csp_nonce(); ?>>.page-hero-image { background-image: url('/assets/imgs/gallery/dead-church.png'); }</style>
+
+<section class="page-hero page-hero-image">
     <div class="container narrow">
         <?= $cms->text('hero_eyebrow', 'Wrong Place', ['tag' => 'p', 'class' => 'eyebrow']); ?>
         <?= $cms->text('hero_headline', 'Dead Church?', ['tag' => 'h1']); ?>

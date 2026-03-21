@@ -119,7 +119,9 @@ if (!isset($cms)) {
 ?>
 
 <?php if ($featuredPost): ?>
-<section class="blog-featured-hero" style="background-image: linear-gradient(rgba(30, 26, 43, 0.6), rgba(30, 26, 43, 0.85)), url('<?= htmlspecialchars($featuredPost['featured_image'] ?: '/assets/imgs/gallery/alive-church-worship-congregation.jpg'); ?>');">
+<?php $blogHeroImage = $featuredPost['featured_image'] ?: '/assets/imgs/gallery/alive-church-worship-congregation.jpg'; ?>
+<style <?= csp_nonce(); ?>>.blog-featured-hero { background-image: linear-gradient(rgba(30, 26, 43, 0.6), rgba(30, 26, 43, 0.85)), url('<?= htmlspecialchars($blogHeroImage); ?>'); }</style>
+<section class="blog-featured-hero">
     <div class="container">
         <div class="featured-hero-content">
             <p class="eyebrow">Latest Post</p>

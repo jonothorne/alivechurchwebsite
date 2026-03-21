@@ -153,9 +153,13 @@ if (!isset($cms)) {
 }
 ?>
 
+<?php if ($post['featured_image']): ?>
+<style <?= csp_nonce(); ?>>.blog-post-header { background-image: linear-gradient(rgba(30, 26, 43, 0.7), rgba(30, 26, 43, 0.9)), url('<?= htmlspecialchars($post['featured_image']); ?>'); }</style>
+<?php endif; ?>
+
 <article class="blog-post">
     <!-- Post Header -->
-    <header class="blog-post-header" <?php if ($post['featured_image']): ?>style="background-image: linear-gradient(rgba(30, 26, 43, 0.7), rgba(30, 26, 43, 0.9)), url('<?= htmlspecialchars($post['featured_image']); ?>');"<?php endif; ?>>
+    <header class="blog-post-header">
         <div class="container narrow">
             <?php if ($post['category_name']): ?>
                 <a href="/blog?category=<?= htmlspecialchars($post['category_slug']); ?>" class="post-category"><?= htmlspecialchars($post['category_name']); ?></a>
