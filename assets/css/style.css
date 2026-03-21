@@ -172,8 +172,6 @@ img {
 .section-subnav {
     background: #f8fafc;
     border-top: 1px solid #e4e4e7;
-    position: relative;
-    z-index: 50;
 }
 
 .study-subnav-inner,
@@ -9570,9 +9568,9 @@ body.cms-edit-mode [data-cms-editable]:hover {
 }
 
 .user-dropdown {
-    position: fixed;
-    top: auto;
-    right: 1rem;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
     background: var(--color-card-bg);
     border-radius: var(--radius-lg);
     box-shadow: 0 10px 40px rgba(0,0,0,0.15);

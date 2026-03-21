@@ -316,32 +316,12 @@
     const userMenu = document.querySelector('.user-menu');
     if (userMenu) {
         const trigger = userMenu.querySelector('.user-menu-trigger');
-        const dropdown = userMenu.querySelector('.user-dropdown');
-
-        const positionDropdown = () => {
-            if (dropdown) {
-                const rect = trigger.getBoundingClientRect();
-                dropdown.style.top = (rect.bottom + 8) + 'px';
-                dropdown.style.right = (window.innerWidth - rect.right) + 'px';
-            }
-        };
 
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
             userMenu.classList.toggle('open');
             trigger.setAttribute('aria-expanded', userMenu.classList.contains('open'));
-            if (userMenu.classList.contains('open')) {
-                positionDropdown();
-            }
         });
-
-        // Reposition on scroll/resize when open
-        window.addEventListener('scroll', () => {
-            if (userMenu.classList.contains('open')) positionDropdown();
-        }, { passive: true });
-        window.addEventListener('resize', () => {
-            if (userMenu.classList.contains('open')) positionDropdown();
-        }, { passive: true });
     }
 
     // Navigation dropdowns
