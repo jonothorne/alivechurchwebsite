@@ -179,11 +179,11 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
 .file-preview { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
 .select-with-preview { display: flex; align-items: center; gap: 0.5rem; }
 .select-with-preview select { flex: 1; }
-.select-preview { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; }
-.available-files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; max-height: 400px; overflow-y: auto; padding: 1rem; background: #f9fafb; border-radius: 4px; margin-top: 1rem; }
+.select-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; }
+.available-files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; max-height: 400px; overflow-y: auto; padding: 1rem; background: #f9fafb; border-radius: 4px; margin-top: 1rem; }
 .file-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 0.5rem; text-align: center; cursor: pointer; }
 .file-card:hover { border-color: #3b82f6; }
-.file-card img { width: 100%; height: 80px; object-fit: cover; border-radius: 2px; }
+.file-card img { width: 50px; height: 50px; object-fit: cover; border-radius: 2px; display: block; margin: 0 auto; }
 .file-card small { display: block; margin-top: 0.25rem; font-size: 0.7rem; color: #6b7280; word-break: break-all; }
 </style>
 
@@ -256,7 +256,7 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="hidden" name="fixes[<?= $i; ?>][old_file]" value="<?= htmlspecialchars($item['filename']); ?>">
                                     <input type="hidden" name="fixes[<?= $i; ?>][in_content]" value="<?= $item['in_content'] ? '1' : '0'; ?>">
                                     <div class="select-with-preview">
-                                        <img src="" class="select-preview" id="preview-<?= $i; ?>" style="display: none;">
+                                        <img src="" class="select-preview" id="preview-<?= $i; ?>" width="50" height="50" style="display: none;">
                                         <select name="fixes[<?= $i; ?>][new_file]" onchange="updatePreview(this, 'preview-<?= $i; ?>')">
                                             <option value="">-- Select replacement --</option>
                                             <?php
@@ -304,9 +304,13 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
             <h4 style="margin-top: 2rem;">Available Files Reference</h4>
             <p style="font-size: 0.875rem; color: #6b7280;">Click a thumbnail to copy the filename, then paste it into the search/select above.</p>
             <div class="available-files-grid">
-                <?php foreach ($uploadedFiles as $file): ?>
+                <?php foreach ($uploadedFiles as $file):
+                    // Use thumbnail variant if available
+                    $thumbName = pathinfo($file, PATHINFO_FILENAME) . '-thumbnail.' . pathinfo($file, PATHINFO_EXTENSION);
+                    $thumbSrc = file_exists($uploadsDir . $thumbName) ? $thumbName : $file;
+                ?>
                     <div class="file-card" onclick="copyFilename('<?= htmlspecialchars($file, ENT_QUOTES); ?>')">
-                        <img src="/uploads/<?= htmlspecialchars($file); ?>" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2280%22><rect fill=%22%23f3f4f6%22 width=%22100%22 height=%2280%22/><text x=%2250%22 y=%2240%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2210%22>No preview</text></svg>'">
+                        <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" width="50" height="50" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%23f3f4f6%22 width=%2250%22 height=%2250%22/><text x=%2225%22 y=%2225%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%228%22>?</text></svg>'">
                         <small><?= htmlspecialchars($file); ?></small>
                     </div>
                 <?php endforeach; ?>
@@ -316,7 +320,16 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
             function updatePreview(select, previewId) {
                 const preview = document.getElementById(previewId);
                 if (select.value) {
-                    preview.src = '/uploads/' + select.value;
+                    // Try thumbnail variant first
+                    const parts = select.value.split('.');
+                    const ext = parts.pop();
+                    const base = parts.join('.');
+                    const thumbSrc = '/uploads/' + base + '-thumbnail.' + ext;
+                    const origSrc = '/uploads/' + select.value;
+
+                    // Try thumbnail, fall back to original
+                    preview.onerror = function() { this.src = origSrc; this.onerror = null; };
+                    preview.src = thumbSrc;
                     preview.style.display = 'block';
                 } else {
                     preview.style.display = 'none';
