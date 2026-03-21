@@ -722,72 +722,85 @@ class Analytics {
      * Get visitors by country
      */
     public function getVisitorsByCountry(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodCondition($period);
+        try {
+            $conditions = $this->getPeriodCondition($period);
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                country_code,
-                country_name,
-                COUNT(*) as visits,
-                COUNT(DISTINCT session_id) as unique_visitors
-            FROM page_visits
-            WHERE {$conditions['where']} AND country_code IS NOT NULL
-            GROUP BY country_code, country_name
-            ORDER BY unique_visitors DESC
-            LIMIT ?
-        ");
-        $params = array_merge($conditions['params'], [$limit]);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    country_code,
+                    country_name,
+                    COUNT(*) as visits,
+                    COUNT(DISTINCT session_id) as unique_visitors
+                FROM page_visits
+                WHERE {$conditions['where']} AND country_code IS NOT NULL
+                GROUP BY country_code, country_name
+                ORDER BY unique_visitors DESC
+                LIMIT ?
+            ");
+            $params = array_merge($conditions['params'], [$limit]);
+            $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            // Column may not exist yet - return empty array
+            return [];
+        }
     }
 
     /**
      * Get visitors by city
      */
     public function getVisitorsByCity(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodCondition($period);
+        try {
+            $conditions = $this->getPeriodCondition($period);
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                city,
-                region,
-                country_code,
-                country_name,
-                COUNT(*) as visits,
-                COUNT(DISTINCT session_id) as unique_visitors
-            FROM page_visits
-            WHERE {$conditions['where']} AND city IS NOT NULL AND city != ''
-            GROUP BY city, region, country_code, country_name
-            ORDER BY unique_visitors DESC
-            LIMIT ?
-        ");
-        $params = array_merge($conditions['params'], [$limit]);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    city,
+                    region,
+                    country_code,
+                    country_name,
+                    COUNT(*) as visits,
+                    COUNT(DISTINCT session_id) as unique_visitors
+                FROM page_visits
+                WHERE {$conditions['where']} AND city IS NOT NULL AND city != ''
+                GROUP BY city, region, country_code, country_name
+                ORDER BY unique_visitors DESC
+                LIMIT ?
+            ");
+            $params = array_merge($conditions['params'], [$limit]);
+            $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     /**
      * Get visitor locations for map (with lat/lng)
      */
     public function getVisitorLocationsForMap(string $period = 'month', int $limit = 100): array {
-        $conditions = $this->getPeriodCondition($period);
+        try {
+            $conditions = $this->getPeriodCondition($period);
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                city,
-                country_code,
-                latitude,
-                longitude,
-                COUNT(DISTINCT session_id) as visitors
-            FROM page_visits
-            WHERE {$conditions['where']} AND latitude IS NOT NULL AND longitude IS NOT NULL
-            GROUP BY city, country_code, latitude, longitude
-            ORDER BY visitors DESC
-            LIMIT ?
-        ");
-        $params = array_merge($conditions['params'], [$limit]);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    city,
+                    country_code,
+                    latitude,
+                    longitude,
+                    COUNT(DISTINCT session_id) as visitors
+                FROM page_visits
+                WHERE {$conditions['where']} AND latitude IS NOT NULL AND longitude IS NOT NULL
+                GROUP BY city, country_code, latitude, longitude
+                ORDER BY visitors DESC
+                LIMIT ?
+            ");
+            $params = array_merge($conditions['params'], [$limit]);
+            $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     // ========================================
@@ -798,113 +811,142 @@ class Analytics {
      * Get session statistics (bounce rate, duration, pages per session)
      */
     public function getSessionStats(string $period = 'month'): array {
-        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
+        try {
+            $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
-        // Total sessions
-        $totalSessions = $this->pdo->query("
-            SELECT COUNT(*) FROM analytics_sessions
-            WHERE {$conditions['where']}
-        ")->fetchColumn() ?: 0;
+            // Total sessions
+            $totalSessions = $this->pdo->query("
+                SELECT COUNT(*) FROM analytics_sessions
+                WHERE {$conditions['where']}
+            ")->fetchColumn() ?: 0;
 
-        // Bounces (sessions with only 1 page)
-        $bounces = $this->pdo->query("
-            SELECT COUNT(*) FROM analytics_sessions
-            WHERE {$conditions['where']} AND is_bounce = 1
-        ")->fetchColumn() ?: 0;
+            // Bounces (sessions with only 1 page)
+            $bounces = $this->pdo->query("
+                SELECT COUNT(*) FROM analytics_sessions
+                WHERE {$conditions['where']} AND is_bounce = 1
+            ")->fetchColumn() ?: 0;
 
-        // Average session duration
-        $avgDuration = $this->pdo->query("
-            SELECT AVG(total_duration) FROM analytics_sessions
-            WHERE {$conditions['where']} AND total_duration > 0
-        ")->fetchColumn() ?: 0;
+            // Average session duration
+            $avgDuration = $this->pdo->query("
+                SELECT AVG(total_duration) FROM analytics_sessions
+                WHERE {$conditions['where']} AND total_duration > 0
+            ")->fetchColumn() ?: 0;
 
-        // Average pages per session
-        $avgPages = $this->pdo->query("
-            SELECT AVG(page_count) FROM analytics_sessions
-            WHERE {$conditions['where']}
-        ")->fetchColumn() ?: 0;
+            // Average pages per session
+            $avgPages = $this->pdo->query("
+                SELECT AVG(page_count) FROM analytics_sessions
+                WHERE {$conditions['where']}
+            ")->fetchColumn() ?: 0;
 
-        $bounceRate = $totalSessions > 0 ? round(($bounces / $totalSessions) * 100, 1) : 0;
+            $bounceRate = $totalSessions > 0 ? round(($bounces / $totalSessions) * 100, 1) : 0;
 
-        return [
-            'total_sessions' => (int)$totalSessions,
-            'bounce_rate' => $bounceRate,
-            'avg_duration' => round((float)$avgDuration, 0), // seconds
-            'avg_duration_formatted' => $this->formatDuration((float)$avgDuration),
-            'avg_pages_per_session' => round((float)$avgPages, 1)
-        ];
+            return [
+                'total_sessions' => (int)$totalSessions,
+                'bounce_rate' => $bounceRate,
+                'avg_duration' => round((float)$avgDuration, 0),
+                'avg_duration_formatted' => $this->formatDuration((float)$avgDuration),
+                'avg_pages_per_session' => round((float)$avgPages, 1)
+            ];
+        } catch (PDOException $e) {
+            // Table may not exist yet
+            return [
+                'total_sessions' => 0,
+                'bounce_rate' => 0,
+                'avg_duration' => 0,
+                'avg_duration_formatted' => '0s',
+                'avg_pages_per_session' => 0
+            ];
+        }
     }
 
     /**
      * Get exit pages (where visitors leave the site)
      */
     public function getExitPages(string $period = 'month', int $limit = 10): array {
-        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
+        try {
+            $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                exit_page,
-                COUNT(*) as exits,
-                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) as exit_rate
-            FROM analytics_sessions
-            WHERE {$conditions['where']} AND exit_page IS NOT NULL
-            GROUP BY exit_page
-            ORDER BY exits DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    exit_page,
+                    COUNT(*) as exits,
+                    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) as exit_rate
+                FROM analytics_sessions
+                WHERE {$conditions['where']} AND exit_page IS NOT NULL
+                GROUP BY exit_page
+                ORDER BY exits DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     /**
      * Get entry pages (where visitors land)
      */
     public function getEntryPages(string $period = 'month', int $limit = 10): array {
-        $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
+        try {
+            $conditions = $this->getPeriodConditionForColumn($period, 'started_at');
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                entry_page,
-                COUNT(*) as entries,
-                SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) as bounces,
-                ROUND(SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as bounce_rate
-            FROM analytics_sessions
-            WHERE {$conditions['where']} AND entry_page IS NOT NULL
-            GROUP BY entry_page
-            ORDER BY entries DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    entry_page,
+                    COUNT(*) as entries,
+                    SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) as bounces,
+                    ROUND(SUM(CASE WHEN is_bounce = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as bounce_rate
+                FROM analytics_sessions
+                WHERE {$conditions['where']} AND entry_page IS NOT NULL
+                GROUP BY entry_page
+                ORDER BY entries DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     /**
      * Get new vs returning visitors
      */
     public function getNewVsReturning(string $period = 'month'): array {
-        $conditions = $this->getPeriodCondition($period);
+        try {
+            $conditions = $this->getPeriodCondition($period);
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                is_new_visitor,
-                COUNT(DISTINCT session_id) as visitors
-            FROM page_visits
-            WHERE {$conditions['where']}
-            GROUP BY is_new_visitor
-        ");
-        $stmt->execute();
-        $results = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    is_new_visitor,
+                    COUNT(DISTINCT session_id) as visitors
+                FROM page_visits
+                WHERE {$conditions['where']}
+                GROUP BY is_new_visitor
+            ");
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
-        $new = (int)($results[1] ?? 0);
-        $returning = (int)($results[0] ?? 0);
-        $total = $new + $returning;
+            $new = (int)($results[1] ?? 0);
+            $returning = (int)($results[0] ?? 0);
+            $total = $new + $returning;
 
-        return [
-            'new_visitors' => $new,
-            'returning_visitors' => $returning,
-            'new_percent' => $total > 0 ? round(($new / $total) * 100, 1) : 0,
-            'returning_percent' => $total > 0 ? round(($returning / $total) * 100, 1) : 0
-        ];
+            return [
+                'new_visitors' => $new,
+                'returning_visitors' => $returning,
+                'new_percent' => $total > 0 ? round(($new / $total) * 100, 1) : 0,
+                'returning_percent' => $total > 0 ? round(($returning / $total) * 100, 1) : 0
+            ];
+        } catch (PDOException $e) {
+            // Column may not exist yet - return defaults
+            return [
+                'new_visitors' => 0,
+                'returning_visitors' => 0,
+                'new_percent' => 0,
+                'returning_percent' => 0
+            ];
+        }
     }
 
     // ========================================
@@ -1012,42 +1054,50 @@ class Analytics {
      * Get top search terms
      */
     public function getTopSearchTerms(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
+        try {
+            $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                search_term,
-                search_type,
-                COUNT(*) as searches,
-                AVG(results_count) as avg_results
-            FROM analytics_searches
-            WHERE {$conditions['where']}
-            GROUP BY search_term, search_type
-            ORDER BY searches DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    search_term,
+                    search_type,
+                    COUNT(*) as searches,
+                    AVG(results_count) as avg_results
+                FROM analytics_searches
+                WHERE {$conditions['where']}
+                GROUP BY search_term, search_type
+                ORDER BY searches DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     /**
      * Get searches with no results (opportunity for content)
      */
     public function getZeroResultSearches(string $period = 'month', int $limit = 20): array {
-        $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
+        try {
+            $conditions = $this->getPeriodConditionForColumn($period, 'searched_at');
 
-        $stmt = $this->pdo->prepare("
-            SELECT
-                search_term,
-                COUNT(*) as searches
-            FROM analytics_searches
-            WHERE {$conditions['where']} AND results_count = 0
-            GROUP BY search_term
-            ORDER BY searches DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    search_term,
+                    COUNT(*) as searches
+                FROM analytics_searches
+                WHERE {$conditions['where']} AND results_count = 0
+                GROUP BY search_term
+                ORDER BY searches DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
     }
 
     // ========================================
@@ -1069,22 +1119,42 @@ class Analytics {
      * Get recent page views (last 30 minutes)
      */
     public function getRecentPageViews(int $limit = 50): array {
-        $stmt = $this->pdo->prepare("
-            SELECT
-                page_url,
-                page_title,
-                device_type,
-                country_code,
-                city,
-                visited_at,
-                session_id
-            FROM page_visits
-            WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
-            ORDER BY visited_at DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    page_url,
+                    page_title,
+                    device_type,
+                    country_code,
+                    city,
+                    visited_at,
+                    session_id
+                FROM page_visits
+                WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                ORDER BY visited_at DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            // Fallback without geo columns
+            $stmt = $this->pdo->prepare("
+                SELECT
+                    page_url,
+                    page_title,
+                    device_type,
+                    NULL as country_code,
+                    NULL as city,
+                    visited_at,
+                    session_id
+                FROM page_visits
+                WHERE visited_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                ORDER BY visited_at DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$limit]);
+            return $stmt->fetchAll();
+        }
     }
 
     /**
