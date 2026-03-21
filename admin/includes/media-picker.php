@@ -16,10 +16,10 @@
     <div class="media-picker-modal">
         <div class="media-picker-header">
             <h3>Select Image</h3>
-            <button type="button" onclick="closeMediaPicker()" class="media-picker-close">&times;</button>
+            <button type="button" id="media-picker-close-btn" class="media-picker-close">&times;</button>
         </div>
         <div class="media-picker-filters">
-            <input type="text" id="media-search" placeholder="Search images..." oninput="filterMedia()">
+            <input type="text" id="media-search" placeholder="Search images...">
             <div id="media-tags" class="media-tag-filters"></div>
         </div>
         <div class="media-picker-body">
@@ -29,7 +29,7 @@
                 No images found. <a href="/admin/media">Upload one</a>.
             </div>
             <div id="media-picker-pagination" class="media-picker-pagination">
-                <button type="button" id="media-load-more" class="btn btn-outline" onclick="loadMoreMedia()">
+                <button type="button" id="media-load-more" class="btn btn-outline">
                     Load More
                 </button>
                 <span id="media-count" class="media-count"></span>
@@ -57,6 +57,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+.image-preview-hidden {
+    display: none;
+}
+.media-picker-clear-hidden {
+    display: none;
 }
 .image-placeholder {
     width: 100%;
@@ -440,6 +446,12 @@
         if (e.target === this) closeMediaPicker();
     });
 
+    // Close button
+    document.getElementById('media-picker-close-btn')?.addEventListener('click', closeMediaPicker);
+
+    // Load more button
+    document.getElementById('media-load-more')?.addEventListener('click', loadMoreMedia);
+
     // Close on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && document.getElementById('media-picker-modal')?.style.display === 'flex') {
@@ -477,14 +489,14 @@ function createImagePickerField($fieldName, $currentValue = '', $label = 'Image'
     if ($hasImage) {
         $html .= '        <img src="' . htmlspecialchars($currentValue) . '" id="' . $fieldId . '_preview" class="image-preview">';
     } else {
-        $html .= '        <img src="" id="' . $fieldId . '_preview" class="image-preview" style="display: none;">';
+        $html .= '        <img src="" id="' . $fieldId . '_preview" class="image-preview image-preview-hidden">';
         $html .= '        <div id="' . $fieldId . '_placeholder" class="image-placeholder">No image</div>';
     }
 
     $html .= '    </div>';
     $html .= '    <div class="image-picker-actions">';
-    $html .= '        <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor(\'' . $fieldId . '\')">Select Image</button>';
-    $html .= '        <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField(\'' . $fieldId . '\')" id="' . $fieldId . '_clear" style="' . ($hasImage ? '' : 'display:none;') . '">Clear</button>';
+    $html .= '        <button type="button" class="btn btn-sm btn-outline media-picker-select-btn" data-field="' . $fieldId . '">Select Image</button>';
+    $html .= '        <button type="button" class="btn btn-sm btn-outline media-picker-clear-btn' . ($hasImage ? '' : ' media-picker-clear-hidden') . '" data-field="' . $fieldId . '" id="' . $fieldId . '_clear">Clear</button>';
     $html .= '    </div>';
     $html .= '</div>';
 
@@ -514,13 +526,13 @@ window.setImageFieldValue = function(fieldId, url) {
 
     if (preview) {
         preview.src = url;
-        preview.style.display = 'block';
+        preview.classList.remove('image-preview-hidden');
     }
     if (placeholder) {
         placeholder.style.display = 'none';
     }
     if (clearBtn) {
-        clearBtn.style.display = 'inline-flex';
+        clearBtn.classList.remove('media-picker-clear-hidden');
     }
 };
 
@@ -531,14 +543,31 @@ window.clearImageField = function(fieldId) {
     const clearBtn = document.getElementById(fieldId + '_clear');
 
     if (preview) {
-        preview.style.display = 'none';
+        preview.classList.add('image-preview-hidden');
         preview.src = '';
     }
     if (placeholder) {
         placeholder.style.display = 'flex';
     }
     if (clearBtn) {
-        clearBtn.style.display = 'none';
+        clearBtn.classList.add('media-picker-clear-hidden');
     }
 };
+
+// Event delegation for select/clear buttons
+document.addEventListener('click', function(e) {
+    const selectBtn = e.target.closest('.media-picker-select-btn');
+    if (selectBtn) {
+        const fieldId = selectBtn.dataset.field;
+        openMediaPickerFor(fieldId);
+        return;
+    }
+
+    const clearBtn = e.target.closest('.media-picker-clear-btn');
+    if (clearBtn) {
+        const fieldId = clearBtn.dataset.field;
+        clearImageField(fieldId);
+        return;
+    }
+});
 </script>
