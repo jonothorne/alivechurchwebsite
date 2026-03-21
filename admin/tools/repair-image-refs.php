@@ -2,8 +2,8 @@
 /**
  * Repair Image References
  *
- * Finds broken image references in the database and attempts to match
- * them with renamed files in the uploads folder.
+ * Finds broken image references in the database and allows manual
+ * mapping to renamed files.
  */
 
 $page_title = 'Repair Image References';
@@ -15,7 +15,6 @@ $uploadsDir = __DIR__ . '/../../uploads/';
 
 // All tables/columns that contain image URLs
 $imageColumns = [
-    'media' => ['filename', 'file_path', 'file_url'],
     'blog_posts' => ['featured_image', 'thumbnail'],
     'event_details' => ['image'],
     'groups_list' => ['image_url'],
@@ -36,9 +35,8 @@ $contentColumns = [
     'bible_studies' => ['content'],
 ];
 
-$dryRun = !isset($_POST['apply']);
-$results = [];
-$errors = [];
+$success = '';
+$error = '';
 
 // Get all files in uploads directory
 $uploadedFiles = [];
@@ -46,50 +44,13 @@ if (is_dir($uploadsDir)) {
     $files = scandir($uploadsDir);
     foreach ($files as $file) {
         if ($file !== '.' && $file !== '..' && is_file($uploadsDir . $file)) {
-            $uploadedFiles[strtolower($file)] = $file;
-            // Also index by base name (without extension variant suffixes)
-            $baseName = preg_replace('/-(thumbnail|small|medium|large)\./', '.', $file);
-            $baseName = preg_replace('/\.webp$/', '', $baseName);
-        }
-    }
-}
-
-/**
- * Try to find a matching file for a broken reference
- */
-function findMatchingFile($brokenRef, $uploadedFiles, $uploadsDir) {
-    $filename = basename($brokenRef);
-    $filenameLower = strtolower($filename);
-
-    // Direct match
-    if (isset($uploadedFiles[$filenameLower])) {
-        return null; // File exists, no fix needed
-    }
-
-    // Check if it's a path issue (file exists but path is wrong)
-    if (file_exists($uploadsDir . $filename)) {
-        return null; // File exists
-    }
-
-    // Try to find a renamed version by looking for similar names
-    $baseName = pathinfo($filename, PATHINFO_FILENAME);
-    $ext = pathinfo($filename, PATHINFO_EXTENSION);
-
-    // Look for files that might be the renamed version
-    // Pattern: old numeric/timestamp name -> new SEO name with alive-church
-    foreach ($uploadedFiles as $lowerName => $actualName) {
-        // Check if this could be a renamed version
-        if (strpos($actualName, 'alive-church') !== false) {
-            // This is a renamed file - check if it might match
-            $actualExt = pathinfo($actualName, PATHINFO_EXTENSION);
-            if (strtolower($ext) === strtolower($actualExt)) {
-                // Same extension - could be a match
-                // We can't automatically determine matches, return as candidate
+            // Skip variant files (thumbnails, etc) - only show main files
+            if (!preg_match('/-(thumbnail|small|medium|large)\.[^.]+$/', $file) && !preg_match('/\.[^.]+\.webp$/', $file)) {
+                $uploadedFiles[] = $file;
             }
         }
     }
-
-    return false; // No match found
+    sort($uploadedFiles);
 }
 
 /**
@@ -97,18 +58,54 @@ function findMatchingFile($brokenRef, $uploadedFiles, $uploadsDir) {
  */
 function isImageMissing($url, $uploadsDir) {
     if (empty($url)) return false;
-
-    // Only check /uploads/ paths
     if (strpos($url, '/uploads/') === false) return false;
-
     $filename = basename($url);
     return !file_exists($uploadsDir . $filename);
 }
 
-// Scan for broken references
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
-    $broken = [];
+// Handle fix submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fix') {
+    $fixes = $_POST['fixes'] ?? [];
+    $fixCount = 0;
 
+    foreach ($fixes as $fix) {
+        if (empty($fix['new_file']) || $fix['new_file'] === '') continue;
+
+        $table = $fix['table'];
+        $column = $fix['column'];
+        $id = $fix['id'];
+        $oldFile = $fix['old_file'];
+        $newFile = $fix['new_file'];
+        $inContent = !empty($fix['in_content']);
+
+        try {
+            if ($inContent) {
+                // Replace in HTML content - replace old filename with new
+                $oldBaseName = pathinfo($oldFile, PATHINFO_FILENAME);
+                $newBaseName = pathinfo($newFile, PATHINFO_FILENAME);
+
+                $stmt = $pdo->prepare("UPDATE `$table` SET `$column` = REPLACE(`$column`, ?, ?) WHERE id = ?");
+                $stmt->execute([$oldBaseName, $newBaseName, $id]);
+            } else {
+                // Direct URL column - replace full path
+                $newUrl = '/uploads/' . $newFile;
+                $stmt = $pdo->prepare("UPDATE `$table` SET `$column` = ? WHERE id = ?");
+                $stmt->execute([$newUrl, $id]);
+            }
+            $fixCount++;
+        } catch (PDOException $e) {
+            $error = "Error updating $table.$column: " . $e->getMessage();
+        }
+    }
+
+    if ($fixCount > 0) {
+        $success = "Fixed $fixCount image reference(s)!";
+    }
+}
+
+// Scan for broken references
+$broken = [];
+if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check direct URL columns
     foreach ($imageColumns as $table => $columns) {
         foreach ($columns as $column) {
@@ -120,9 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
                         $broken[] = [
                             'table' => $table,
                             'column' => $column,
-                            'id' => $row['id'] ?? $row[array_key_first($row)],
+                            'id' => $row['id'],
                             'url' => $url,
-                            'filename' => basename($url)
+                            'filename' => basename($url),
+                            'in_content' => false
                         ];
                     }
                 }
@@ -139,14 +137,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
                 $stmt = $pdo->query("SELECT * FROM `$table` WHERE `$column` LIKE '%/uploads/%'");
                 while ($row = $stmt->fetch()) {
                     $content = $row[$column];
-                    // Find all image references in content
                     if (preg_match_all('/\/uploads\/([^"\'>\s]+)/i', $content, $matches)) {
                         foreach ($matches[1] as $filename) {
-                            if (!file_exists($uploadsDir . $filename)) {
+                            // Skip variant files in content check
+                            $baseFilename = preg_replace('/-(thumbnail|small|medium|large)(\.[^.]+)$/', '$2', $filename);
+                            if (!file_exists($uploadsDir . $baseFilename) && !file_exists($uploadsDir . $filename)) {
                                 $broken[] = [
                                     'table' => $table,
                                     'column' => $column,
-                                    'id' => $row['id'] ?? $row[array_key_first($row)],
+                                    'id' => $row['id'],
                                     'url' => '/uploads/' . $filename,
                                     'filename' => $filename,
                                     'in_content' => true
@@ -161,21 +160,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
         }
     }
 
-    $results = $broken;
+    // Deduplicate by unique combination
+    $seen = [];
+    $broken = array_filter($broken, function($item) use (&$seen) {
+        $key = $item['table'] . '|' . $item['column'] . '|' . $item['id'] . '|' . $item['filename'];
+        if (isset($seen[$key])) return false;
+        $seen[$key] = true;
+        return true;
+    });
 }
-
-// Build a map of old -> new filenames from media table history
-// This checks if media table has original_filename that can help us map
-$filenameMap = [];
-try {
-    $stmt = $pdo->query("SELECT filename, original_filename FROM media WHERE original_filename IS NOT NULL AND original_filename != filename");
-    while ($row = $stmt->fetch()) {
-        // Map original to current
-        $filenameMap[basename($row['original_filename'])] = $row['filename'];
-    }
-} catch (PDOException $e) {}
-
 ?>
+
+<style>
+.repair-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.repair-table th, .repair-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+.repair-table select { width: 100%; padding: 0.25rem; font-size: 0.8rem; }
+.repair-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 0.5rem; vertical-align: middle; }
+.file-preview { display: flex; align-items: center; gap: 0.5rem; }
+</style>
 
 <div class="admin-card">
     <div class="admin-card-header">
@@ -183,85 +185,116 @@ try {
     </div>
 
     <div style="padding: 1rem;">
-        <?php if (empty($results) && !isset($_GET['scan'])): ?>
-            <p>This tool scans the database for broken image references and helps fix them.</p>
+        <?php if ($success): ?>
+            <div class="admin-alert admin-alert-success"><?= htmlspecialchars($success); ?></div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="admin-alert admin-alert-error"><?= htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <?php if (!isset($_GET['scan']) && empty($broken)): ?>
+            <p>This tool scans the database for broken image references and lets you select the correct replacement file.</p>
 
             <form method="GET">
                 <input type="hidden" name="scan" value="1">
                 <button type="submit" class="btn btn-primary">Scan for Broken References</button>
             </form>
 
-            <h4 style="margin-top: 2rem;">Files in Uploads Folder</h4>
-            <p>Total files: <?= count($uploadedFiles); ?></p>
-
+            <h4 style="margin-top: 2rem;">Available Files in Uploads (<?= count($uploadedFiles); ?>)</h4>
             <div style="max-height: 300px; overflow-y: auto; font-size: 0.85rem; background: #f9fafb; padding: 1rem; border-radius: 4px;">
-                <?php foreach (array_slice($uploadedFiles, 0, 50) as $file): ?>
-                    <div><?= htmlspecialchars($file); ?></div>
+                <?php foreach (array_slice($uploadedFiles, 0, 100) as $file): ?>
+                    <div class="file-preview">
+                        <img src="/uploads/<?= htmlspecialchars($file); ?>" class="repair-thumb" loading="lazy" onerror="this.style.display='none'">
+                        <?= htmlspecialchars($file); ?>
+                    </div>
                 <?php endforeach; ?>
-                <?php if (count($uploadedFiles) > 50): ?>
-                    <div style="color: #6b7280;">... and <?= count($uploadedFiles) - 50; ?> more</div>
+                <?php if (count($uploadedFiles) > 100): ?>
+                    <div style="color: #6b7280; margin-top: 0.5rem;">... and <?= count($uploadedFiles) - 100; ?> more</div>
                 <?php endif; ?>
             </div>
 
-        <?php elseif (!empty($results)): ?>
+        <?php elseif (!empty($broken)): ?>
             <div class="admin-alert admin-alert-warning">
-                Found <?= count($results); ?> broken image references
+                Found <?= count($broken); ?> broken image reference(s)
             </div>
 
-            <table class="admin-table" style="font-size: 0.85rem;">
-                <thead>
-                    <tr>
-                        <th>Table</th>
-                        <th>Column</th>
-                        <th>ID</th>
-                        <th>Missing File</th>
-                        <th>Possible Match</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($results as $item): ?>
+            <p>Select the correct replacement file for each broken reference, then click "Apply Fixes".</p>
+
+            <form method="POST">
+                <input type="hidden" name="action" value="fix">
+
+                <table class="repair-table">
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($item['table']); ?></td>
-                            <td><?= htmlspecialchars($item['column']); ?><?= !empty($item['in_content']) ? ' (HTML)' : ''; ?></td>
-                            <td><?= htmlspecialchars($item['id']); ?></td>
-                            <td><small><?= htmlspecialchars($item['filename']); ?></small></td>
-                            <td>
-                                <?php
-                                $oldName = $item['filename'];
-                                if (isset($filenameMap[$oldName])) {
-                                    echo '<span style="color: green;">' . htmlspecialchars($filenameMap[$oldName]) . '</span>';
-                                } else {
-                                    echo '<span style="color: #6b7280;">No mapping found</span>';
-                                }
-                                ?>
-                            </td>
+                            <th style="width: 100px;">Table</th>
+                            <th style="width: 100px;">Column</th>
+                            <th style="width: 50px;">ID</th>
+                            <th>Missing File</th>
+                            <th style="width: 300px;">Replace With</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($broken as $i => $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['table']); ?></td>
+                                <td><?= htmlspecialchars($item['column']); ?><?= $item['in_content'] ? ' <small>(HTML)</small>' : ''; ?></td>
+                                <td><?= htmlspecialchars($item['id']); ?></td>
+                                <td><small style="color: #dc2626;"><?= htmlspecialchars($item['filename']); ?></small></td>
+                                <td>
+                                    <input type="hidden" name="fixes[<?= $i; ?>][table]" value="<?= htmlspecialchars($item['table']); ?>">
+                                    <input type="hidden" name="fixes[<?= $i; ?>][column]" value="<?= htmlspecialchars($item['column']); ?>">
+                                    <input type="hidden" name="fixes[<?= $i; ?>][id]" value="<?= htmlspecialchars($item['id']); ?>">
+                                    <input type="hidden" name="fixes[<?= $i; ?>][old_file]" value="<?= htmlspecialchars($item['filename']); ?>">
+                                    <input type="hidden" name="fixes[<?= $i; ?>][in_content]" value="<?= $item['in_content'] ? '1' : '0'; ?>">
+                                    <select name="fixes[<?= $i; ?>][new_file]">
+                                        <option value="">-- Select replacement --</option>
+                                        <?php
+                                        // Try to find likely matches (same extension)
+                                        $ext = strtolower(pathinfo($item['filename'], PATHINFO_EXTENSION));
+                                        $matches = [];
+                                        $others = [];
+                                        foreach ($uploadedFiles as $file) {
+                                            if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === $ext) {
+                                                $matches[] = $file;
+                                            } else {
+                                                $others[] = $file;
+                                            }
+                                        }
+                                        ?>
+                                        <?php if (!empty($matches)): ?>
+                                            <optgroup label="Same extension (<?= strtoupper($ext); ?>)">
+                                                <?php foreach ($matches as $file): ?>
+                                                    <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
+                                                <?php endforeach; ?>
+                                            </optgroup>
+                                        <?php endif; ?>
+                                        <?php if (!empty($others)): ?>
+                                            <optgroup label="Other files">
+                                                <?php foreach ($others as $file): ?>
+                                                    <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
+                                                <?php endforeach; ?>
+                                            </optgroup>
+                                        <?php endif; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
 
-            <h4 style="margin-top: 2rem;">Available SEO-Named Files</h4>
-            <p>These files have been renamed with SEO-friendly names:</p>
-            <div style="max-height: 200px; overflow-y: auto; font-size: 0.85rem; background: #f9fafb; padding: 1rem; border-radius: 4px;">
-                <?php
-                $seoFiles = array_filter($uploadedFiles, fn($f) => strpos($f, 'alive-church') !== false);
-                foreach ($seoFiles as $file): ?>
-                    <div><?= htmlspecialchars($file); ?></div>
-                <?php endforeach; ?>
-                <?php if (empty($seoFiles)): ?>
-                    <div style="color: #6b7280;">No SEO-named files found</div>
-                <?php endif; ?>
-            </div>
-
-            <div style="margin-top: 1rem;">
-                <a href="" class="btn btn-outline">Scan Again</a>
-            </div>
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary">Apply Fixes</button>
+                    <a href="?scan=1" class="btn btn-outline">Rescan</a>
+                    <a href="" class="btn btn-outline">Start Over</a>
+                </div>
+            </form>
 
         <?php else: ?>
             <div class="admin-alert admin-alert-success">
                 No broken image references found!
             </div>
-            <a href="" class="btn btn-outline">Scan Again</a>
+            <a href="?scan=1" class="btn btn-outline">Scan Again</a>
         <?php endif; ?>
     </div>
 </div>
