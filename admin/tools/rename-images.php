@@ -24,9 +24,12 @@ require_once __DIR__ . '/../../includes/db-config.php';
 require_once __DIR__ . '/../../includes/ImageNameGenerator.php';
 
 $pdo = getDbConnection();
+$uploadsDir = __DIR__ . '/../../uploads/';
 
 // Parse CLI arguments or form data
 $dryRun = $isCli ? in_array('--dry-run', $argv) : ($_POST['dry_run'] ?? false);
+$action = $_POST['action'] ?? 'preview';
+$selectedIds = $_POST['selected_ids'] ?? [];
 $limit = 0;
 if ($isCli) {
     foreach ($argv as $arg) {
@@ -251,27 +254,59 @@ function updateMediaRecord($pdo, $mediaId, $newFilename, $newFilePath, $newFileU
     return $stmt->execute([$newFilename, $newFilePath, $newFileUrl, $mediaId]);
 }
 
+/**
+ * Check if image needs renaming
+ */
+function getImageStatus($filename) {
+    if (strpos($filename, 'alive-church') !== false) {
+        // Check if it's a poor name like "image-alive-church-abc123"
+        if (preg_match('/^image-alive-church-[a-f0-9]+\.(jpg|jpeg|png|gif|webp)$/i', $filename)) {
+            return ['status' => 'poor', 'reason' => 'Generic AI fallback name'];
+        }
+        return ['status' => 'good', 'reason' => 'Already has SEO name'];
+    }
+
+    // Check for non-descriptive patterns
+    $basename = pathinfo($filename, PATHINFO_FILENAME);
+    if (preg_match('/^[0-9]{8}-wa[0-9]+$/i', $basename)) {
+        return ['status' => 'needs_rename', 'reason' => 'WhatsApp filename'];
+    }
+    if (preg_match('/^(img|image|photo|pic|dsc|dcim|screenshot)-?/i', $basename)) {
+        return ['status' => 'needs_rename', 'reason' => 'Camera/generic prefix'];
+    }
+    if (preg_match('/^[0-9-]+$/', $basename)) {
+        return ['status' => 'needs_rename', 'reason' => 'Numeric filename'];
+    }
+
+    return ['status' => 'needs_rename', 'reason' => 'Not SEO-friendly'];
+}
+
 // Process form submission or CLI execution
 $results = [];
 $processed = 0;
 $errors = [];
+$allImages = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || $isCli) {
+// Always fetch all images for display
+$query = "SELECT * FROM media WHERE file_type = 'image' ORDER BY id DESC";
+if ($limit > 0 && $action === 'preview') {
+    $query .= " LIMIT " . $limit;
+}
+$allImages = $pdo->query($query)->fetchAll();
+
+// Process selected images
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'rename' && !empty($selectedIds)) {
     $nameGenerator = new ImageNameGenerator();
 
     if (!$nameGenerator->isConfigured()) {
         $errors[] = 'Anthropic API key not configured. Add ANTHROPIC_API_KEY to includes/db-config.php';
     } else {
-        $uploadsDir = __DIR__ . '/../../uploads/';
+        foreach ($allImages as $image) {
+            // Only process selected images
+            if (!in_array($image['id'], $selectedIds)) {
+                continue;
+            }
 
-        // Fetch all images from media table
-        $query = "SELECT * FROM media WHERE file_type = 'image' ORDER BY id";
-        if ($limit > 0) {
-            $query .= " LIMIT " . $limit;
-        }
-        $images = $pdo->query($query)->fetchAll();
-
-        foreach ($images as $image) {
             $oldFilename = $image['filename'];
             $oldFilePath = $image['file_path'];
             $oldFileUrl = $image['file_url'];
@@ -280,18 +315,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $isCli) {
             // Skip if file doesn't exist
             if (!file_exists($fullPath)) {
                 $errors[] = "File not found: {$oldFilename}";
-                continue;
-            }
-
-            // Skip if already has SEO-friendly name (contains 'alive-church')
-            if (strpos($oldFilename, 'alive-church') !== false) {
-                $results[] = [
-                    'id' => $image['id'],
-                    'old' => $oldFilename,
-                    'new' => $oldFilename,
-                    'status' => 'skipped',
-                    'reason' => 'Already has SEO name'
-                ];
                 continue;
             }
 
@@ -372,6 +395,21 @@ if ($isCli) {
 // HTML output for browser
 ?>
 
+<style>
+.image-select-table { width: 100%; border-collapse: collapse; }
+.image-select-table th, .image-select-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.image-select-table tr:hover { background: #f9fafb; }
+.image-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+.status-good { color: #10b981; }
+.status-poor { color: #f59e0b; }
+.status-needs_rename { color: #6b7280; }
+.select-actions { margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; }
+.select-actions button { padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+.filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.filter-tab { padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; border-radius: 4px; }
+.filter-tab.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+</style>
+
 <div class="admin-card">
     <div class="admin-card-header">
         <h3>AI Image Rename Tool</h3>
@@ -385,43 +423,14 @@ if ($isCli) {
         </div>
     <?php endif; ?>
 
-    <?php if (empty($results)): ?>
-        <div style="padding: 1rem;">
-            <p>This tool will analyze your images using AI and rename them with SEO-friendly names that describe the image content.</p>
-
-            <div class="admin-alert admin-alert-warning" style="margin: 1rem 0;">
-                <strong>Important:</strong> This will rename image files and update all database references. Make a backup first!
-            </div>
-
-            <form method="POST">
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="dry_run" value="1" checked>
-                        Dry run (preview changes without applying)
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Limit (0 = all images)</label>
-                    <input type="number" name="limit" value="10" min="0" style="width: 100px;">
-                </div>
-                <button type="submit" class="btn btn-primary">Analyze Images</button>
-            </form>
-        </div>
-    <?php else: ?>
+    <?php if (!empty($results)): ?>
+        <!-- Show results after processing -->
         <div style="padding: 1rem;">
             <div class="admin-alert <?= $dryRun ? 'admin-alert-warning' : 'admin-alert-success'; ?>">
                 <?= $dryRun ? 'Dry run completed' : 'Rename completed'; ?>: <?= $processed; ?> images processed
             </div>
 
-            <?php if ($dryRun): ?>
-                <form method="POST" style="margin-bottom: 1rem;">
-                    <input type="hidden" name="limit" value="<?= $limit; ?>">
-                    <button type="submit" class="btn btn-primary">Apply Changes</button>
-                    <a href="" class="btn btn-outline">Start Over</a>
-                </form>
-            <?php else: ?>
-                <a href="" class="btn btn-outline">Rename More</a>
-            <?php endif; ?>
+            <a href="" class="btn btn-outline" style="margin-bottom: 1rem;">Back to Selection</a>
 
             <table class="admin-table" style="margin-top: 1rem;">
                 <thead>
@@ -467,6 +476,166 @@ if ($isCli) {
                 </tbody>
             </table>
         </div>
+    <?php else: ?>
+        <!-- Show image selection -->
+        <div style="padding: 1rem;">
+            <p>Select which images to rename with AI-generated SEO-friendly names.</p>
+
+            <div class="admin-alert admin-alert-warning" style="margin: 1rem 0;">
+                <strong>Important:</strong> This will rename image files and update all database references. Make a backup first!
+            </div>
+
+            <form method="POST" id="rename-form">
+                <input type="hidden" name="action" value="rename">
+
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab active" data-filter="all">All (<?= count($allImages); ?>)</button>
+                    <button type="button" class="filter-tab" data-filter="needs_rename">Needs Rename</button>
+                    <button type="button" class="filter-tab" data-filter="poor">Poor Names</button>
+                    <button type="button" class="filter-tab" data-filter="good">Good Names</button>
+                </div>
+
+                <div class="select-actions">
+                    <button type="button" id="select-all" class="btn btn-outline">Select All Visible</button>
+                    <button type="button" id="select-none" class="btn btn-outline">Deselect All</button>
+                    <button type="button" id="select-needs-rename" class="btn btn-outline">Select Needs Rename</button>
+                    <button type="button" id="select-poor" class="btn btn-outline">Select Poor Names</button>
+                    <span id="selected-count" style="margin-left: 1rem; color: #6b7280;">0 selected</span>
+                </div>
+
+                <div style="max-height: 500px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    <table class="image-select-table">
+                        <thead style="position: sticky; top: 0; background: #fff;">
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="check-all"></th>
+                                <th style="width: 60px;">Image</th>
+                                <th>Current Filename</th>
+                                <th style="width: 120px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($allImages as $image):
+                                $status = getImageStatus($image['filename']);
+                                $exists = file_exists($uploadsDir . $image['filename']);
+                            ?>
+                                <tr data-status="<?= $status['status']; ?>" <?= !$exists ? 'style="opacity: 0.5;"' : ''; ?>>
+                                    <td>
+                                        <?php if ($exists): ?>
+                                            <input type="checkbox" name="selected_ids[]" value="<?= $image['id']; ?>" class="image-checkbox" data-status="<?= $status['status']; ?>">
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($exists): ?>
+                                            <img src="/uploads/<?= htmlspecialchars($image['filename']); ?>" class="image-thumb" alt="">
+                                        <?php else: ?>
+                                            <span style="color: red;">Missing</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <small><?= htmlspecialchars($image['filename']); ?></small>
+                                        <?php if ($image['original_filename'] && $image['original_filename'] !== $image['filename']): ?>
+                                            <br><small style="color: #9ca3af;">Original: <?= htmlspecialchars($image['original_filename']); ?></small>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="status-<?= $status['status']; ?>">
+                                            <?php if ($status['status'] === 'good'): ?>
+                                                &#10003; Good
+                                            <?php elseif ($status['status'] === 'poor'): ?>
+                                                &#9888; Poor
+                                            <?php else: ?>
+                                                &#8226; Needs Rename
+                                            <?php endif; ?>
+                                        </span>
+                                        <br><small style="color: #9ca3af;"><?= htmlspecialchars($status['reason']); ?></small>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <label>
+                        <input type="checkbox" name="dry_run" value="1" checked>
+                        Dry run (preview changes without applying)
+                    </label>
+                    <button type="submit" class="btn btn-primary">Rename Selected Images</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+        (function() {
+            const checkboxes = document.querySelectorAll('.image-checkbox');
+            const checkAll = document.getElementById('check-all');
+            const selectedCount = document.getElementById('selected-count');
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const rows = document.querySelectorAll('.image-select-table tbody tr');
+
+            function updateCount() {
+                const count = document.querySelectorAll('.image-checkbox:checked').length;
+                selectedCount.textContent = count + ' selected';
+            }
+
+            // Individual checkbox change
+            checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+
+            // Check all header checkbox
+            checkAll.addEventListener('change', function() {
+                const visibleCheckboxes = document.querySelectorAll('.image-select-table tbody tr:not([style*="display: none"]) .image-checkbox');
+                visibleCheckboxes.forEach(cb => cb.checked = this.checked);
+                updateCount();
+            });
+
+            // Select all visible button
+            document.getElementById('select-all').addEventListener('click', function() {
+                const visibleCheckboxes = document.querySelectorAll('.image-select-table tbody tr:not([style*="display: none"]) .image-checkbox');
+                visibleCheckboxes.forEach(cb => cb.checked = true);
+                updateCount();
+            });
+
+            // Deselect all button
+            document.getElementById('select-none').addEventListener('click', function() {
+                checkboxes.forEach(cb => cb.checked = false);
+                checkAll.checked = false;
+                updateCount();
+            });
+
+            // Select needs rename button
+            document.getElementById('select-needs-rename').addEventListener('click', function() {
+                checkboxes.forEach(cb => {
+                    cb.checked = cb.dataset.status === 'needs_rename';
+                });
+                updateCount();
+            });
+
+            // Select poor names button
+            document.getElementById('select-poor').addEventListener('click', function() {
+                checkboxes.forEach(cb => {
+                    cb.checked = cb.dataset.status === 'poor';
+                });
+                updateCount();
+            });
+
+            // Filter tabs
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const filter = this.dataset.filter;
+                    rows.forEach(row => {
+                        if (filter === 'all' || row.dataset.status === filter) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        })();
+        </script>
     <?php endif; ?>
 </div>
 
