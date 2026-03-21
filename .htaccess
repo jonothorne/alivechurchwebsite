@@ -199,6 +199,9 @@ RewriteRule ^bible-study/([a-zA-Z0-9-]+)/?$ bible-study-book.php?book=$1 [L,QSA]
 # /blog/post-slug -> blog-post.php?slug=post-slug
 RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ blog-post.php?slug=$1 [L,QSA]
 
+# Next Steps page
+RewriteRule ^next-steps/?$ next-steps.php [L,QSA]
+
 # Reading plans
 RewriteRule ^reading-plans/?$ reading-plans.php [L,QSA]
 
