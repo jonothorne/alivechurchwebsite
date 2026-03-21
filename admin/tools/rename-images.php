@@ -399,7 +399,7 @@ if ($isCli) {
 .image-select-table { width: 100%; border-collapse: collapse; }
 .image-select-table th, .image-select-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
 .image-select-table tr:hover { background: #f9fafb; }
-.image-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+.image-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; display: block; }
 .status-good { color: #10b981; }
 .status-poor { color: #f59e0b; }
 .status-needs_rename { color: #6b7280; }
@@ -525,8 +525,12 @@ if ($isCli) {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($exists): ?>
-                                            <img src="/uploads/<?= htmlspecialchars($image['filename']); ?>" class="image-thumb" alt="">
+                                        <?php if ($exists):
+                                            // Use thumbnail variant if available
+                                            $thumbName = pathinfo($image['filename'], PATHINFO_FILENAME) . '-thumbnail.' . pathinfo($image['filename'], PATHINFO_EXTENSION);
+                                            $thumbSrc = file_exists($uploadsDir . $thumbName) ? $thumbName : $image['filename'];
+                                        ?>
+                                            <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" class="image-thumb" loading="lazy" alt="">
                                         <?php else: ?>
                                             <span style="color: red;">Missing</span>
                                         <?php endif; ?>
