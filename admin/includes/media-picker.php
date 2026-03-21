@@ -12,7 +12,7 @@
 ?>
 
 <!-- Media Picker Modal -->
-<div id="media-picker-modal" class="media-picker-overlay" style="display: none;">
+<div id="media-picker-modal" class="media-picker-overlay">
     <div class="media-picker-modal">
         <div class="media-picker-header">
             <h3>Select Image</h3>
@@ -23,12 +23,12 @@
             <div id="media-tags" class="media-tag-filters"></div>
         </div>
         <div class="media-picker-body">
-            <div id="media-picker-loading" style="text-align: center; padding: 2rem;">Loading...</div>
+            <div id="media-picker-loading" class="media-picker-loading">Loading...</div>
             <div id="media-picker-grid" class="media-picker-grid"></div>
-            <div id="media-picker-empty" style="display: none; text-align: center; padding: 2rem; color: var(--color-text-muted);">
+            <div id="media-picker-empty" class="media-picker-empty">
                 No images found. <a href="/admin/media">Upload one</a>.
             </div>
-            <div id="media-picker-pagination" class="media-picker-pagination" style="display: none;">
+            <div id="media-picker-pagination" class="media-picker-pagination">
                 <button type="button" id="media-load-more" class="btn btn-outline" onclick="loadMoreMedia()">
                     Load More
                 </button>
@@ -77,7 +77,7 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     z-index: 9999;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
 }
@@ -159,6 +159,16 @@
     overflow-y: auto;
     flex: 1;
 }
+.media-picker-loading {
+    text-align: center;
+    padding: 2rem;
+}
+.media-picker-empty {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-muted);
+}
 .media-picker-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -185,7 +195,7 @@
 .media-picker-pagination {
     margin-top: 1rem;
     text-align: center;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 0.5rem;
     align-items: center;
