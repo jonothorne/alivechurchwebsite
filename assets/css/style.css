@@ -11313,6 +11313,14 @@ body.cms-edit-mode [data-cms-editable]:hover {
     border-color: #2e2e33;
 }
 
+[data-theme="dark"] .user-menu-trigger:hover {
+    background: #2e2e33;
+}
+
+[data-theme="dark"] .user-name {
+    color: var(--color-text);
+}
+
 [data-theme="dark"] .dropdown-item:hover {
     background: #2e2e33;
 }
