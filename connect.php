@@ -117,7 +117,7 @@ include __DIR__ . '/includes/header.php';
                         <?php if (isset($opportunity['image'])): ?>
                             <img src="<?= htmlspecialchars($opportunity['image']); ?>"
                                  alt="<?= htmlspecialchars($opportunity['title']); ?>"
-                                 style="width: 100%; height: 180px; object-fit: cover; border-radius: 0.75rem; margin-bottom: 1rem;">
+                                 class="content-image-small">
                         <?php endif; ?>
                         <h3><?= htmlspecialchars($opportunity['title']); ?></h3>
                         <span class="commitment"><?= htmlspecialchars($opportunity['commitment']); ?></span>

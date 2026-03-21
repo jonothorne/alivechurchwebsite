@@ -83,7 +83,7 @@ include __DIR__ . '/../includes/header.php';
                     <?php if (isset($selected_group['image'])): ?>
                         <img src="<?= htmlspecialchars($selected_group['image']); ?>"
                              alt="<?= htmlspecialchars($selected_group['title']); ?>"
-                             style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+                             class="content-image">
                     <?php endif; ?>
 
                     <div class="info-box">

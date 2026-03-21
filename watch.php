@@ -135,7 +135,7 @@ include __DIR__ . '/includes/header.php';
         <div class="card">
             <img src="/assets/imgs/gallery/alive-church-worship-leaders-performance.jpg"
                  alt="Prayer room worship at Alive Church"
-                 style="border-radius: 0.75rem; margin-bottom: 1rem; width: 100%; height: 200px; object-fit: cover;"
+                 class="content-image-small"
                  data-cms-editable="prayer_room_image" data-cms-page="watch" data-cms-type="image">
             <h3 data-cms-editable="prayer_room_title" data-cms-page="watch" data-cms-type="text"><?= $cms->text('prayer_room_title', 'Prayer Room Live'); ?></h3>
             <p data-cms-editable="prayer_room_text" data-cms-page="watch" data-cms-type="text"><?= $cms->text('prayer_room_text', 'Weekdays at 7AM we stream live worship and intercession from the Prayer Room. Submit requests and we will pray with you in real time.'); ?></p>

@@ -143,6 +143,13 @@ img {
 .hidden {
     display: none !important;
 }
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
 .skip-link {
     position: absolute;
     left: -999px;

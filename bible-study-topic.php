@@ -200,7 +200,7 @@ if ($isMainCategory) {
                 <h2>Content Coming Soon</h2>
                 <p>We're working on adding studies and questions about <?= htmlspecialchars($topic['name']); ?>.</p>
                 <p>In the meantime, try searching for related keywords or browse other topics.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                <div class="button-group">
                     <a href="/bible-study/search?q=<?= urlencode($topic['name']); ?>" class="btn btn-primary">Search "<?= htmlspecialchars($topic['name']); ?>"</a>
                     <a href="/bible-study/topics" class="btn btn-outline">Browse Topics</a>
                 </div>

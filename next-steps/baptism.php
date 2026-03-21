@@ -68,7 +68,7 @@ if (!isset($cms)) {
 
                 <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg"
                      alt="Baptism celebration at Alive Church"
-                     style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+                     class="content-image">
             </div>
 
             <form class="card form-card" method="post" id="baptism-form">

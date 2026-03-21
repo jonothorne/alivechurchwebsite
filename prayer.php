@@ -49,7 +49,7 @@ if (!isset($cms)) {
                 </ul>
                 <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg"
                      alt="Prayer at Alive Church"
-                     style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+                     class="content-image">
             </div>
 
             <form class="card form-card" method="post" id="prayer-form">
@@ -167,7 +167,7 @@ if (!isset($cms)) {
     <div class="container narrow center-text">
         <h2 data-cms-editable="connect_headline" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('connect_headline', 'Other Ways to Connect'); ?></h2>
         <p data-cms-editable="connect_subtext" data-cms-page="prayer" data-cms-type="text"><?= $cms->text('connect_subtext', 'Looking for pastoral care, counseling, or someone to talk to? Our care team is here for you.'); ?></p>
-        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+        <div class="button-group">
             <a href="mailto:<?= htmlspecialchars($site['email']); ?>" class="btn btn-outline">
                 Email Our Team
             </a>

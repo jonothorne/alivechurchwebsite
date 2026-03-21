@@ -275,7 +275,7 @@ if (!isset($cms)) {
     <div class="container narrow center-text">
         <h2 data-cms-editable="other_headline" data-cms-page="contact-us" data-cms-type="text"><?= $cms->text('other_headline', 'Looking for Something Specific?'); ?></h2>
         <p data-cms-editable="other_subtext" data-cms-page="contact-us" data-cms-type="text"><?= $cms->text('other_subtext', 'We have dedicated pages for common requests. Click below to get started.'); ?></p>
-        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+        <div class="button-group">
             <a href="/prayer" class="btn btn-outline">
                 Submit a Prayer Request
             </a>

@@ -86,7 +86,7 @@ if (!isset($cms)) {
                     <?php if (isset($selected_team['image'])): ?>
                         <img src="<?= htmlspecialchars($selected_team['image']); ?>"
                              alt="<?= htmlspecialchars($selected_team['title']); ?>"
-                             style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+                             class="content-image">
                     <?php endif; ?>
                 </div>
             <?php else: ?>
@@ -100,7 +100,7 @@ if (!isset($cms)) {
                     </ul>
                     <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg"
                          alt="Serving at Alive Church"
-                         style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+                         class="content-image">
                 </div>
             <?php endif; ?>
 
