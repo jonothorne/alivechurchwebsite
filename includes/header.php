@@ -179,8 +179,8 @@ if ($current_user && $is_bible_study_page) {
     <!-- Preload LCP image for homepage -->
     <link rel="preload" as="image" href="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" fetchpriority="high">
     <?php endif; ?>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" rel="stylesheet"></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Yellowtail&display=swap" media="print" id="google-fonts">
+    <script <?= csp_nonce(); ?>>document.getElementById('google-fonts').media='all';</script>
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
     <?php
     // Load sermon CSS for sermon-related pages
