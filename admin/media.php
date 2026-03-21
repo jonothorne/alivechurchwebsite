@@ -1,4 +1,11 @@
 <?php
+// Increase limits for large uploads
+@ini_set('upload_max_filesize', '256M');
+@ini_set('post_max_size', '512M');
+@ini_set('max_execution_time', '600');
+@ini_set('max_input_time', '600');
+@ini_set('memory_limit', '512M');
+
 $page_title = 'Media Library';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/../includes/db-config.php';
@@ -34,6 +41,28 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
+// Helper function to get upload error message
+function getUploadErrorMessage($errorCode) {
+    switch ($errorCode) {
+        case UPLOAD_ERR_INI_SIZE:
+            return 'File exceeds server upload_max_filesize limit';
+        case UPLOAD_ERR_FORM_SIZE:
+            return 'File exceeds form MAX_FILE_SIZE limit';
+        case UPLOAD_ERR_PARTIAL:
+            return 'File was only partially uploaded';
+        case UPLOAD_ERR_NO_FILE:
+            return 'No file was uploaded';
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return 'Missing temporary folder on server';
+        case UPLOAD_ERR_CANT_WRITE:
+            return 'Failed to write file to disk';
+        case UPLOAD_ERR_EXTENSION:
+            return 'Upload blocked by PHP extension';
+        default:
+            return 'Unknown upload error';
+    }
+}
+
 // Handle File Upload (supports multiple files)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_FILES['files']))) {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
@@ -48,6 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_
 
         // Normalize files array (handle both single and multiple uploads)
         $files = [];
+        $uploadErrors = [];
+
         if (isset($_FILES['files'])) {
             // Multiple files uploaded
             $fileCount = count($_FILES['files']['name']);
@@ -60,11 +91,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['file']) || isset($_
                         'error' => $_FILES['files']['error'][$i],
                         'size' => $_FILES['files']['size'][$i]
                     ];
+                } elseif ($_FILES['files']['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                    // Log upload errors (but not "no file" which is normal for empty slots)
+                    $uploadErrors[] = $_FILES['files']['name'][$i] . ': ' . getUploadErrorMessage($_FILES['files']['error'][$i]);
                 }
             }
-        } elseif (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
-            // Single file (backwards compatibility)
-            $files[] = $_FILES['file'];
+        } elseif (isset($_FILES['file'])) {
+            if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
+                $files[] = $_FILES['file'];
+            } elseif ($_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $uploadErrors[] = $_FILES['file']['name'] . ': ' . getUploadErrorMessage($_FILES['file']['error']);
+            }
+        }
+
+        // Report any upload errors
+        if (!empty($uploadErrors)) {
+            $error = implode('; ', $uploadErrors);
         }
 
         // Allowed file types
@@ -658,31 +700,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
         progressDiv.classList.remove('upload-progress-hidden');
         progressBar.style.width = '0%';
-        progressText.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`;
+        progressBar.style.background = ''; // Reset color
+
+        const totalSize = Array.from(files).reduce((sum, f) => sum + f.size, 0);
+        const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(1);
+        progressText.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''} (${totalSizeMB} MB)...`;
 
         const xhr = new XMLHttpRequest();
+
+        // Set longer timeout for large uploads (10 minutes)
+        xhr.timeout = 600000;
 
         xhr.upload.addEventListener('progress', function(e) {
             if (e.lengthComputable) {
                 const percent = Math.round((e.loaded / e.total) * 100);
                 progressBar.style.width = percent + '%';
-                progressText.textContent = `Uploading... ${percent}%`;
+                const uploadedMB = (e.loaded / (1024 * 1024)).toFixed(1);
+                if (percent < 100) {
+                    progressText.textContent = `Uploading... ${percent}% (${uploadedMB} / ${totalSizeMB} MB)`;
+                } else {
+                    progressText.textContent = 'Processing images... This may take a while for large files.';
+                }
             }
         });
 
         xhr.addEventListener('load', function() {
             if (xhr.status === 200) {
                 progressBar.style.width = '100%';
-                progressText.textContent = 'Processing complete! Refreshing...';
+                progressText.textContent = 'Upload complete! Refreshing...';
                 setTimeout(() => window.location.reload(), 500);
             } else {
-                progressText.textContent = 'Upload failed. Please try again.';
+                let errorMsg = 'Upload failed';
+                if (xhr.status === 413) {
+                    errorMsg = 'Files too large. Try uploading fewer files at once.';
+                } else if (xhr.status === 504 || xhr.status === 408) {
+                    errorMsg = 'Server timeout. Try uploading fewer files at once.';
+                } else if (xhr.responseText) {
+                    // Try to extract error from response
+                    const match = xhr.responseText.match(/admin-alert[^>]*>([^<]+)/);
+                    if (match) errorMsg = match[1];
+                }
+                progressText.textContent = errorMsg;
                 progressBar.style.background = '#ef4444';
             }
         });
 
         xhr.addEventListener('error', function() {
-            progressText.textContent = 'Upload failed. Please try again.';
+            progressText.textContent = 'Network error. Check your connection and try again.';
+            progressBar.style.background = '#ef4444';
+        });
+
+        xhr.addEventListener('timeout', function() {
+            progressText.textContent = 'Upload timed out. Try uploading fewer/smaller files at once.';
             progressBar.style.background = '#ef4444';
         });
 
