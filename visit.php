@@ -54,7 +54,7 @@ if (!isset($cms)) {
         </div>
         <form class="card form-card" id="visit-form" method="post">
             <input type="hidden" name="form_type" value="visit">
-            <div class="form-message" id="form-message" style="display: none;"></div>
+            <div class="form-message hidden" id="form-message"></div>
 
             <label>
                 <span>Name</span>
@@ -79,8 +79,8 @@ if (!isset($cms)) {
             </label>
             <button type="submit" class="btn btn-primary" id="submit-btn">
                 <span class="btn-text">Submit</span>
-                <span class="btn-spinner" style="display: none;">
-                    <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
+                <span class="btn-spinner hidden">
+                    <svg width="20" height="20" viewBox="0 0 24 24" class="btn-spinner-svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
                         <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
                             <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
@@ -101,11 +101,11 @@ if (!isset($cms)) {
             const formMessage = document.getElementById('form-message');
 
             document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
-            formMessage.style.display = 'none';
+            formMessage.classList.add('hidden');
 
             btn.disabled = true;
-            btnText.style.display = 'none';
-            btnSpinner.style.display = 'inline-block';
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
 
             try {
                 const formData = new FormData(form);
@@ -119,7 +119,7 @@ if (!isset($cms)) {
                 if (data.success) {
                     formMessage.className = 'form-message success';
                     formMessage.textContent = data.message;
-                    formMessage.style.display = 'block';
+                    formMessage.classList.remove('hidden');
                     form.reset();
                 } else {
                     if (data.errors) {
@@ -131,20 +131,20 @@ if (!isset($cms)) {
 
                     formMessage.className = 'form-message error';
                     formMessage.textContent = data.error || 'Please fix the errors and try again.';
-                    formMessage.style.display = 'block';
+                    formMessage.classList.remove('hidden');
                 }
 
                 btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnSpinner.style.display = 'none';
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
             } catch (error) {
                 formMessage.className = 'form-message error';
                 formMessage.textContent = 'Something went wrong. Please try again.';
-                formMessage.style.display = 'block';
+                formMessage.classList.remove('hidden');
 
                 btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnSpinner.style.display = 'none';
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
             }
         });
         </script>

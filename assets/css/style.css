@@ -140,6 +140,9 @@ img {
 .narrow {
     max-width: 720px;
 }
+.hidden {
+    display: none !important;
+}
 .skip-link {
     position: absolute;
     left: -999px;
@@ -1200,6 +1203,12 @@ textarea {
     background: linear-gradient(135deg, #2b63b5, #451a73);
     padding: 3rem 0;
     margin: 0;
+    width: 100%;
+}
+.newsletter-section .container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 1.5rem;
 }
 .newsletter-card {
     display: grid;
@@ -1223,7 +1232,7 @@ textarea {
 }
 .newsletter-input {
     flex: 1;
-    min-width: 250px;
+    min-width: 200px;
     padding: 0.85rem 1.25rem;
     border-radius: var(--radius-full);
     border: none;
@@ -1231,6 +1240,21 @@ textarea {
 }
 .newsletter-form .btn {
     white-space: nowrap;
+}
+@media (max-width: 480px) {
+    .newsletter-section .container {
+        padding: 0 1rem;
+    }
+    .newsletter-input {
+        min-width: 100%;
+        width: 100%;
+    }
+    .newsletter-form {
+        flex-direction: column;
+    }
+    .newsletter-form .btn {
+        width: 100%;
+    }
 }
 
 /* Newsletter Messages */
@@ -2087,6 +2111,24 @@ textarea {
 
 #button-text.hidden {
     display: none;
+}
+
+.btn-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-spinner.hidden {
+    display: none;
+}
+
+.btn-text.hidden {
+    display: none;
+}
+
+.btn-spinner-svg {
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
