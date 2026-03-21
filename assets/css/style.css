@@ -163,7 +163,7 @@ img {
     background: var(--color-header-bg);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     border-bottom: 1px solid var(--color-border);
 }
 
