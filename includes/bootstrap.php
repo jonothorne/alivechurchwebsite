@@ -37,7 +37,7 @@ if (!function_exists('set_csp_header')) {
         }
         $nonce = CSP_NONCE;
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'nonce-{$nonce}' https://js.stripe.com https://www.youtube.com https://www.google.com https://www.gstatic.com https://img1.wsimg.com; " .
+               "script-src 'self' 'nonce-{$nonce}' https://js.stripe.com https://www.youtube.com https://www.google.com https://www.gstatic.com https://img1.wsimg.com https://cdn.jsdelivr.net; " .
                "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com; " .
                "font-src 'self' https://fonts.gstatic.com; " .
                "img-src 'self' data: https: blob:; " .
