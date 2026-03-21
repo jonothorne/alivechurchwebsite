@@ -530,7 +530,7 @@ if ($isCli) {
                                             $thumbName = pathinfo($image['filename'], PATHINFO_FILENAME) . '-thumbnail.' . pathinfo($image['filename'], PATHINFO_EXTENSION);
                                             $thumbSrc = file_exists($uploadsDir . $thumbName) ? $thumbName : $image['filename'];
                                         ?>
-                                            <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" class="image-thumb" loading="lazy" alt="">
+                                            <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" class="image-thumb" width="50" height="50" loading="lazy" alt="">
                                         <?php else: ?>
                                             <span style="color: red;">Missing</span>
                                         <?php endif; ?>
