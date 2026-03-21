@@ -176,7 +176,15 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
 .repair-table th, .repair-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
 .repair-table select { width: 100%; padding: 0.25rem; font-size: 0.8rem; }
 .repair-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 0.5rem; vertical-align: middle; }
-.file-preview { display: flex; align-items: center; gap: 0.5rem; }
+.file-preview { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+.select-with-preview { display: flex; align-items: center; gap: 0.5rem; }
+.select-with-preview select { flex: 1; }
+.select-preview { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; }
+.available-files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; max-height: 400px; overflow-y: auto; padding: 1rem; background: #f9fafb; border-radius: 4px; margin-top: 1rem; }
+.file-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 0.5rem; text-align: center; cursor: pointer; }
+.file-card:hover { border-color: #3b82f6; }
+.file-card img { width: 100%; height: 80px; object-fit: cover; border-radius: 2px; }
+.file-card small { display: block; margin-top: 0.25rem; font-size: 0.7rem; color: #6b7280; word-break: break-all; }
 </style>
 
 <div class="admin-card">
@@ -247,36 +255,39 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="hidden" name="fixes[<?= $i; ?>][id]" value="<?= htmlspecialchars($item['id']); ?>">
                                     <input type="hidden" name="fixes[<?= $i; ?>][old_file]" value="<?= htmlspecialchars($item['filename']); ?>">
                                     <input type="hidden" name="fixes[<?= $i; ?>][in_content]" value="<?= $item['in_content'] ? '1' : '0'; ?>">
-                                    <select name="fixes[<?= $i; ?>][new_file]">
-                                        <option value="">-- Select replacement --</option>
-                                        <?php
-                                        // Try to find likely matches (same extension)
-                                        $ext = strtolower(pathinfo($item['filename'], PATHINFO_EXTENSION));
-                                        $matches = [];
-                                        $others = [];
-                                        foreach ($uploadedFiles as $file) {
-                                            if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === $ext) {
-                                                $matches[] = $file;
-                                            } else {
-                                                $others[] = $file;
+                                    <div class="select-with-preview">
+                                        <img src="" class="select-preview" id="preview-<?= $i; ?>" style="display: none;">
+                                        <select name="fixes[<?= $i; ?>][new_file]" onchange="updatePreview(this, 'preview-<?= $i; ?>')">
+                                            <option value="">-- Select replacement --</option>
+                                            <?php
+                                            // Try to find likely matches (same extension)
+                                            $ext = strtolower(pathinfo($item['filename'], PATHINFO_EXTENSION));
+                                            $matches = [];
+                                            $others = [];
+                                            foreach ($uploadedFiles as $file) {
+                                                if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === $ext) {
+                                                    $matches[] = $file;
+                                                } else {
+                                                    $others[] = $file;
+                                                }
                                             }
-                                        }
-                                        ?>
-                                        <?php if (!empty($matches)): ?>
-                                            <optgroup label="Same extension (<?= strtoupper($ext); ?>)">
-                                                <?php foreach ($matches as $file): ?>
-                                                    <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
-                                                <?php endforeach; ?>
-                                            </optgroup>
-                                        <?php endif; ?>
-                                        <?php if (!empty($others)): ?>
-                                            <optgroup label="Other files">
-                                                <?php foreach ($others as $file): ?>
-                                                    <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
-                                                <?php endforeach; ?>
-                                            </optgroup>
-                                        <?php endif; ?>
-                                    </select>
+                                            ?>
+                                            <?php if (!empty($matches)): ?>
+                                                <optgroup label="Same extension (<?= strtoupper($ext); ?>)">
+                                                    <?php foreach ($matches as $file): ?>
+                                                        <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php endif; ?>
+                                            <?php if (!empty($others)): ?>
+                                                <optgroup label="Other files">
+                                                    <?php foreach ($others as $file): ?>
+                                                        <option value="<?= htmlspecialchars($file); ?>"><?= htmlspecialchars($file); ?></option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php endif; ?>
+                                        </select>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -289,6 +300,35 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="" class="btn btn-outline">Start Over</a>
                 </div>
             </form>
+
+            <h4 style="margin-top: 2rem;">Available Files Reference</h4>
+            <p style="font-size: 0.875rem; color: #6b7280;">Click a thumbnail to copy the filename, then paste it into the search/select above.</p>
+            <div class="available-files-grid">
+                <?php foreach ($uploadedFiles as $file): ?>
+                    <div class="file-card" onclick="copyFilename('<?= htmlspecialchars($file, ENT_QUOTES); ?>')">
+                        <img src="/uploads/<?= htmlspecialchars($file); ?>" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2280%22><rect fill=%22%23f3f4f6%22 width=%22100%22 height=%2280%22/><text x=%2250%22 y=%2240%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2210%22>No preview</text></svg>'">
+                        <small><?= htmlspecialchars($file); ?></small>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <script <?= csp_nonce(); ?>>
+            function updatePreview(select, previewId) {
+                const preview = document.getElementById(previewId);
+                if (select.value) {
+                    preview.src = '/uploads/' + select.value;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
+            function copyFilename(filename) {
+                navigator.clipboard.writeText(filename).then(() => {
+                    alert('Copied: ' + filename);
+                });
+            }
+            </script>
 
         <?php else: ?>
             <div class="admin-alert admin-alert-success">
