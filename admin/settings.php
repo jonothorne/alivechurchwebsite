@@ -128,4 +128,53 @@ while ($row = $stmt->fetch()) {
     </div>
 </form>
 
+<!-- Admin Tools Section -->
+<div class="admin-card" style="margin-top: 2rem;">
+    <div class="admin-card-header">
+        <h3>Admin Tools</h3>
+    </div>
+    <div style="padding: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+            <a href="/admin/tools/rename-images.php" class="admin-tool-link">
+                <strong>AI Image Rename</strong>
+                <span>Rename images with SEO-friendly names using AI</span>
+            </a>
+            <a href="/admin/tools/repair-image-refs.php" class="admin-tool-link">
+                <strong>Repair Image References</strong>
+                <span>Find and fix broken image references</span>
+            </a>
+            <a href="/admin/tools/diagnose-uploads.php" class="admin-tool-link">
+                <strong>Upload Diagnostics</strong>
+                <span>Check files vs database records</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-tool-link {
+    display: block;
+    padding: 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+}
+.admin-tool-link:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+.admin-tool-link strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #1f2937;
+}
+.admin-tool-link span {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+</style>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
