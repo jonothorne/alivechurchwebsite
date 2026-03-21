@@ -50,7 +50,7 @@ if (!isset($cms)) {
                 <li><strong>Dress:</strong> Trainers or ties—come as you are.</li>
             </ul>
             <p>Need extra assistance? Email <a href="mailto:' . $site['email'] . '">' . $site['email'] . '</a> and we\'ll make arrangements.</p>'); ?></div>
-            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church welcoming service" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;" data-cms-editable="expect_image" data-cms-page="visit" data-cms-type="image">
+            <img src="/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg" alt="Alive Church welcoming service" class="content-image" data-cms-editable="expect_image" data-cms-page="visit" data-cms-type="image">
         </div>
         <form class="card form-card" id="visit-form" method="post">
             <input type="hidden" name="form_type" value="visit">

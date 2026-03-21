@@ -52,7 +52,7 @@ if (!isset($cms)) {
         <div>
             <h2 data-cms-editable="prayer_headline" data-cms-page="next-steps" data-cms-type="text"><?= $cms->text('prayer_headline', 'Need prayer or care?'); ?></h2>
             <p data-cms-editable="prayer_text" data-cms-page="next-steps" data-cms-type="text"><?= $cms->text('prayer_text', 'Our pastoral team and prayer room intercessors stand ready to serve your family. We can pray via email, phone, or at a gathering.'); ?></p>
-            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Prayer and worship at Alive Church" style="border-radius: 1rem; margin-top: 1.5rem; box-shadow: 0 20px 40px rgba(75, 38, 121, 0.15); width: 100%;">
+            <img src="/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg" alt="Prayer and worship at Alive Church" class="content-image">
         </div>
         <form class="card form-card" method="post" action="<?= htmlspecialchars($_SERVER['PHP_SELF']); ?>">
             <?php if ($prayer_notice): ?>
