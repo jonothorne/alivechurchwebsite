@@ -22,31 +22,52 @@ class ImageNameGenerator {
     }
 
     /**
+     * Track the last error for debugging
+     */
+    public $lastError = null;
+
+    /**
      * Generate an SEO-friendly filename for an image
      *
      * @param string $imagePath Path to the image file
      * @param string $originalFilename Original filename for fallback
-     * @return string SEO-friendly filename (without extension)
+     * @return string|null SEO-friendly filename (without extension), or null if can't generate
      */
-    public function generateName(string $imagePath, string $originalFilename = ''): string {
+    public function generateName(string $imagePath, string $originalFilename = ''): ?string {
+        $this->lastError = null;
+
         if (!$this->isConfigured()) {
-            return $this->sanitizeFilename($originalFilename);
+            $this->lastError = 'API not configured';
+            $fallback = $this->sanitizeFilename($originalFilename);
+            return $fallback ?: null;
         }
 
         if (!file_exists($imagePath)) {
-            return $this->sanitizeFilename($originalFilename);
+            $this->lastError = 'File not found';
+            return null;
         }
 
+        // Always try AI first
         try {
             $description = $this->analyzeImage($imagePath);
             if ($description) {
                 return $this->createSeoFilename($description);
             }
+            $this->lastError = 'AI returned empty description';
         } catch (Exception $e) {
+            $this->lastError = 'AI error: ' . $e->getMessage();
             error_log('ImageNameGenerator error: ' . $e->getMessage());
         }
 
-        return $this->sanitizeFilename($originalFilename);
+        // Fallback to sanitized filename only if it's meaningful
+        $fallback = $this->sanitizeFilename($originalFilename);
+        if ($fallback && strlen($fallback) >= 5) {
+            return $fallback . '-' . $this->brandSuffix;
+        }
+
+        // Can't generate a good name
+        $this->lastError = $this->lastError ?: 'No meaningful name available';
+        return null;
     }
 
     /**
@@ -185,12 +206,25 @@ class ImageNameGenerator {
         // Trim hyphens
         $filename = trim($filename, '-');
 
-        // Remove common non-descriptive prefixes
-        $filename = preg_replace('/^(img|image|photo|pic|dsc|dcim|screenshot|screen-shot)-?/i', '', $filename);
+        // Remove common non-descriptive prefixes/patterns
+        $patterns = [
+            '/^(img|image|photo|pic|dsc|dcim|screenshot|screen-shot)-?/',  // Camera prefixes
+            '/^[0-9]{8}-wa[0-9]+$/',  // WhatsApp: 20250727-wa0015
+            '/^wa[0-9]+/',  // WhatsApp short
+            '/^[0-9]{10,}/',  // Long number strings (timestamps)
+            '/^temp-?[0-9]*/',  // Temp files
+        ];
 
-        // If filename is just numbers or too short, make it generic
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $filename)) {
+                // This is a non-descriptive filename, return null to force AI or skip
+                return '';
+            }
+        }
+
+        // If filename is just numbers or too short, return empty to force AI
         if (preg_match('/^[0-9-]+$/', $filename) || strlen($filename) < 3) {
-            $filename = 'image-' . $this->brandSuffix . '-' . substr(uniqid(), -6);
+            return '';
         }
 
         return $filename;

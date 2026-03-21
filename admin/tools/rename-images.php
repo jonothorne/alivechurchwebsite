@@ -298,6 +298,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $isCli) {
             // Generate new name using AI
             $ext = pathinfo($oldFilename, PATHINFO_EXTENSION);
             $newBaseName = $nameGenerator->generateName($fullPath, $image['original_filename']);
+
+            // Skip if AI couldn't generate a meaningful name
+            if ($newBaseName === null) {
+                $results[] = [
+                    'id' => $image['id'],
+                    'old' => $oldFilename,
+                    'new' => $oldFilename,
+                    'status' => 'skipped',
+                    'reason' => $nameGenerator->lastError ?: 'Could not generate SEO name'
+                ];
+                continue;
+            }
+
             $newBaseName = $nameGenerator->ensureUnique($newBaseName, $ext, $uploadsDir);
             $newFilename = $newBaseName . '.' . $ext;
             $newFilePath = 'uploads/' . $newFilename;
@@ -429,6 +442,9 @@ if ($isCli) {
                             <td>
                                 <?php if ($result['status'] === 'skipped'): ?>
                                     <span style="color: #6b7280;">Skipped</span>
+                                    <?php if (!empty($result['reason'])): ?>
+                                        <br><small style="color: #9ca3af;"><?= htmlspecialchars($result['reason']); ?></small>
+                                    <?php endif; ?>
                                 <?php elseif ($result['status'] === 'dry-run'): ?>
                                     <span style="color: #f59e0b;">Preview</span>
                                 <?php else: ?>
