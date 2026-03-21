@@ -349,7 +349,7 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
                 <p><strong>Drop files here</strong> or click to browse</p>
                 <span class="upload-hint">Supports images, videos, audio, PDFs, and documents</span>
             </div>
-            <div class="upload-progress" id="upload-progress" style="display: none;">
+            <div class="upload-progress upload-progress-hidden" id="upload-progress">
                 <div class="upload-progress-bar" id="upload-progress-bar"></div>
                 <span class="upload-progress-text" id="upload-progress-text">Uploading...</span>
             </div>
@@ -407,6 +407,9 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 
 .upload-progress {
     margin-top: 1rem;
+}
+.upload-progress-hidden {
+    display: none;
 }
 
 .upload-progress-bar {
@@ -653,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('files[]', files[i]);
         }
 
-        progressDiv.style.display = 'block';
+        progressDiv.classList.remove('upload-progress-hidden');
         progressBar.style.width = '0%';
         progressText.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`;
 
