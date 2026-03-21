@@ -9570,9 +9570,9 @@ body.cms-edit-mode [data-cms-editable]:hover {
 }
 
 .user-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    right: 0;
+    position: fixed;
+    top: auto;
+    right: 1rem;
     background: var(--color-card-bg);
     border-radius: var(--radius-lg);
     box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -9580,10 +9580,9 @@ body.cms-edit-mode [data-cms-editable]:hover {
     padding: 0.5rem;
     opacity: 0;
     visibility: hidden;
-    z-index: 1000; /* Above subnavs and other elements */
+    z-index: 99999;
     transform: translateY(-10px);
     transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-    z-index: 1000;
 }
 
 .user-menu.open .user-dropdown {
