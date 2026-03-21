@@ -170,13 +170,13 @@ if ($view === 'series') {
                         <?php if (!empty($edit_series['image_url'])): ?>
                             <img src="<?= htmlspecialchars($edit_series['image_url']); ?>" id="image_url_preview" class="image-preview">
                         <?php else: ?>
-                            <img src="" id="image_url_preview" class="image-preview" style="display: none;">
+                            <img src="" id="image_url_preview" class="image-preview hidden">
                             <div id="image_url_placeholder" class="image-placeholder">No image</div>
                         <?php endif; ?>
                     </div>
                     <div class="image-picker-actions">
                         <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select Image</button>
-                        <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('image_url')" id="image_url_clear" style="<?= empty($edit_series['image_url']) ? 'display:none;' : ''; ?>">Clear</button>
+                        <button type="button" class="btn btn-sm btn-outline <?= empty($edit_series['image_url']) ? 'hidden' : ''; ?>" onclick="clearImageField('image_url')" id="image_url_clear">Clear</button>
                     </div>
                 </div>
                 <div class="form-help">Series artwork/cover image from media library</div>

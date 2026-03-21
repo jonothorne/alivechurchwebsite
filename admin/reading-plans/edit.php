@@ -378,13 +378,13 @@ $duration = $plan['duration_days'] ?? 7;
                         <?php if (!empty($plan['cover_image'])): ?>
                             <img src="<?= htmlspecialchars($plan['cover_image']); ?>" id="cover_image_preview" class="image-preview">
                         <?php else: ?>
-                            <img src="" id="cover_image_preview" class="image-preview" style="display: none;">
+                            <img src="" id="cover_image_preview" class="image-preview hidden">
                             <div id="cover_image_placeholder" class="image-placeholder">No image</div>
                         <?php endif; ?>
                     </div>
                     <div class="image-picker-actions">
                         <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('cover_image')">Select</button>
-                        <button type="button" class="btn btn-sm btn-outline" onclick="clearImageField('cover_image')" id="cover_image_clear" style="<?= empty($plan['cover_image']) ? 'display:none;' : ''; ?>">Clear</button>
+                        <button type="button" class="btn btn-sm btn-outline <?= empty($plan['cover_image']) ? 'hidden' : ''; ?>" onclick="clearImageField('cover_image')" id="cover_image_clear">Clear</button>
                     </div>
                 </div>
             </div>
