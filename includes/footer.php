@@ -115,9 +115,9 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
                 <div class="footer-legal-links">
                     <a href="/policies">Privacy Policy</a>
                     <span class="footer-divider">|</span>
-                    <a href="/policies#safeguarding">Safeguarding</a>
+                    <a href="/safeguarding">Safeguarding</a>
                     <span class="footer-divider">|</span>
-                    <a href="/policies#accessibility">Accessibility</a>
+                    <a href="/accessibility">Accessibility</a>
                 </div>
             </div>
         </div>
