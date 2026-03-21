@@ -294,7 +294,7 @@
             if (result.tags && mediaPickerState.page === 1) {
                 mediaPickerState.availableTags = result.tags;
                 tagsContainer.innerHTML = result.tags.map(tag =>
-                    `<button type="button" class="media-tag-btn" data-tag="${tag.slug}" style="--tag-color: ${tag.color}" onclick="filterByTag('${tag.slug}')">${tag.name}</button>`
+                    `<button type="button" class="media-tag-btn" data-tag="${tag.slug}" style="--tag-color: ${tag.color}">${tag.name}</button>`
                 ).join('');
             }
 
@@ -451,6 +451,15 @@
 
     // Load more button
     document.getElementById('media-load-more')?.addEventListener('click', loadMoreMedia);
+
+    // Tag filter buttons (event delegation since tags are dynamically added)
+    document.getElementById('media-tags')?.addEventListener('click', function(e) {
+        const tagBtn = e.target.closest('.media-tag-btn');
+        if (tagBtn) {
+            const tag = tagBtn.dataset.tag;
+            filterByTag(tag);
+        }
+    });
 
     // Close on Escape key
     document.addEventListener('keydown', function(e) {
