@@ -12415,10 +12415,7 @@ textarea {
     background: linear-gradient(120deg, #1c1c21, #121215);
 }
 
-/* Blog featured hero */
-[data-theme="dark"] .blog-featured-hero {
-    background: linear-gradient(135deg, #1e1033, #121215);
-}
+/* Blog featured hero - inherits inline background-image which has dark overlay */
 
 
 /* ==================== Author Links ==================== */
