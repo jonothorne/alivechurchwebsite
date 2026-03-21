@@ -97,7 +97,7 @@ if (!isset($cms)) {
 ?>
 
 <?php if (!empty($eventData['image'])): ?>
-<style <?= csp_nonce(); ?>>.event-hero { background-image: linear-gradient(rgba(30, 26, 43, 0.7), rgba(30, 26, 43, 0.9)), url('<?= htmlspecialchars($eventData['image']); ?>'); }</style>
+<style <?= csp_nonce(); ?>>.event-hero { background-image: linear-gradient(rgba(30, 26, 43, 0.7), rgba(30, 26, 43, 0.9)), url('<?= htmlspecialchars($eventData['image']); ?>'); background-size: cover; background-position: center; }</style>
 <?php endif; ?>
 
 <section class="event-hero">
