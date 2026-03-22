@@ -213,7 +213,7 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
             <div style="max-height: 300px; overflow-y: auto; font-size: 0.85rem; background: #f9fafb; padding: 1rem; border-radius: 4px;">
                 <?php foreach (array_slice($uploadedFiles, 0, 100) as $file): ?>
                     <div class="file-preview">
-                        <img src="/uploads/<?= htmlspecialchars($file); ?>" class="repair-thumb" loading="lazy" onerror="this.style.display='none'">
+                        <img src="/uploads/<?= htmlspecialchars($file); ?>" class="repair-thumb" loading="lazy" data-hide-on-error>
                         <?= htmlspecialchars($file); ?>
                     </div>
                 <?php endforeach; ?>
@@ -257,7 +257,7 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <input type="hidden" name="fixes[<?= $i; ?>][in_content]" value="<?= $item['in_content'] ? '1' : '0'; ?>">
                                     <div class="select-with-preview">
                                         <img src="" class="select-preview" id="preview-<?= $i; ?>" width="50" height="50" style="display: none;">
-                                        <select name="fixes[<?= $i; ?>][new_file]" onchange="updatePreview(this, 'preview-<?= $i; ?>')">
+                                        <select name="fixes[<?= $i; ?>][new_file]" data-action="update-preview" data-preview-id="preview-<?= $i; ?>">
                                             <option value="">-- Select replacement --</option>
                                             <?php
                                             // Try to find likely matches (same extension)
@@ -309,8 +309,8 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                     $thumbName = pathinfo($file, PATHINFO_FILENAME) . '-thumbnail.' . pathinfo($file, PATHINFO_EXTENSION);
                     $thumbSrc = file_exists($uploadsDir . $thumbName) ? $thumbName : $file;
                 ?>
-                    <div class="file-card" onclick="copyFilename('<?= htmlspecialchars($file, ENT_QUOTES); ?>')">
-                        <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" width="50" height="50" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%23f3f4f6%22 width=%2250%22 height=%2250%22/><text x=%2225%22 y=%2225%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%228%22>?</text></svg>'">
+                    <div class="file-card" data-action="copy-filename" data-filename="<?= htmlspecialchars($file, ENT_QUOTES); ?>">
+                        <img src="/uploads/<?= htmlspecialchars($thumbSrc); ?>" width="50" height="50" loading="lazy" data-fallback-on-error="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%23f3f4f6%22 width=%2250%22 height=%2250%22/><text x=%2225%22 y=%2225%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%228%22>?</text></svg>">
                         <small><?= htmlspecialchars($file); ?></small>
                     </div>
                 <?php endforeach; ?>
@@ -341,6 +341,20 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
                     alert('Copied: ' + filename);
                 });
             }
+
+            // Event delegation for CSP compliance
+            document.addEventListener('change', function(e) {
+                if (e.target.matches('[data-action="update-preview"]')) {
+                    updatePreview(e.target, e.target.dataset.previewId);
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                const card = e.target.closest('[data-action="copy-filename"]');
+                if (card) {
+                    copyFilename(card.dataset.filename);
+                }
+            });
             </script>
 
         <?php else: ?>
@@ -351,5 +365,19 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
     </div>
 </div>
+
+<script <?= csp_nonce(); ?>>
+// Handle image errors (CSP-compliant replacement for onerror)
+document.querySelectorAll('[data-hide-on-error]').forEach(function(img) {
+    img.addEventListener('error', function() {
+        this.style.display = 'none';
+    });
+});
+document.querySelectorAll('[data-fallback-on-error]').forEach(function(img) {
+    img.addEventListener('error', function() {
+        this.src = this.dataset.fallbackOnError;
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

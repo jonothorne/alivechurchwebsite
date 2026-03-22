@@ -383,8 +383,8 @@ $duration = $plan['duration_days'] ?? 7;
                         <?php endif; ?>
                     </div>
                     <div class="image-picker-actions">
-                        <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('cover_image')">Select</button>
-                        <button type="button" class="btn btn-sm btn-outline <?= empty($plan['cover_image']) ? 'hidden' : ''; ?>" onclick="clearImageField('cover_image')" id="cover_image_clear">Clear</button>
+                        <button type="button" class="btn btn-sm btn-outline media-picker-select-btn" data-field="cover_image">Select</button>
+                        <button type="button" class="btn btn-sm btn-outline media-picker-clear-btn <?= empty($plan['cover_image']) ? 'media-picker-clear-hidden' : ''; ?>" data-field="cover_image" id="cover_image_clear">Clear</button>
                     </div>
                 </div>
             </div>
@@ -426,7 +426,7 @@ $duration = $plan['duration_days'] ?? 7;
                 $studyIdList = $day['study_ids'] ?? '';
             ?>
             <div class="day-card" data-day="<?= $i; ?>">
-                <div class="day-header" onclick="toggleDay(<?= $i; ?>)">
+                <div class="day-header" data-action="toggle-day" data-day="<?= $i; ?>">
                     <span>Day <?= $i; ?><?= $day && $day['title'] ? ': ' . htmlspecialchars($day['title']) : ''; ?></span>
                     <span class="day-toggle">▼</span>
                 </div>
@@ -461,7 +461,7 @@ $duration = $plan['duration_days'] ?? 7;
                                 ?>
                                 <div class="selected-study" data-study-id="<?= $s['id']; ?>">
                                     <?= htmlspecialchars($s['book_name'] . ' ' . $s['chapter']); ?>
-                                    <span class="remove" onclick="removeStudy(<?= $i; ?>, <?= $s['id']; ?>)">×</span>
+                                    <span class="remove" data-action="remove-study" data-day="<?= $i; ?>" data-study-id="<?= $s['id']; ?>">×</span>
                                 </div>
                                 <?php
                                             endif;
@@ -474,7 +474,7 @@ $duration = $plan['duration_days'] ?? 7;
                             <div class="study-picker">
                                 <?php foreach ($studiesByBook as $bookName => $bookStudies): ?>
                                 <div class="study-book-group">
-                                    <div class="study-book-name" onclick="toggleBookGroup(this)">
+                                    <div class="study-book-name" data-action="toggle-book-group">
                                         <?= htmlspecialchars($bookName); ?>
                                         <span>(<?= count($bookStudies); ?>)</span>
                                     </div>
@@ -483,7 +483,8 @@ $duration = $plan['duration_days'] ?? 7;
                                         <div class="study-chapter-item"
                                              data-study-id="<?= $study['id']; ?>"
                                              data-label="<?= htmlspecialchars($study['book_name'] . ' ' . $study['chapter']); ?>"
-                                             onclick="addStudy(<?= $i; ?>, <?= $study['id']; ?>, '<?= htmlspecialchars($study['book_name'] . ' ' . $study['chapter'], ENT_QUOTES); ?>')">
+                                             data-action="add-study"
+                                             data-day="<?= $i; ?>">
                                             Chapter <?= $study['chapter']; ?>
                                             <?php if ($study['title']): ?>
                                                 <small style="color: #64748b;"> – <?= htmlspecialchars($study['title']); ?></small>
@@ -537,7 +538,7 @@ function addStudy(dayNum, studyId, label) {
     const tag = document.createElement('div');
     tag.className = 'selected-study';
     tag.dataset.studyId = studyId;
-    tag.innerHTML = label + ' <span class="remove" onclick="removeStudy(' + dayNum + ', ' + studyId + ')">×</span>';
+    tag.innerHTML = label + ' <span class="remove" data-action="remove-study" data-day="' + dayNum + '" data-study-id="' + studyId + '">×</span>';
     container.insertBefore(tag, emptyMsg);
 
     // Hide empty message
@@ -607,10 +608,36 @@ document.getElementById('duration_days').addEventListener('change', function() {
     }
 });
 
+// Event delegation for data-action handlers (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+
+    const action = el.dataset.action;
+    const dayNum = el.dataset.day;
+    const studyId = el.dataset.studyId;
+    const label = el.dataset.label;
+
+    switch (action) {
+        case 'toggle-day':
+            toggleDay(dayNum);
+            break;
+        case 'toggle-book-group':
+            toggleBookGroup(el);
+            break;
+        case 'add-study':
+            addStudy(dayNum, studyId, label);
+            break;
+        case 'remove-study':
+            removeStudy(dayNum, studyId);
+            break;
+    }
+});
+
 function createDayCard(dayNum) {
     return `
     <div class="day-card" data-day="${dayNum}">
-        <div class="day-header" onclick="toggleDay(${dayNum})">
+        <div class="day-header" data-action="toggle-day" data-day="${dayNum}">
             <span>Day ${dayNum}</span>
             <span class="day-toggle">▼</span>
         </div>

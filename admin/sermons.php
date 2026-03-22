@@ -175,8 +175,8 @@ if ($view === 'series') {
                         <?php endif; ?>
                     </div>
                     <div class="image-picker-actions">
-                        <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select Image</button>
-                        <button type="button" class="btn btn-sm btn-outline <?= empty($edit_series['image_url']) ? 'hidden' : ''; ?>" onclick="clearImageField('image_url')" id="image_url_clear">Clear</button>
+                        <button type="button" class="btn btn-sm btn-outline media-picker-select-btn" data-field="image_url">Select Image</button>
+                        <button type="button" class="btn btn-sm btn-outline media-picker-clear-btn <?= empty($edit_series['image_url']) ? 'media-picker-clear-hidden' : ''; ?>" data-field="image_url" id="image_url_clear">Clear</button>
                     </div>
                 </div>
                 <div class="form-help">Series artwork/cover image from media library</div>
@@ -292,7 +292,7 @@ if ($view === 'series') {
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
             <?php if (!$series_id): ?>
-                <select id="series-filter" onchange="filterBySeries(this.value)" style="padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
+                <select id="series-filter" data-action="filter-series" style="padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
                     <option value="">All Series</option>
                     <?php foreach ($all_series as $s): ?>
                         <option value="<?= $s['id']; ?>"><?= htmlspecialchars($s['title']); ?></option>
@@ -369,13 +369,17 @@ if ($view === 'series') {
     </div>
 
     <script <?= csp_nonce(); ?>>
-    function filterBySeries(seriesId) {
-        if (seriesId) {
-            window.location.href = '?view=messages&series_id=' + seriesId;
-        } else {
-            window.location.href = '?view=messages';
+    // Event listener for series filter (CSP-compliant)
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('[data-action="filter-series"]')) {
+            const seriesId = e.target.value;
+            if (seriesId) {
+                window.location.href = '?view=messages&series_id=' + seriesId;
+            } else {
+                window.location.href = '?view=messages';
+            }
         }
-    }
+    });
     </script>
 
 <?php endif; ?>

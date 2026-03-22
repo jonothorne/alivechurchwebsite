@@ -251,9 +251,9 @@ if (!isset($cms)) {
                                 <?= nl2br($commentText); ?>
                             </div>
                             <?php if ($isLong): ?>
-                                <button class="read-more-btn" onclick="toggleComment(<?= $comment['id']; ?>)">Read more</button>
+                                <button class="read-more-btn" data-action="toggle-comment" data-comment-id="<?= $comment['id']; ?>">Read more</button>
                             <?php endif; ?>
-                            <button class="reply-btn" onclick="showReplyForm(<?= $comment['id']; ?>)">Reply</button>
+                            <button class="reply-btn" data-action="show-reply" data-comment-id="<?= $comment['id']; ?>">Reply</button>
 
                             <!-- Reply Form (hidden by default) -->
                             <div class="reply-form-container" id="reply-form-<?= $comment['id']; ?>" style="display: none;">
@@ -289,7 +289,7 @@ if (!isset($cms)) {
                                                 </svg>
                                             </span>
                                         </button>
-                                        <button type="button" class="btn btn-outline" onclick="hideReplyForm(<?= $comment['id']; ?>)">Cancel</button>
+                                        <button type="button" class="btn btn-outline" data-action="hide-reply" data-comment-id="<?= $comment['id']; ?>">Cancel</button>
                                     </div>
                                 </form>
                             </div>
@@ -323,7 +323,7 @@ if (!isset($cms)) {
                                                 <?= nl2br($replyText); ?>
                                             </div>
                                             <?php if ($isReplyLong): ?>
-                                                <button class="read-more-btn" onclick="toggleComment(<?= $reply['id']; ?>)">Read more</button>
+                                                <button class="read-more-btn" data-action="toggle-comment" data-comment-id="<?= $reply['id']; ?>">Read more</button>
                                             <?php endif; ?>
                                         </div>
                                     <?php endforeach; ?>
@@ -548,6 +548,27 @@ document.querySelectorAll('.reply-comment-form').forEach(function(form) {
         const messageEl = this.closest('.reply-form-container').querySelector('.reply-form-message');
         submitComment(this, messageEl);
     });
+});
+
+// Event delegation for data-action buttons (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const commentId = btn.dataset.commentId;
+
+    switch(action) {
+        case 'toggle-comment':
+            toggleComment(commentId);
+            break;
+        case 'show-reply':
+            showReplyForm(commentId);
+            break;
+        case 'hide-reply':
+            hideReplyForm(commentId);
+            break;
+    }
 });
 </script>
 <?php include __DIR__ . '/includes/newsletter.php'; ?>

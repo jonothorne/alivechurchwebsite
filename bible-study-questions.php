@@ -139,7 +139,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <div class="filter-group">
                 <label>Sort:</label>
-                <select onchange="window.location.href=this.value" class="sort-select">
+                <select class="sort-select" data-action="navigate-on-change">
                     <option value="?category=<?= urlencode($categorySlug); ?>&sort=popular" <?= $sortBy === 'popular' ? 'selected' : ''; ?>>Most Popular</option>
                     <option value="?category=<?= urlencode($categorySlug); ?>&sort=newest" <?= $sortBy === 'newest' ? 'selected' : ''; ?>>Newest</option>
                     <option value="?category=<?= urlencode($categorySlug); ?>&sort=alphabetical" <?= $sortBy === 'alphabetical' ? 'selected' : ''; ?>>A-Z</option>
@@ -195,5 +195,14 @@ include __DIR__ . '/includes/header.php';
         <a href="/bible-study" class="btn btn-outline">Browse by Book</a>
     </div>
 </section>
+
+<script <?= csp_nonce(); ?>>
+// Navigate on select change (CSP-compliant)
+document.addEventListener('change', function(e) {
+    if (e.target.matches('[data-action="navigate-on-change"]')) {
+        window.location.href = e.target.value;
+    }
+});
+</script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

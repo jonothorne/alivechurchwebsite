@@ -20,14 +20,44 @@
         });
     }
 
-    // Confirm delete actions
-    const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+    // Confirm delete actions (data-confirm-delete attribute)
+    document.addEventListener('click', function(e) {
+        const deleteBtn = e.target.closest('[data-confirm-delete]');
+        if (deleteBtn) {
             if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
                 e.preventDefault();
             }
-        });
+        }
+    });
+
+    // Custom confirm dialogs (data-confirm="message")
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-confirm]');
+        if (btn && !confirm(btn.dataset.confirm)) {
+            e.preventDefault();
+        }
+    });
+
+    // Confirm on form submit (data-confirm-submit="message")
+    document.addEventListener('submit', function(e) {
+        const form = e.target.closest('[data-confirm-submit]');
+        if (form && !confirm(form.dataset.confirmSubmit)) {
+            e.preventDefault();
+        }
+    });
+
+    // Navigate on select change (data-navigate-on-change)
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('[data-navigate-on-change]')) {
+            window.location.href = e.target.value;
+        }
+    });
+
+    // Submit form on input change (data-submit-on-change)
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('[data-submit-on-change]')) {
+            e.target.form.submit();
+        }
     });
 
     // Auto-hide alerts after 5 seconds

@@ -203,7 +203,7 @@ $categories = [
                             <?= $word['active'] ? '👁️' : '👁️‍🗨️'; ?>
                         </a>
                         <a href="?delete=<?= $word['id']; ?><?= $categoryFilter ? '&category=' . urlencode($categoryFilter) : ''; ?>"
-                           class="admin-word-action" title="Delete" onclick="return confirm('Remove this word?');">×</a>
+                           class="admin-word-action" title="Delete" data-confirm="Remove this word?">×</a>
                     </div>
                 <?php endforeach; ?>
             </div>

@@ -192,7 +192,7 @@ $heroStyles = TemplateEngine::getHeroStyles();
                     <div class="admin-post-actions">
                         <a href="/<?= htmlspecialchars($page['slug']); ?>" class="btn btn-xs btn-primary" target="_blank">Edit</a>
                         <a href="?edit=<?= $page['id']; ?>" class="btn btn-xs btn-outline">Settings</a>
-                        <a href="?delete=<?= $page['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this page?')">×</a>
+                        <a href="?delete=<?= $page['id']; ?>" class="btn btn-xs btn-danger" data-confirm="Delete this page?">×</a>
                     </div>
                 </div>
             <?php endforeach; ?>

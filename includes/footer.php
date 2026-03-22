@@ -111,6 +111,7 @@ $is_cms_edit_mode = isset($is_cms_edit_mode) ? $is_cms_edit_mode : false;
     </div>
 </footer>
 <?php if ($is_cms_edit_mode): ?>
+<link rel="stylesheet" href="/assets/css/media-picker.css?v=<?= filemtime(__DIR__ . '/../assets/css/media-picker.css'); ?>">
 <script src="/assets/js/media-picker.js?v=<?= filemtime(__DIR__ . '/../assets/js/media-picker.js'); ?>"></script>
 <script src="/assets/js/cms-editor.js?v=<?= filemtime(__DIR__ . '/../assets/js/cms-editor.js'); ?>"></script>
 <?php endif; ?>

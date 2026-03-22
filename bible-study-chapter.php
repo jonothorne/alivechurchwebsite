@@ -556,7 +556,7 @@ include __DIR__ . '/includes/header.php';
                                 <button class="font-reset-btn" title="Reset to defaults">Reset</button>
                             </div>
                         </div>
-                        <button onclick="window.print()" class="study-action-btn print-fab" title="Print study">
+                        <button class="study-action-btn print-fab" title="Print study" data-action="print">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6 9 6 2 18 2 18 9"/>
                                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -1650,7 +1650,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </svg>
                 <span class="listen-text">Listen to Study</span>
             </button>
-            <button onclick="window.print()" class="mobile-action-btn">
+            <button class="mobile-action-btn" data-action="print">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
                 </svg>
@@ -2378,6 +2378,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showLoginPrompt = showLoginPrompt;
 });
 <?php endif; ?>
+
+// Event delegation for data-action buttons (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    if (btn.dataset.action === 'print') {
+        window.print();
+    }
+});
 </script>
 
 <?php if (!$currentUser): ?>

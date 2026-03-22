@@ -243,12 +243,12 @@ include __DIR__ . '/includes/header.php';
                                 </svg>
                                 Upload Photo
                             </label>
-                            <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" class="visually-hidden" onchange="this.form.submit()">
+                            <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif,image/webp" class="visually-hidden" data-action="submit-on-change">
                         </form>
                         <?php if (!empty($user['avatar'])): ?>
                             <form method="post" style="display: inline;">
                                 <input type="hidden" name="action" value="remove_avatar">
-                                <button type="submit" class="btn btn-outline btn-danger-outline" onclick="return confirm('Remove your profile photo?')">Remove</button>
+                                <button type="submit" class="btn btn-outline btn-danger-outline" data-confirm="Remove your profile photo?">Remove</button>
                             </form>
                         <?php endif; ?>
                         <p class="avatar-help">JPG, PNG, GIF or WebP. Max 2MB.</p>
@@ -424,5 +424,22 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </section>
+
+<script <?= csp_nonce(); ?>>
+// Submit form on file input change (CSP-compliant)
+document.addEventListener('change', function(e) {
+    if (e.target.matches('[data-action="submit-on-change"]')) {
+        e.target.form.submit();
+    }
+});
+
+// Confirm dialog on submit (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-confirm]');
+    if (btn && !confirm(btn.dataset.confirm)) {
+        e.preventDefault();
+    }
+});
+</script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

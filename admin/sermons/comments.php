@@ -123,7 +123,7 @@ $counts = [
                                     <button type="submit" name="spam" class="btn btn-sm btn-outline">Spam</button>
                                 </form>
                             <?php endif; ?>
-                            <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this comment?');">
+                            <form method="POST" style="display: inline;" data-confirm-submit="Delete this comment?">
                                 <input type="hidden" name="id" value="<?= $comment['id']; ?>">
                                 <button type="submit" name="delete" class="btn btn-sm btn-danger">Delete</button>
                             </form>

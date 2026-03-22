@@ -287,7 +287,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="sermon-actions">
                         <div class="action-group">
                             <?php if ($sermon['transcript']): ?>
-                                <button class="action-btn" onclick="toggleTranscript()" id="transcript-btn">
+                                <button class="action-btn" id="transcript-btn" data-action="toggle-transcript">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                         <polyline points="14 2 14 8 20 8"/>
@@ -312,7 +312,7 @@ include __DIR__ . '/includes/header.php';
                         </div>
 
                         <div class="action-group share-group">
-                            <button class="action-btn share-toggle" onclick="toggleShareMenu()">
+                            <button class="action-btn share-toggle" data-action="toggle-share">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="18" cy="5" r="3"/>
                                     <circle cx="6" cy="12" r="3"/>
@@ -348,7 +348,7 @@ include __DIR__ . '/includes/header.php';
                                     </svg>
                                     Email
                                 </a>
-                                <button class="share-option" onclick="copyLink()">
+                                <button class="share-option" data-action="copy-link">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -400,7 +400,7 @@ include __DIR__ . '/includes/header.php';
                                     </svg>
                                     Transcript
                                 </h2>
-                                <button class="transcript-toggle-btn" onclick="toggleTranscript()" id="transcript-toggle-btn">
+                                <button class="transcript-toggle-btn" id="transcript-toggle-btn" data-action="toggle-transcript">
                                     <span>Collapse</span>
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="18 15 12 9 6 15"/>
@@ -643,9 +643,9 @@ include __DIR__ . '/includes/header.php';
                                 <?= nl2br($commentText); ?>
                             </div>
                             <?php if ($isLong): ?>
-                                <button class="read-more-btn" onclick="toggleComment(<?= $comment['id']; ?>)">Read more</button>
+                                <button class="read-more-btn" data-action="toggle-comment" data-comment-id="<?= $comment['id']; ?>">Read more</button>
                             <?php endif; ?>
-                            <button class="reply-btn" onclick="showReplyForm(<?= $comment['id']; ?>)">Reply</button>
+                            <button class="reply-btn" data-action="show-reply" data-comment-id="<?= $comment['id']; ?>">Reply</button>
 
                             <!-- Reply Form (hidden by default) -->
                             <div class="reply-form-container" id="reply-form-<?= $comment['id']; ?>" style="display: none;">
@@ -681,7 +681,7 @@ include __DIR__ . '/includes/header.php';
                                                 </svg>
                                             </span>
                                         </button>
-                                        <button type="button" class="btn btn-outline" onclick="hideReplyForm(<?= $comment['id']; ?>)">Cancel</button>
+                                        <button type="button" class="btn btn-outline" data-action="hide-reply" data-comment-id="<?= $comment['id']; ?>">Cancel</button>
                                     </div>
                                 </form>
                             </div>
@@ -719,7 +719,7 @@ include __DIR__ . '/includes/header.php';
                                                 <?= nl2br($replyText); ?>
                                             </div>
                                             <?php if ($isReplyLong): ?>
-                                                <button class="read-more-btn" onclick="toggleComment(<?= $reply['id']; ?>)">Read more</button>
+                                                <button class="read-more-btn" data-action="toggle-comment" data-comment-id="<?= $reply['id']; ?>">Read more</button>
                                             <?php endif; ?>
                                         </div>
                                     <?php endforeach; ?>
@@ -1024,6 +1024,36 @@ document.querySelectorAll('.reply-comment-form').forEach(function(form) {
         const messageEl = this.closest('.reply-form-container').querySelector('.reply-form-message');
         submitComment(this, messageEl);
     });
+});
+
+// Event delegation for data-action buttons (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const commentId = btn.dataset.commentId;
+
+    switch(action) {
+        case 'toggle-transcript':
+            toggleTranscript();
+            break;
+        case 'toggle-share':
+            toggleShareMenu();
+            break;
+        case 'copy-link':
+            copyLink();
+            break;
+        case 'toggle-comment':
+            toggleComment(commentId);
+            break;
+        case 'show-reply':
+            showReplyForm(commentId);
+            break;
+        case 'hide-reply':
+            hideReplyForm(commentId);
+            break;
+    }
 });
 </script>
 

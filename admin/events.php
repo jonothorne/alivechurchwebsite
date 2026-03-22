@@ -86,7 +86,7 @@ foreach ($planningCenterEvents as $e) {
                     <div class="admin-post-actions">
                         <a href="/events/<?= htmlspecialchars($detail['slug']); ?>" target="_blank" class="btn btn-xs btn-outline">View</a>
                         <a href="/admin/events/edit?slug=<?= urlencode($detail['slug']); ?>" class="btn btn-xs btn-outline">Edit</a>
-                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this event\'s details?');">
+                        <form method="POST" style="display: inline;" data-confirm-submit="Delete this event's details?">
                             <input type="hidden" name="slug" value="<?= htmlspecialchars($detail['slug']); ?>">
                             <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
                         </form>

@@ -113,8 +113,8 @@ $visible_count = count(array_filter($ministries, fn($m) => $m['visible']));
                             <?php endif; ?>
                         </div>
                         <div class="image-picker-actions">
-                            <button type="button" class="btn btn-sm btn-outline" onclick="openMediaPickerFor('image_url')">Select</button>
-                            <button type="button" class="btn btn-sm btn-outline <?= empty($edit_ministry['image_url']) ? 'hidden' : ''; ?>" onclick="clearImageField('image_url')" id="image_url_clear">Clear</button>
+                            <button type="button" class="btn btn-sm btn-outline media-picker-select-btn" data-field="image_url">Select</button>
+                            <button type="button" class="btn btn-sm btn-outline media-picker-clear-btn <?= empty($edit_ministry['image_url']) ? 'media-picker-clear-hidden' : ''; ?>" data-field="image_url" id="image_url_clear">Clear</button>
                         </div>
                     </div>
                 </div>

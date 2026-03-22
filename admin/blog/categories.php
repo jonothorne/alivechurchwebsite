@@ -102,7 +102,7 @@ $categories = $pdo->query("SELECT c.*, COUNT(p.id) as post_count
                             </td>
                             <td><?= $cat['post_count']; ?></td>
                             <td>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this category?');">
+                                <form method="POST" style="display: inline;" data-confirm-submit="Delete this category?">
                                     <input type="hidden" name="id" value="<?= $cat['id']; ?>">
                                     <button type="submit" name="delete" class="btn btn-sm btn-danger">Delete</button>
                                 </form>

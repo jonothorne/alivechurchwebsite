@@ -273,14 +273,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div id="featured-image-preview" style="<?= $post['featured_image'] ? '' : 'display: none;'; ?> margin-bottom: 0.75rem;">
                         <img src="<?= htmlspecialchars($post['featured_image'] ?? ''); ?>" alt="Preview" style="width: 100%; border-radius: 0.5rem;">
-                        <button type="button" onclick="removeFeaturedImage()" class="btn btn-xs btn-danger" style="margin-top: 0.5rem;">Remove Image</button>
+                        <button type="button" class="btn btn-xs btn-danger" style="margin-top: 0.5rem;" data-action="remove-featured">Remove Image</button>
                     </div>
 
                     <div id="featured-image-buttons" style="<?= $post['featured_image'] ? 'display: none;' : ''; ?> display: flex; gap: 0.5rem;">
-                        <button type="button" onclick="openMediaPickerForBlog('featured')" class="btn btn-sm btn-outline" style="flex: 1;">Choose from Library</button>
+                        <button type="button" class="btn btn-sm btn-outline" style="flex: 1;" data-action="pick-media" data-target="featured">Choose from Library</button>
                         <label class="btn btn-sm btn-primary" style="flex: 1; text-align: center; cursor: pointer;">
                             Upload
-                            <input type="file" id="featured-image-upload" accept="image/*" style="display: none;" onchange="uploadImage(this, 'featured')">
+                            <input type="file" id="featured-image-upload" accept="image/*" style="display: none;" data-action="upload-image" data-target="featured">
                         </label>
                     </div>
                 </div>
@@ -297,14 +297,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div id="thumbnail-preview" style="<?= ($post['thumbnail'] ?? '') ? '' : 'display: none;'; ?> margin-bottom: 0.75rem;">
                         <img src="<?= htmlspecialchars($post['thumbnail'] ?? ''); ?>" alt="Thumbnail" style="width: 100%; max-width: 200px; border-radius: 0.5rem;">
-                        <button type="button" onclick="removeThumbnail()" class="btn btn-xs btn-danger" style="margin-top: 0.5rem;">Remove</button>
+                        <button type="button" class="btn btn-xs btn-danger" style="margin-top: 0.5rem;" data-action="remove-thumbnail">Remove</button>
                     </div>
 
                     <div id="thumbnail-buttons" style="<?= ($post['thumbnail'] ?? '') ? 'display: none;' : ''; ?> display: flex; gap: 0.5rem;">
-                        <button type="button" onclick="openMediaPickerForBlog('thumbnail')" class="btn btn-sm btn-outline" style="flex: 1;">Choose from Library</button>
+                        <button type="button" class="btn btn-sm btn-outline" style="flex: 1;" data-action="pick-media" data-target="thumbnail">Choose from Library</button>
                         <label class="btn btn-sm btn-primary" style="flex: 1; text-align: center; cursor: pointer;">
                             Upload
-                            <input type="file" id="thumbnail-upload" accept="image/*" style="display: none;" onchange="uploadImage(this, 'thumbnail')">
+                            <input type="file" id="thumbnail-upload" accept="image/*" style="display: none;" data-action="upload-image" data-target="thumbnail">
                         </label>
                     </div>
                 </div>
@@ -461,6 +461,33 @@ async function uploadImage(input, type = 'featured') {
 
     input.value = '';
 }
+
+// Event delegation for data-action attributes (CSP-compliant)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const target = btn.dataset.target;
+
+    switch(action) {
+        case 'remove-featured':
+            removeFeaturedImage();
+            break;
+        case 'remove-thumbnail':
+            removeThumbnail();
+            break;
+        case 'pick-media':
+            openMediaPickerForBlog(target);
+            break;
+    }
+});
+
+document.addEventListener('change', function(e) {
+    if (e.target.matches('[data-action="upload-image"]')) {
+        uploadImage(e.target, e.target.dataset.target);
+    }
+});
 
 </script>
 

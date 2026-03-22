@@ -103,10 +103,10 @@ $counts = [
             <a href="/admin/blog?status=published" class="admin-filter-tab <?= $statusFilter === 'published' ? 'active' : ''; ?>">Published (<?= $counts['published']; ?>)</a>
             <a href="/admin/blog?status=draft" class="admin-filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts (<?= $counts['draft']; ?>)</a>
         </div>
-        <select onchange="window.location.href='/admin/blog?category=' + this.value" style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-strong); background: var(--color-bg-elevated); color: var(--color-text);">
-            <option value="">All Categories</option>
+        <select data-navigate-on-change style="padding: 0.5rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-strong); background: var(--color-bg-elevated); color: var(--color-text);">
+            <option value="/admin/blog" <?= empty($categoryFilter) ? 'selected' : ''; ?>>All Categories</option>
             <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id']; ?>" <?= $categoryFilter == $cat['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
+                <option value="/admin/blog?category=<?= $cat['id']; ?>" <?= $categoryFilter == $cat['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -175,7 +175,7 @@ $counts = [
                                 <button type="submit" name="unpublish" class="btn btn-xs btn-outline">Unpub</button>
                             </form>
                         <?php endif; ?>
-                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete?');">
+                        <form method="POST" style="display: inline;" data-confirm-submit="Delete this post?">
                             <input type="hidden" name="id" value="<?= $post['id']; ?>">
                             <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
                         </form>

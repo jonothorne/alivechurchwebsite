@@ -119,10 +119,10 @@ $counts = [
         </div>
         <?php if (!empty($categories)): ?>
         <div class="admin-filter-selects">
-            <select onchange="window.location.href='/admin/reading-plans?category='+this.value" class="admin-select-sm">
-                <option value="">All Categories</option>
+            <select data-navigate-on-change class="admin-select-sm">
+                <option value="/admin/reading-plans" <?= empty($categoryFilter) ? 'selected' : ''; ?>>All Categories</option>
                 <?php foreach ($categories as $cat): ?>
-                    <option value="<?= htmlspecialchars($cat); ?>" <?= $categoryFilter === $cat ? 'selected' : ''; ?>>
+                    <option value="/admin/reading-plans?category=<?= urlencode($cat); ?>" <?= $categoryFilter === $cat ? 'selected' : ''; ?>>
                         <?= htmlspecialchars(ucfirst($cat)); ?>
                     </option>
                 <?php endforeach; ?>
@@ -182,7 +182,7 @@ $counts = [
                                 <?= $plan['is_featured'] ? '★' : '☆'; ?>
                             </button>
                         </form>
-                        <form method="post" style="display: inline;" onsubmit="return confirm('Delete this reading plan?');">
+                        <form method="post" style="display: inline;" data-confirm-submit="Delete this reading plan?">
                             <?= csrf_field(); ?>
                             <input type="hidden" name="id" value="<?= $plan['id']; ?>">
                             <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>

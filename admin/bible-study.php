@@ -99,15 +99,15 @@ $booksWithStudies = $pdo->query("SELECT COUNT(DISTINCT book_id) FROM bible_studi
             <a href="/admin/bible-study?status=draft" class="admin-filter-tab <?= $statusFilter === 'draft' ? 'active' : ''; ?>">Drafts</a>
         </div>
         <div class="admin-filter-selects">
-            <select onchange="window.location.href='/admin/bible-study?testament=' + this.value" class="admin-select-sm">
-                <option value="">All Testaments</option>
-                <option value="old" <?= $testamentFilter === 'old' ? 'selected' : ''; ?>>Old Testament</option>
-                <option value="new" <?= $testamentFilter === 'new' ? 'selected' : ''; ?>>New Testament</option>
+            <select data-navigate-on-change class="admin-select-sm">
+                <option value="/admin/bible-study" <?= empty($testamentFilter) ? 'selected' : ''; ?>>All Testaments</option>
+                <option value="/admin/bible-study?testament=old" <?= $testamentFilter === 'old' ? 'selected' : ''; ?>>Old Testament</option>
+                <option value="/admin/bible-study?testament=new" <?= $testamentFilter === 'new' ? 'selected' : ''; ?>>New Testament</option>
             </select>
-            <select onchange="window.location.href='/admin/bible-study?book=' + this.value" class="admin-select-sm">
-                <option value="">All Books</option>
+            <select data-navigate-on-change class="admin-select-sm">
+                <option value="/admin/bible-study" <?= empty($bookFilter) ? 'selected' : ''; ?>>All Books</option>
                 <?php foreach ($books as $book): ?>
-                    <option value="<?= $book['id']; ?>" <?= $bookFilter == $book['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($book['name']); ?></option>
+                    <option value="/admin/bible-study?book=<?= $book['id']; ?>" <?= $bookFilter == $book['id'] ? 'selected' : ''; ?>><?= htmlspecialchars($book['name']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -160,7 +160,7 @@ $booksWithStudies = $pdo->query("SELECT COUNT(DISTINCT book_id) FROM bible_studi
                                 <button type="submit" name="unpublish" class="btn btn-xs btn-outline">Unpublish</button>
                             </form>
                         <?php endif; ?>
-                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this study?');">
+                        <form method="POST" style="display: inline;" data-confirm-submit="Delete this study?">
                             <input type="hidden" name="id" value="<?= $study['id']; ?>">
                             <button type="submit" name="delete" class="btn btn-xs btn-danger">×</button>
                         </form>
