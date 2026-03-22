@@ -33,6 +33,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Set Stripe API key
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
+// Set CA bundle for SSL verification (fixes certificate errors on some hosts)
+$caBundlePath = __DIR__ . '/../includes/cacert.pem';
+if (file_exists($caBundlePath)) {
+    \Stripe\Stripe::setCABundlePath($caBundlePath);
+}
+
 try {
     // Get form data
     $amount = filter_input(INPUT_POST, 'amount', FILTER_VALIDATE_FLOAT);
