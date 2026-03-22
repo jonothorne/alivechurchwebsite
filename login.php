@@ -100,7 +100,7 @@ include __DIR__ . '/includes/header.php';
 
                 <button type="submit" class="btn btn-primary btn-block" id="login-btn">
                     <span class="btn-text">Sign In</span>
-                    <span class="btn-spinner" style="display: none;">
+                    <span class="btn-spinner">
                         <svg class="spinner" width="20" height="20" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.25"/>
                             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">

@@ -2476,13 +2476,18 @@ textarea {
 }
 
 .btn-spinner {
-    display: inline-flex;
+    display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
 }
 
+.btn-spinner.visible,
+.btn-spinner.show {
+    display: inline-flex;
+}
+
 .btn-spinner.hidden {
-    display: none;
+    display: none !important;
 }
 
 .btn-text.hidden {
