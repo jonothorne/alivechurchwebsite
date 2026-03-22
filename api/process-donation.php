@@ -7,8 +7,22 @@
  * Get your key from: https://dashboard.stripe.com/apikeys
  */
 
+// Debug mode - remove after fixing
+if (isset($_GET['debug'])) {
+    header('Content-Type: text/plain');
+    echo "=== PROCESS-DONATION DEBUG ===\n\n";
+    echo "Requiring env-loader...\n";
+}
+
 require_once __DIR__ . '/../includes/env-loader.php';
 Env::load();
+
+if (isset($_GET['debug'])) {
+    $key = env('STRIPE_SECRET_KEY', 'NOT_FOUND');
+    echo "STRIPE_SECRET_KEY from env(): " . substr($key, 0, 7) . "... (length: " . strlen($key) . ")\n";
+    echo "Direct getenv(): " . substr(getenv('STRIPE_SECRET_KEY') ?: 'NOT_SET', 0, 7) . "...\n";
+    exit;
+}
 
 // Load Stripe key from environment
 define('STRIPE_SECRET_KEY', env('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY_HERE'));
