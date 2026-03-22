@@ -140,15 +140,42 @@ try {
 
         // Verify we got a valid client_secret from subscription
         $clientSecret = null;
-        if (isset($subscription->latest_invoice) && isset($subscription->latest_invoice->payment_intent)) {
+
+        // Check for payment_intent on the invoice
+        if (isset($subscription->latest_invoice->payment_intent->client_secret)) {
             $clientSecret = $subscription->latest_invoice->payment_intent->client_secret;
+        }
+        // Fallback: check if there's a pending_setup_intent (for some subscription types)
+        elseif (isset($subscription->pending_setup_intent->client_secret)) {
+            $clientSecret = $subscription->pending_setup_intent->client_secret;
+            // Return as setup type for frontend handling
+            echo json_encode([
+                'success' => true,
+                'clientSecret' => $clientSecret,
+                'subscriptionId' => $subscription->id,
+                'type' => 'setup'
+            ]);
+            logDonation([
+                'amount' => $amount,
+                'frequency' => $frequency,
+                'email' => $email,
+                'gift_aid' => $giftAid,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            exit;
         }
 
         if (empty($clientSecret)) {
-            // Log for debugging
-            error_log('Subscription created but no client_secret. Subscription status: ' . $subscription->status);
-            error_log('Invoice status: ' . ($subscription->latest_invoice->status ?? 'no invoice'));
-            throw new Exception('Subscription setup incomplete. Please try again or use a one-time donation.');
+            // Detailed debug info
+            $debugInfo = [
+                'sub_status' => $subscription->status ?? 'unknown',
+                'sub_id' => $subscription->id ?? 'unknown',
+                'invoice_status' => $subscription->latest_invoice->status ?? 'no_invoice',
+                'invoice_id' => $subscription->latest_invoice->id ?? 'no_invoice',
+                'payment_intent' => isset($subscription->latest_invoice->payment_intent) ? 'exists' : 'missing',
+            ];
+            error_log('Subscription debug: ' . json_encode($debugInfo));
+            throw new Exception('Subscription setup incomplete. Debug: ' . json_encode($debugInfo));
         }
 
         // Return client secret from the subscription's payment intent
