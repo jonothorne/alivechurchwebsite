@@ -59,6 +59,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Include core files
+require_once __DIR__ . '/Config.php';
+Config::load(); // Initialize configuration and path constants
 require_once __DIR__ . '/db-config.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/Auth.php';

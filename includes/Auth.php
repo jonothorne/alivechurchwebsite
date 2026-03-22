@@ -5,6 +5,7 @@
  */
 
 // Legacy admin auth functions for backward compatibility with CMS
+// @deprecated Use AuthMiddleware::check() or $auth->check() instead
 if (!function_exists('is_logged_in')) {
     function is_logged_in() {
         if (session_status() === PHP_SESSION_NONE) {
@@ -46,6 +47,7 @@ if (!function_exists('is_logged_in')) {
     }
 }
 
+// @deprecated Use AuthMiddleware::requireAuth() instead
 if (!function_exists('require_auth')) {
     function require_auth() {
         if (!is_logged_in()) {
@@ -56,6 +58,7 @@ if (!function_exists('require_auth')) {
     }
 }
 
+// @deprecated Use AuthMiddleware::user() or $auth->user() instead
 if (!function_exists('get_logged_in_user')) {
     function get_logged_in_user() {
         if (session_status() === PHP_SESSION_NONE) {
@@ -68,6 +71,7 @@ if (!function_exists('get_logged_in_user')) {
     }
 }
 
+// @deprecated Use $auth->logout() instead
 if (!function_exists('logout_user')) {
     function logout_user() {
         if (session_status() === PHP_SESSION_NONE) {
@@ -550,6 +554,9 @@ class Auth {
         // Successful login - record it
         $this->recordLoginAttempt($ip, $identifier, true);
 
+        // Regenerate session ID to prevent session fixation attacks
+        session_regenerate_id(true);
+
         // Update last login
         $this->pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
 
@@ -582,6 +589,9 @@ class Auth {
      * Login by user ID (for auto-login after registration)
      */
     private function loginById($userId) {
+        // Regenerate session ID to prevent session fixation attacks
+        session_regenerate_id(true);
+
         $this->pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$userId]);
         $_SESSION['user_id'] = $userId;
         $this->user = $this->getUserById($userId);

@@ -3,12 +3,15 @@
  * Stripe Donation Processing Endpoint
  *
  * This file handles donation payments through Stripe.
- * SETUP REQUIRED: Add your Stripe secret key below to enable payment processing.
+ * SETUP: Add STRIPE_SECRET_KEY to your .env file
  * Get your key from: https://dashboard.stripe.com/apikeys
  */
 
-// IMPORTANT: Add your Stripe secret key here
-define('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY_HERE'); // REPLACE THIS
+require_once __DIR__ . '/../includes/env-loader.php';
+Env::load();
+
+// Load Stripe key from environment
+define('STRIPE_SECRET_KEY', env('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY_HERE'));
 
 // Only process POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

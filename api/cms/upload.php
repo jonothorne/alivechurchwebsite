@@ -28,6 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Verify CSRF token
+$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+if (!verify_csrf($csrfToken)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+    exit;
+}
+
 // Configuration
 $uploadDir = __DIR__ . '/../../storage/uploads/';
 $webPath = '/storage/uploads/';

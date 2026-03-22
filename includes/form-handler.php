@@ -5,9 +5,13 @@
  * Handles form submissions, stores to JSON, and sends email notifications to church staff.
  */
 
-// Church staff email for notifications (update this with real email)
-define('CHURCH_ADMIN_EMAIL', 'admin@alivechurch.co.uk');
-define('CHURCH_NAME', 'Alive Church');
+require_once __DIR__ . '/env-loader.php';
+Env::load();
+
+// Church staff email for notifications (from environment)
+define('CHURCH_ADMIN_EMAIL', env('CHURCH_ADMIN_EMAIL', 'admin@alivechurch.co.uk'));
+define('CHURCH_NAME', env('CHURCH_NAME', 'Alive Church'));
+define('MAIL_FROM_ADDRESS', env('MAIL_FROM_ADDRESS', 'noreply@alivechurch.co.uk'));
 
 /**
  * Sanitize form field input
@@ -82,7 +86,7 @@ function send_form_notification(string $type, array $data): bool
     // Set up email headers
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: {$siteName} Website <noreply@alivechurch.co.uk>\r\n";
+    $headers .= "From: {$siteName} Website <" . MAIL_FROM_ADDRESS . ">\r\n";
 
     if ($replyTo && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
         $headers .= "Reply-To: {$replyTo}\r\n";
