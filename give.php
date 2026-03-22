@@ -25,6 +25,15 @@ if (!isset($cms)) {
             <h2>Give Online</h2>
             <p class="form-intro">Secure, convenient giving in less than a minute. Your generosity makes a difference.</p>
 
+            <!-- Success Message (hidden by default) -->
+            <div id="donation-success" class="donation-success hidden">
+                <div class="success-icon">✓</div>
+                <h3>Thank You for Your Generosity!</h3>
+                <p>Your donation has been processed successfully. You will receive a receipt via email shortly.</p>
+                <p class="success-subtitle">Your gift is making a difference in our community and beyond.</p>
+                <button type="button" class="btn btn-primary" onclick="resetDonationForm()">Make Another Donation</button>
+            </div>
+
             <form id="stripe-giving-form" class="stripe-form" action="/api/process-donation.php" method="post">
 
                 <!-- Amount Selection -->
@@ -390,13 +399,12 @@ if (!isset($cms)) {
                 throw new Error(confirmError.message);
             }
 
-            // Payment successful!
-            alert('Thank you for your generous donation! You will receive a receipt via email.');
-            form.reset();
-            cardElement.clear();
+            // Payment successful - show success message
+            document.getElementById('stripe-giving-form').classList.add('hidden');
+            document.getElementById('donation-success').classList.remove('hidden');
 
-            // Redirect to thank you page (optional)
-            // window.location.href = '/thank-you.php';
+            // Scroll to success message
+            document.getElementById('donation-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         } catch (error) {
             // Show error
@@ -407,6 +415,25 @@ if (!isset($cms)) {
             buttonText.classList.remove('hidden');
         }
     });
+
+    // Reset form to make another donation
+    function resetDonationForm() {
+        const form = document.getElementById('stripe-giving-form');
+        const successMsg = document.getElementById('donation-success');
+
+        form.reset();
+        if (cardElement) cardElement.clear();
+
+        successMsg.classList.add('hidden');
+        form.classList.remove('hidden');
+
+        // Reset amount buttons
+        document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.amount-btn[data-amount="custom"]').classList.add('active');
+        document.getElementById('custom-amount-group').style.display = 'block';
+
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     // Copy to clipboard functionality
     document.querySelectorAll('.copy-btn').forEach(btn => {
