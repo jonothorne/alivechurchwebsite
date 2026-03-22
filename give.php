@@ -382,6 +382,11 @@ if (!isset($cms)) {
                 throw new Error(result.error || 'Payment failed');
             }
 
+            // Validate we got a client secret
+            if (!result.clientSecret) {
+                throw new Error(result.error || 'Payment setup failed. Please try again or contact us.');
+            }
+
             // Confirm payment with Stripe
             const {error: confirmError} = await stripe.confirmCardPayment(
                 result.clientSecret,

@@ -21,9 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Check if Stripe key is configured
-if (STRIPE_SECRET_KEY === 'sk_test_YOUR_SECRET_KEY_HERE') {
+if (empty(STRIPE_SECRET_KEY) || STRIPE_SECRET_KEY === 'sk_test_YOUR_SECRET_KEY_HERE') {
     http_response_code(500);
-    echo json_encode(['error' => 'Stripe is not configured. Please add your secret key.']);
+    echo json_encode(['error' => 'Stripe is not configured. Please add your secret key to the .env file.']);
+    exit;
+}
+
+// Validate the key format
+if (!str_starts_with(STRIPE_SECRET_KEY, 'sk_live_') && !str_starts_with(STRIPE_SECRET_KEY, 'sk_test_') && !str_starts_with(STRIPE_SECRET_KEY, 'rk_live_') && !str_starts_with(STRIPE_SECRET_KEY, 'rk_test_')) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Invalid Stripe secret key format. Key should start with sk_live_, sk_test_, rk_live_, or rk_test_.']);
     exit;
 }
 
