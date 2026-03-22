@@ -65,6 +65,8 @@ RewriteRule ^api/cookie-consent$ api/cookie-consent.php [L,QSA]
 RewriteRule ^api/newsletter-signup$ api/newsletter-signup.php [L,QSA]
 RewriteRule ^api/user-studies$ api/user-studies.php [L,QSA]
 RewriteRule ^api/question-search$ api/question-search.php [L,QSA]
+RewriteRule ^api/process-donation$ api/process-donation.php [L,QSA]
+RewriteRule ^api/process-donation\.php$ api/process-donation.php [L,QSA]
 # === END API ROUTES ===
 
 # Sitemap - serve sitemap.xml from sitemap.php
