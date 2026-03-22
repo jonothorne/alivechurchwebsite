@@ -279,14 +279,13 @@ if (!isset($cms)) {
 <!-- Stripe JavaScript Integration -->
 <script src="https://js.stripe.com/v3/"></script>
 <script <?= csp_nonce(); ?>>
-    // NOTE: User needs to add their Stripe publishable key here
-    // Get your key from: https://dashboard.stripe.com/apikeys
-    const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SzcpfJk18C9h8xIu6xrUQyR9ZS57dVBJaewYUHbwRamCEfqyVstjT20M8AyXXN5Oj0lrfZGWOpgxIeuhWBU6tGl00MxJvNvzZ'; // REPLACE THIS
+    // Stripe publishable key loaded from environment
+    const STRIPE_PUBLISHABLE_KEY = '<?= env('STRIPE_PUBLISHABLE_KEY', '') ?>';
 
     // Initialize Stripe (will show error message if key not configured)
     let stripe, elements, cardElement;
 
-    if (STRIPE_PUBLISHABLE_KEY !== 'pk_test_51SzcpfJk18C9h8xIu6xrUQyR9ZS57dVBJaewYUHbwRamCEfqyVstjT20M8AyXXN5Oj0lrfZGWOpgxIeuhWBU6tGl00MxJvNvzZ') {
+    if (STRIPE_PUBLISHABLE_KEY && STRIPE_PUBLISHABLE_KEY.startsWith('pk_')) {
         stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
         elements = stripe.elements();
         cardElement = elements.create('card', {
