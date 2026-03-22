@@ -47,9 +47,12 @@ if (file_exists($caBundlePath)) {
 }
 
 try {
+    // Set JSON content type for all responses
+    header('Content-Type: application/json');
+
     // Get form data
     $amount = filter_input(INPUT_POST, 'amount', FILTER_VALIDATE_FLOAT);
-    $frequency = filter_input(INPUT_POST, 'frequency', FILTER_SANITIZE_STRING);
+    $frequency = isset($_POST['frequency']) ? trim($_POST['frequency']) : '';
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
     $giftAid = isset($_POST['gift_aid']) && $_POST['gift_aid'] === 'yes';
 
@@ -149,10 +152,30 @@ try {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);
 
+} catch (\Stripe\Exception\RateLimitException $e) {
+    // Too many requests
+    http_response_code(429);
+    echo json_encode(['error' => 'Too many requests. Please wait a moment and try again.']);
+
 } catch (\Stripe\Exception\InvalidRequestException $e) {
     // Invalid parameters
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);
+
+} catch (\Stripe\Exception\AuthenticationException $e) {
+    // Invalid API key
+    http_response_code(500);
+    echo json_encode(['error' => 'Payment system authentication error. Please contact the church.']);
+
+} catch (\Stripe\Exception\ApiConnectionException $e) {
+    // Network error
+    http_response_code(500);
+    echo json_encode(['error' => 'Could not connect to payment system. Please try again.']);
+
+} catch (\Stripe\Exception\ApiErrorException $e) {
+    // Generic Stripe API error
+    http_response_code(500);
+    echo json_encode(['error' => 'Payment error: ' . $e->getMessage()]);
 
 } catch (Exception $e) {
     // General error
