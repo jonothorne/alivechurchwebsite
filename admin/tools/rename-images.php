@@ -583,6 +583,16 @@ if ($isCli) {
         </div>
 
         <script <?= csp_nonce(); ?>>
+        // Toast notification
+        function showAdminToast(message, type = 'error') {
+            document.querySelectorAll('.admin-toast').forEach(t => t.remove());
+            const toast = document.createElement('div');
+            toast.className = `admin-toast admin-toast-${type}`;
+            toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'} ${message}</span><button type="button" onclick="this.parentElement.remove()">&times;</button>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
         (function() {
             const checkboxes = document.querySelectorAll('.image-checkbox');
             const checkAll = document.getElementById('check-all');
@@ -646,7 +656,7 @@ if ($isCli) {
 
                 if (count === 0) {
                     e.preventDefault();
-                    alert('Please select at least one image to rename.');
+                    showAdminToast('Please select at least one image to rename.');
                     return;
                 }
 

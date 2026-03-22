@@ -664,6 +664,23 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
 </style>
 
 <script <?= csp_nonce(); ?>>
+// Toast notification function for admin pages
+function showAdminToast(message, type = 'error') {
+    // Remove existing toasts
+    document.querySelectorAll('.admin-toast').forEach(t => t.remove());
+
+    const toast = document.createElement('div');
+    toast.className = `admin-toast admin-toast-${type}`;
+    toast.innerHTML = `
+        <span>${type === 'error' ? '⚠️' : '✅'} ${message}</span>
+        <button type="button" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    document.body.appendChild(toast);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => toast.remove(), 5000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const dropzone = document.getElementById('upload-dropzone');
     const fileInput = document.getElementById('file-input');
@@ -1155,14 +1172,14 @@ async function rotateImage(mediaId, direction, btn) {
             imageRotations[mediaId] -= rotateAmount;
             img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
             console.error('Rotate error:', result.error);
-            alert('Failed to rotate: ' + (result.error || 'Unknown error'));
+            showAdminToast('Failed to rotate: ' + (result.error || 'Unknown error'));
         }
     } catch (error) {
         // Revert visual rotation on error
         imageRotations[mediaId] -= rotateAmount;
         img.style.transform = `rotate(${imageRotations[mediaId]}deg)`;
         console.error('Rotate error:', error);
-        alert('Failed to rotate image: ' + error.message);
+        showAdminToast('Failed to rotate image: ' + error.message);
     }
 
     // Re-enable buttons

@@ -277,6 +277,7 @@ include __DIR__ . '/includes/header.php';
                         <button type="submit" class="btn btn-primary btn-lg">
                             Mark as Complete
                         </button>
+                        <div class="form-error-message hidden" id="complete-error"></div>
                     </form>
                 <?php endif; ?>
             <?php else: ?>
@@ -336,12 +337,17 @@ document.getElementById('complete-day-form')?.addEventListener('submit', async (
                 form.innerHTML = '<div class="completed-notice"><span class="completed-icon">🎉</span><span>Congratulations! You\'ve completed this reading plan!</span></div>';
             <?php endif; ?>
         } else {
-            alert(result.error || 'Failed to save progress');
+            const errorEl = document.getElementById('complete-error');
+            errorEl.textContent = result.error || 'Failed to save progress. Please try again.';
+            errorEl.classList.remove('hidden');
             btn.disabled = false;
             btn.textContent = 'Mark as Complete';
         }
     } catch (error) {
         console.error('Error:', error);
+        const errorEl = document.getElementById('complete-error');
+        errorEl.textContent = 'Something went wrong. Please try again.';
+        errorEl.classList.remove('hidden');
         btn.disabled = false;
         btn.textContent = 'Mark as Complete';
     }

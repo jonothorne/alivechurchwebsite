@@ -319,6 +319,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 const csrfToken = '<?= $_SESSION['csrf_token'] ?? ''; ?>';
 const postId = <?= $post['id'] ?? 'null'; ?>;
 
+// Toast notification function for admin pages
+function showAdminToast(message, type = 'error') {
+    document.querySelectorAll('.admin-toast').forEach(t => t.remove());
+    const toast = document.createElement('div');
+    toast.className = `admin-toast admin-toast-${type}`;
+    toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'} ${message}</span><button type="button" onclick="this.parentElement.remove()">&times;</button>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
 // Auto-save status indicator
 function showSaveStatus(message, isError = false) {
     let indicator = document.getElementById('auto-save-indicator');
@@ -451,11 +461,11 @@ async function uploadImage(input, type = 'featured') {
         if (result.success && result.data) {
             selectMedia(result.data.url, type);
         } else {
-            alert(result.error || 'Upload failed');
+            showAdminToast(result.error || 'Upload failed');
             buttons.innerHTML = originalContent;
         }
     } catch (error) {
-        alert('Upload failed: ' + error.message);
+        showAdminToast('Upload failed: ' + error.message);
         buttons.innerHTML = originalContent;
     }
 

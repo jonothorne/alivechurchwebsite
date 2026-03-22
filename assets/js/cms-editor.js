@@ -15,6 +15,22 @@
         originalContent: new Map()
     };
 
+    // Toast notification helper
+    function showEditorToast(message, type = 'error') {
+        document.querySelectorAll('.cms-editor-toast').forEach(t => t.remove());
+        const toast = document.createElement('div');
+        toast.className = `cms-editor-toast cms-editor-toast-${type}`;
+        toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'} ${message}</span>`;
+        toast.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);padding:0.75rem 1.5rem;border-radius:0.5rem;font-size:0.875rem;z-index:10001;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+        if (type === 'success') {
+            toast.style.background = '#d1fae5';
+            toast.style.color = '#065f46';
+            toast.style.borderColor = '#6ee7b7';
+        }
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', init);
 
@@ -741,7 +757,7 @@
             // Save the current selection before anything steals focus
             const selection = window.getSelection();
             if (!selection.rangeCount || selection.isCollapsed) {
-                alert('Please select some text first to create a link.');
+                showEditorToast('Please select some text first to create a link.');
                 return;
             }
 
@@ -749,13 +765,13 @@
             const selectedText = range.toString();
 
             if (!selectedText.trim()) {
-                alert('Please select some text first to create a link.');
+                showEditorToast('Please select some text first to create a link.');
                 return;
             }
 
             // Check if selection is within our editable element
             if (!state.currentElement || !state.currentElement.contains(range.commonAncestorContainer)) {
-                alert('Please select text within the editable area.');
+                showEditorToast('Please select text within the editable area.');
                 return;
             }
 
@@ -1013,7 +1029,7 @@
                                 selectCallback(url);
                                 closeModal();
                             } else if (!url) {
-                                alert('Error: This image has no valid URL');
+                                showEditorToast('Error: This image has no valid URL');
                             }
                         }
                     });

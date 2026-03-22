@@ -108,12 +108,14 @@ include __DIR__ . '/includes/header.php';
                             <input type="hidden" name="action" value="start_plan">
                             <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
                             <button type="submit" class="plan-action-btn secondary">Start Again</button>
+                            <div class="form-error-message hidden"></div>
                         </form>
                     <?php else: ?>
                         <form method="post" action="/api/user-studies" class="start-form">
                             <input type="hidden" name="action" value="start_plan">
                             <input type="hidden" name="plan_id" value="<?= $plan['id']; ?>">
                             <button type="submit" class="plan-action-btn primary">Start This Plan</button>
+                            <div class="form-error-message hidden"></div>
                         </form>
                     <?php endif; ?>
                 </div>
@@ -181,12 +183,19 @@ document.querySelectorAll('.start-form, .restart-form').forEach(form => {
             if (result.success) {
                 window.location.href = '/reading-plan/<?= htmlspecialchars($plan['slug']); ?>/day/1';
             } else {
-                alert(result.error || 'Failed to start plan');
+                const errorEl = form.querySelector('.form-error-message');
+                errorEl.textContent = result.error || 'Failed to start plan. Please try again.';
+                errorEl.classList.remove('hidden');
                 btn.disabled = false;
+                btn.textContent = form.classList.contains('restart-form') ? 'Start Again' : 'Start This Plan';
             }
         } catch (error) {
             console.error('Error:', error);
+            const errorEl = form.querySelector('.form-error-message');
+            errorEl.textContent = 'Something went wrong. Please try again.';
+            errorEl.classList.remove('hidden');
             btn.disabled = false;
+            btn.textContent = form.classList.contains('restart-form') ? 'Start Again' : 'Start This Plan';
         }
     });
 });

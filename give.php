@@ -354,7 +354,7 @@ if (!isset($cms)) {
         event.preventDefault();
 
         if (!stripe || !cardElement) {
-            alert('Stripe is not configured. Please contact the church administrator.');
+            document.getElementById('card-errors').textContent = 'Payment system is not configured. Please contact the church administrator.';
             return;
         }
 

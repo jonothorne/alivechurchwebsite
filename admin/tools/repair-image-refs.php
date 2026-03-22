@@ -317,6 +317,16 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <script <?= csp_nonce(); ?>>
+            // Toast notification
+            function showAdminToast(message, type = 'success') {
+                document.querySelectorAll('.admin-toast').forEach(t => t.remove());
+                const toast = document.createElement('div');
+                toast.className = `admin-toast admin-toast-${type}`;
+                toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'} ${message}</span><button type="button" onclick="this.parentElement.remove()">&times;</button>`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
             function updatePreview(select, previewId) {
                 const preview = document.getElementById(previewId);
                 if (select.value) {
@@ -338,7 +348,7 @@ if (isset($_GET['scan']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
 
             function copyFilename(filename) {
                 navigator.clipboard.writeText(filename).then(() => {
-                    alert('Copied: ' + filename);
+                    showAdminToast('Copied: ' + filename);
                 });
             }
 
