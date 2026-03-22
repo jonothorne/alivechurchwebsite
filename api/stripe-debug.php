@@ -4,64 +4,54 @@
  * Delete this file after debugging is complete
  */
 
-require_once __DIR__ . '/../includes/env-loader.php';
-Env::load();
+// Show errors for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-header('Content-Type: application/json');
+header('Content-Type: text/plain');
 
-$secretKey = env('STRIPE_SECRET_KEY', '');
-$publishableKey = env('STRIPE_PUBLISHABLE_KEY', '');
+echo "=== STRIPE DEBUG ===\n\n";
 
-// Mask the keys for display (show first 7 and last 4 chars)
-function maskKey($key) {
-    if (strlen($key) < 15) return 'TOO_SHORT';
-    if (empty($key)) return 'EMPTY';
-    return substr($key, 0, 7) . '...' . substr($key, -4);
-}
+// Check PHP version
+echo "PHP Version: " . PHP_VERSION . "\n\n";
 
-$debug = [
-    'env_file_exists' => file_exists(__DIR__ . '/../.env'),
-    'secret_key_prefix' => $secretKey ? substr($secretKey, 0, 7) : 'EMPTY',
-    'secret_key_masked' => maskKey($secretKey),
-    'secret_key_length' => strlen($secretKey),
-    'publishable_key_prefix' => $publishableKey ? substr($publishableKey, 0, 7) : 'EMPTY',
-    'publishable_key_masked' => maskKey($publishableKey),
-    'php_version' => PHP_VERSION,
-    'stripe_library_exists' => file_exists(__DIR__ . '/../vendor/autoload.php'),
-];
+// Check if env file exists
+$envPath = __DIR__ . '/../.env';
+echo ".env file exists: " . (file_exists($envPath) ? 'YES' : 'NO') . "\n";
 
-// Test Stripe connection if key looks valid
-if (!empty($secretKey) && (str_starts_with($secretKey, 'sk_') || str_starts_with($secretKey, 'rk_'))) {
-    try {
-        require_once __DIR__ . '/../vendor/autoload.php';
-        \Stripe\Stripe::setApiKey($secretKey);
+// Try to load env manually
+if (file_exists($envPath)) {
+    $envContent = file_get_contents($envPath);
+    $lines = explode("\n", $envContent);
 
-        // Set CA bundle
-        $caBundlePath = __DIR__ . '/../includes/cacert.pem';
-        if (file_exists($caBundlePath)) {
-            \Stripe\Stripe::setCABundlePath($caBundlePath);
+    echo "\n=== ENV FILE KEYS ===\n";
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line) || $line[0] === '#') continue;
+
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+
+            // Mask sensitive values
+            if (stripos($key, 'KEY') !== false || stripos($key, 'SECRET') !== false || stripos($key, 'PASS') !== false) {
+                if (strlen($value) > 10) {
+                    $value = substr($value, 0, 7) . '...' . substr($value, -4) . ' (length: ' . strlen($value) . ')';
+                } else {
+                    $value = 'TOO_SHORT or EMPTY';
+                }
+            }
+            echo "$key = $value\n";
         }
-
-        // Try to retrieve account info (simple API test)
-        $account = \Stripe\Account::retrieve();
-        $debug['stripe_connection'] = 'SUCCESS';
-        $debug['stripe_account_id'] = $account->id ?? 'unknown';
-        $debug['stripe_account_type'] = $account->type ?? 'unknown';
-    } catch (\Stripe\Exception\AuthenticationException $e) {
-        $debug['stripe_connection'] = 'AUTH_FAILED';
-        $debug['stripe_error'] = $e->getMessage();
-    } catch (\Stripe\Exception\PermissionException $e) {
-        $debug['stripe_connection'] = 'PERMISSION_DENIED';
-        $debug['stripe_error'] = $e->getMessage();
-    } catch (\Stripe\Exception\ApiConnectionException $e) {
-        $debug['stripe_connection'] = 'CONNECTION_FAILED';
-        $debug['stripe_error'] = $e->getMessage();
-    } catch (Exception $e) {
-        $debug['stripe_connection'] = 'ERROR';
-        $debug['stripe_error'] = $e->getMessage();
     }
-} else {
-    $debug['stripe_connection'] = 'SKIPPED - Invalid key format';
 }
 
-echo json_encode($debug, JSON_PRETTY_PRINT);
+// Check vendor
+echo "\n=== VENDOR ===\n";
+echo "vendor/autoload.php exists: " . (file_exists(__DIR__ . '/../vendor/autoload.php') ? 'YES' : 'NO') . "\n";
+
+// Check CA cert
+echo "includes/cacert.pem exists: " . (file_exists(__DIR__ . '/../includes/cacert.pem') ? 'YES' : 'NO') . "\n";
+
+echo "\n=== DONE ===\n";
