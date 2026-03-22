@@ -11,11 +11,39 @@ class ContentManager {
     private $isEditMode = false;
     private $loadedBlocks = [];
 
-    public function __construct($pageSlug = null) {
+    public function __construct($pageSlug = null, $preload = true) {
         require_once __DIR__ . '/../db-config.php';
         $this->pdo = getDbConnection();
         $this->pageSlug = $pageSlug ?? $this->getCurrentPageSlug();
         $this->checkEditMode();
+
+        // Preload all blocks for this page in one query (major performance optimization)
+        if ($preload) {
+            $this->preloadBlocks();
+        }
+    }
+
+    /**
+     * Preload all content blocks for the current page in a single query
+     * This avoids N+1 queries when multiple blocks are accessed
+     */
+    public function preloadBlocks() {
+        if (!empty($this->loadedBlocks)) {
+            return; // Already loaded
+        }
+
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT block_key, content FROM content_blocks WHERE page_slug = ?"
+            );
+            $stmt->execute([$this->pageSlug]);
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->loadedBlocks[$row['block_key']] = $row['content'];
+            }
+        } catch (Exception $e) {
+            error_log('ContentManager preloadBlocks error: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -346,9 +374,13 @@ class ContentManager {
     /**
      * Set page slug (useful for loading content for different pages)
      */
-    public function setPageSlug($slug) {
+    public function setPageSlug($slug, $preload = true) {
         $this->pageSlug = $slug;
         $this->loadedBlocks = []; // Clear cache
+
+        if ($preload) {
+            $this->preloadBlocks();
+        }
     }
 
     /**

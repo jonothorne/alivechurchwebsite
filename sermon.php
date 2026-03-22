@@ -93,28 +93,24 @@ $youtubeChannelUrl = $site['social']['youtube'] ?? 'https://www.youtube.com/@ali
 // Get current user for comments
 $currentUser = $auth->user();
 
-// Get approved comments with user data
-$commentStmt = $pdo->prepare("SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.avatar as user_avatar, u.avatar_color as user_avatar_color
+// Get all approved comments with user data (single query for both comments and replies)
+$allCommentsStmt = $pdo->prepare("SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.avatar as user_avatar, u.avatar_color as user_avatar_color
                               FROM sermon_comments c
                               LEFT JOIN users u ON c.user_id = u.id
-                              WHERE c.sermon_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
+                              WHERE c.sermon_id = ? AND c.status = 'approved'
                               ORDER BY c.created_at ASC");
-$commentStmt->execute([$sermon['id']]);
-$comments = $commentStmt->fetchAll();
+$allCommentsStmt->execute([$sermon['id']]);
+$allComments = $allCommentsStmt->fetchAll();
 
-// Get comment replies with user data
-$replyStmt = $pdo->prepare("SELECT c.*, u.full_name as user_full_name, u.username as user_username, u.avatar as user_avatar, u.avatar_color as user_avatar_color
-                            FROM sermon_comments c
-                            LEFT JOIN users u ON c.user_id = u.id
-                            WHERE c.sermon_id = ? AND c.status = 'approved' AND c.parent_id IS NOT NULL
-                            ORDER BY c.created_at ASC");
-$replyStmt->execute([$sermon['id']]);
-$replies = $replyStmt->fetchAll();
-
-// Group replies by parent
+// Separate top-level comments and replies
+$comments = [];
 $repliesByParent = [];
-foreach ($replies as $reply) {
-    $repliesByParent[$reply['parent_id']][] = $reply;
+foreach ($allComments as $comment) {
+    if ($comment['parent_id'] === null) {
+        $comments[] = $comment;
+    } else {
+        $repliesByParent[$comment['parent_id']][] = $comment;
+    }
 }
 
 // Handle comment submission
