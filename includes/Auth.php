@@ -11,9 +11,14 @@ if (!function_exists('is_logged_in')) {
             session_start();
         }
 
-        // Check legacy admin session first
+        // Check legacy admin session first (fastest path)
         if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
             return true;
+        }
+
+        // Check if we've already determined this user is NOT an admin (avoid repeated DB queries)
+        if (isset($_SESSION['_not_admin']) && $_SESSION['_not_admin'] === true) {
+            return false;
         }
 
         // Also check unified Auth system - if user is logged in with admin/editor role,
@@ -31,6 +36,9 @@ if (!function_exists('is_logged_in')) {
                 $_SESSION['admin_user_id'] = $user['id'];
                 $_SESSION['admin_user'] = $user;
                 return true;
+            } else {
+                // Cache that this user is not an admin to avoid repeated DB queries
+                $_SESSION['_not_admin'] = true;
             }
         }
 
