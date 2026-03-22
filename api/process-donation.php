@@ -27,26 +27,8 @@ if (STRIPE_SECRET_KEY === 'sk_test_YOUR_SECRET_KEY_HERE') {
     exit;
 }
 
-// Load Stripe PHP library (you'll need to install this via Composer)
-// Run: composer require stripe/stripe-php
-// Uncomment the line below once Stripe is installed:
-// require_once __DIR__ . '/../vendor/autoload.php';
-
-// For now, return a setup message
-if (!class_exists('\Stripe\Stripe')) {
-    http_response_code(500);
-    echo json_encode([
-        'error' => 'Stripe library not installed. Run: composer require stripe/stripe-php',
-        'setup_instructions' => [
-            '1. Install Composer if not already installed: https://getcomposer.org',
-            '2. Navigate to your project directory',
-            '3. Run: composer require stripe/stripe-php',
-            '4. Add your Stripe secret key to this file',
-            '5. Test with Stripe test mode keys first'
-        ]
-    ]);
-    exit;
-}
+// Load Stripe PHP library
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Set Stripe API key
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
