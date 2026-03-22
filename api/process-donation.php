@@ -138,44 +138,58 @@ try {
             ]
         ]);
 
-        // Verify we got a valid client_secret from subscription
+        // Get client_secret - try multiple approaches
         $clientSecret = null;
 
-        // Check for payment_intent on the invoice
+        // Method 1: Direct from expanded subscription
         if (isset($subscription->latest_invoice->payment_intent->client_secret)) {
             $clientSecret = $subscription->latest_invoice->payment_intent->client_secret;
         }
-        // Fallback: check if there's a pending_setup_intent (for some subscription types)
-        elseif (isset($subscription->pending_setup_intent->client_secret)) {
-            $clientSecret = $subscription->pending_setup_intent->client_secret;
-            // Return as setup type for frontend handling
-            echo json_encode([
-                'success' => true,
-                'clientSecret' => $clientSecret,
-                'subscriptionId' => $subscription->id,
-                'type' => 'setup'
+
+        // Method 2: Fetch invoice separately if payment_intent not expanded
+        if (empty($clientSecret) && isset($subscription->latest_invoice->id)) {
+            $invoiceId = is_string($subscription->latest_invoice)
+                ? $subscription->latest_invoice
+                : $subscription->latest_invoice->id;
+
+            $invoice = \Stripe\Invoice::retrieve([
+                'id' => $invoiceId,
+                'expand' => ['payment_intent']
             ]);
-            logDonation([
-                'amount' => $amount,
-                'frequency' => $frequency,
-                'email' => $email,
-                'gift_aid' => $giftAid,
-                'timestamp' => date('Y-m-d H:i:s')
+
+            if (isset($invoice->payment_intent->client_secret)) {
+                $clientSecret = $invoice->payment_intent->client_secret;
+            }
+        }
+
+        // Method 3: If still no payment_intent, the invoice might need to be paid differently
+        // Create a payment intent manually for the invoice amount
+        if (empty($clientSecret) && isset($subscription->latest_invoice)) {
+            $invoiceId = is_string($subscription->latest_invoice)
+                ? $subscription->latest_invoice
+                : $subscription->latest_invoice->id;
+
+            $invoice = \Stripe\Invoice::retrieve($invoiceId);
+
+            // Create a payment intent for this invoice
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => $invoice->amount_due,
+                'currency' => 'gbp',
+                'customer' => $customer->id,
+                'description' => ucfirst($frequency) . ' Donation to Alive Church',
+                'metadata' => [
+                    'invoice_id' => $invoiceId,
+                    'subscription_id' => $subscription->id,
+                    'gift_aid' => $giftAid ? 'yes' : 'no',
+                    'type' => $frequency . ' donation'
+                ]
             ]);
-            exit;
+
+            $clientSecret = $paymentIntent->client_secret;
         }
 
         if (empty($clientSecret)) {
-            // Detailed debug info
-            $debugInfo = [
-                'sub_status' => $subscription->status ?? 'unknown',
-                'sub_id' => $subscription->id ?? 'unknown',
-                'invoice_status' => $subscription->latest_invoice->status ?? 'no_invoice',
-                'invoice_id' => $subscription->latest_invoice->id ?? 'no_invoice',
-                'payment_intent' => isset($subscription->latest_invoice->payment_intent) ? 'exists' : 'missing',
-            ];
-            error_log('Subscription debug: ' . json_encode($debugInfo));
-            throw new Exception('Subscription setup incomplete. Debug: ' . json_encode($debugInfo));
+            throw new Exception('Could not create payment for subscription. Please try a one-time donation.');
         }
 
         // Return client secret from the subscription's payment intent
