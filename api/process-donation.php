@@ -96,6 +96,11 @@ try {
             ]
         ]);
 
+        // Verify we got a valid client_secret
+        if (empty($paymentIntent->client_secret)) {
+            throw new Exception('Payment intent created but no client secret returned. Check Stripe API key permissions.');
+        }
+
         // Return client secret for confirming payment on frontend
         echo json_encode([
             'success' => true,
@@ -129,10 +134,16 @@ try {
             ]
         ]);
 
+        // Verify we got a valid client_secret from subscription
+        $clientSecret = $subscription->latest_invoice->payment_intent->client_secret ?? null;
+        if (empty($clientSecret)) {
+            throw new Exception('Subscription created but no client secret returned. Check Stripe API key permissions.');
+        }
+
         // Return client secret from the subscription's payment intent
         echo json_encode([
             'success' => true,
-            'clientSecret' => $subscription->latest_invoice->payment_intent->client_secret,
+            'clientSecret' => $clientSecret,
             'subscriptionId' => $subscription->id,
             'type' => 'subscription'
         ]);
