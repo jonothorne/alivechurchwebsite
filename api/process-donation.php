@@ -7,22 +7,8 @@
  * Get your key from: https://dashboard.stripe.com/apikeys
  */
 
-// Debug mode - remove after fixing
-if (isset($_GET['debug'])) {
-    header('Content-Type: text/plain');
-    echo "=== PROCESS-DONATION DEBUG ===\n\n";
-    echo "Requiring env-loader...\n";
-}
-
 require_once __DIR__ . '/../includes/env-loader.php';
 Env::load();
-
-if (isset($_GET['debug'])) {
-    $key = env('STRIPE_SECRET_KEY', 'NOT_FOUND');
-    echo "STRIPE_SECRET_KEY from env(): " . substr($key, 0, 7) . "... (length: " . strlen($key) . ")\n";
-    echo "Direct getenv(): " . substr(getenv('STRIPE_SECRET_KEY') ?: 'NOT_SET', 0, 7) . "...\n";
-    exit;
-}
 
 // Load Stripe key from environment
 define('STRIPE_SECRET_KEY', env('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY_HERE'));
@@ -136,11 +122,15 @@ try {
             ]
         ]);
 
-        // Create subscription
+        // Create subscription with payment settings
         $subscription = \Stripe\Subscription::create([
             'customer' => $customer->id,
             'items' => [['price' => $price->id]],
             'payment_behavior' => 'default_incomplete',
+            'payment_settings' => [
+                'payment_method_types' => ['card'],
+                'save_default_payment_method' => 'on_subscription'
+            ],
             'expand' => ['latest_invoice.payment_intent'],
             'metadata' => [
                 'gift_aid' => $giftAid ? 'yes' : 'no',
@@ -149,9 +139,16 @@ try {
         ]);
 
         // Verify we got a valid client_secret from subscription
-        $clientSecret = $subscription->latest_invoice->payment_intent->client_secret ?? null;
+        $clientSecret = null;
+        if (isset($subscription->latest_invoice) && isset($subscription->latest_invoice->payment_intent)) {
+            $clientSecret = $subscription->latest_invoice->payment_intent->client_secret;
+        }
+
         if (empty($clientSecret)) {
-            throw new Exception('Subscription created but no client secret returned. Check Stripe API key permissions.');
+            // Log for debugging
+            error_log('Subscription created but no client_secret. Subscription status: ' . $subscription->status);
+            error_log('Invoice status: ' . ($subscription->latest_invoice->status ?? 'no invoice'));
+            throw new Exception('Subscription setup incomplete. Please try again or use a one-time donation.');
         }
 
         // Return client secret from the subscription's payment intent
