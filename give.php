@@ -115,7 +115,7 @@ if (!isset($cms)) {
 </section>
 
 <!-- Alternative Giving Methods -->
-<section class="content-section">
+<section class="content-section" id="ways">
     <div class="container">
         <div class="section-heading center">
             <h2 data-cms-editable="methods_headline" data-cms-page="give" data-cms-type="text"><?= $cms->text('methods_headline', 'More Ways to Give'); ?></h2>
@@ -177,7 +177,7 @@ if (!isset($cms)) {
 </section>
 
 <!-- Financial Transparency Section -->
-<section class="content-section alt">
+<section class="content-section alt" id="why">
     <div class="container">
         <div class="section-heading center">
             <h2 data-cms-editable="transparency_headline" data-cms-page="give" data-cms-type="text"><?= $cms->text('transparency_headline', 'Where Your Giving Goes'); ?></h2>
