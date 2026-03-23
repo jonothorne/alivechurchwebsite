@@ -12,7 +12,8 @@
         isEditing: false,
         currentElement: null,
         hasUnsavedChanges: false,
-        originalContent: new Map()
+        originalContent: new Map(),
+        csrfToken: null
     };
 
     // Toast notification helper
@@ -38,6 +39,12 @@
         // Check if we're in edit mode (admin logged in)
         if (!document.body.classList.contains('cms-edit-mode')) {
             return;
+        }
+
+        // Get CSRF token from toolbar
+        const toolbar = document.getElementById('cms-toolbar');
+        if (toolbar) {
+            state.csrfToken = toolbar.dataset.csrfToken;
         }
 
         createEditorToolbar();
@@ -416,6 +423,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': state.csrfToken
                 },
                 body: JSON.stringify({
                     key: key,
@@ -589,6 +597,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': state.csrfToken
                 },
                 body: JSON.stringify({
                     key: key,
@@ -1167,6 +1176,9 @@
         try {
             const response = await fetch('/api/cms/upload', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': state.csrfToken
+                },
                 body: formData
             });
 
@@ -1301,6 +1313,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': state.csrfToken
                 },
                 body: JSON.stringify(data)
             });

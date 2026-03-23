@@ -313,7 +313,7 @@ if ($current_user && $is_bible_study_page) {
 </head>
 <body<?php if ($is_cms_edit_mode): ?> class="cms-edit-mode"<?php endif; ?>>
 <?php if ($is_cms_edit_mode): ?>
-<div id="cms-toolbar" class="cms-toolbar-php">
+<div id="cms-toolbar" class="cms-toolbar-php" data-csrf-token="<?= csrf_token(); ?>">
     <div class="cms-toolbar-inner">
         <div class="cms-toolbar-left">
             <span class="cms-toolbar-logo">CMS</span>
