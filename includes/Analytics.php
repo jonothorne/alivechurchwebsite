@@ -8,8 +8,8 @@
 class Analytics {
     private PDO $pdo;
     private static $batchFile;
-    private static $batchThreshold = 10; // Flush after this many entries
-    private static $batchTimeout = 60;   // Flush after this many seconds
+    private static $batchThreshold = 3;  // Flush after this many entries (low for real-time)
+    private static $batchTimeout = 30;   // Flush after this many seconds
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
