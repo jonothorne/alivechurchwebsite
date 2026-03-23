@@ -195,23 +195,13 @@ class Analytics {
     }
 
     /**
-     * Write a single visit directly to database with geo lookup
+     * Write a single visit directly to database with optional geo lookup
      */
     private function writeVisitDirectly(array $visit): void {
-        try {
-            // Geo lookup for the IP
-            $geo = null;
-            $ip = $visit['ip_address'];
-            if ($ip && $ip !== '127.0.0.1' && strpos($ip, '192.168.') !== 0 && strpos($ip, '10.') !== 0) {
-                try {
-                    require_once __DIR__ . '/GeoIP.php';
-                    $geoIP = new GeoIP();
-                    $geo = $geoIP->lookup($ip);
-                } catch (Exception $e) {
-                    // Geo lookup failed, continue without it
-                }
-            }
+        // Geo lookup for the IP (optional, fails silently)
+        $geo = $this->lookupGeo($visit['ip_address'] ?? null);
 
+        try {
             // Use NOW() for timestamp to ensure consistency with database timezone
             $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
@@ -234,8 +224,35 @@ class Analytics {
                 $geo['longitude'] ?? null,
                 $visit['is_new_visitor'] ?? 0
             ]);
-        } catch (PDOException $e) {
+        } catch (Exception $e) {
             error_log('Analytics direct write error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Safe geo lookup - returns null on any error
+     */
+    private function lookupGeo(?string $ip): ?array {
+        if (!$ip || $ip === '127.0.0.1' || strpos($ip, '192.168.') === 0 || strpos($ip, '10.') === 0) {
+            return null;
+        }
+
+        $geoFile = __DIR__ . '/GeoIP.php';
+        if (!file_exists($geoFile)) {
+            return null;
+        }
+
+        try {
+            require_once $geoFile;
+            if (!class_exists('GeoIP')) {
+                return null;
+            }
+            $geoIP = new GeoIP();
+            return $geoIP->lookup($ip);
+        } catch (Exception $e) {
+            return null;
+        } catch (Error $e) {
+            return null;
         }
     }
 
