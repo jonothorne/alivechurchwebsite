@@ -202,7 +202,7 @@ class Analytics {
             // Geo lookup for the IP
             $geo = null;
             $ip = $visit['ip_address'];
-            if ($ip && $ip !== '127.0.0.1' && !str_starts_with($ip, '192.168.') && !str_starts_with($ip, '10.')) {
+            if ($ip && $ip !== '127.0.0.1' && strpos($ip, '192.168.') !== 0 && strpos($ip, '10.') !== 0) {
                 try {
                     require_once __DIR__ . '/GeoIP.php';
                     $geoIP = new GeoIP();
