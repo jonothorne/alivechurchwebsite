@@ -135,16 +135,31 @@ class Analytics {
             return true;
         }
 
-        // Skip system files and assets
+        // Skip system files, assets, and common bot/scanner paths
         $skipPatterns = [
             '/favicon',
             '/robots.txt',
             '/sitemap',
             '/.well-known',
             '/.git/',
+            '/.env',
             '/assets/',
             '/uploads/',
             '/cron/',
+            '/wp-',           // WordPress scanner bots
+            '/wordpress',
+            '/xmlrpc',
+            '/wp-admin',
+            '/wp-login',
+            '/wp-includes',
+            '/wp-content',
+            '/phpmyadmin',
+            '/administrator', // Joomla
+            '/drupal',
+            '/magento',
+            '/vendor/',
+            '/node_modules/',
+            '/config',
             '.php',  // Direct PHP file access (we use clean URLs)
             '.css',
             '.js',
