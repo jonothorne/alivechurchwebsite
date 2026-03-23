@@ -17,6 +17,29 @@ header('Content-Type: application/json');
 
 $debug = [];
 
+// Test direct database insert
+if (isset($_GET['test_insert'])) {
+    try {
+        $testSql = "INSERT INTO page_visits (page_url, page_title, session_id, ip_address, device_type, browser, is_new_visitor, visited_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+        $stmt = $pdo->prepare($testSql);
+        $result = $stmt->execute([
+            '/debug-test-' . time(),
+            'Debug Test Visit',
+            'debug-session-' . bin2hex(random_bytes(8)),
+            $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            'desktop',
+            'Debug',
+            0
+        ]);
+        $debug['test_insert'] = $result ? 'SUCCESS' : 'FAILED';
+        $debug['test_insert_id'] = $pdo->lastInsertId();
+    } catch (Exception $e) {
+        $debug['test_insert'] = 'ERROR';
+        $debug['test_insert_error'] = $e->getMessage();
+    }
+}
+
 // Check if page_visits table exists
 try {
     $result = $pdo->query("SHOW TABLES LIKE 'page_visits'")->fetch();
@@ -63,6 +86,16 @@ if (file_exists($batchFile)) {
 $gitHead = __DIR__ . '/../../.git/HEAD';
 if (file_exists($gitHead)) {
     $debug['git_head'] = trim(file_get_contents($gitHead));
+}
+
+// Check Analytics.php version by looking for key code
+$analyticsFile = __DIR__ . '/../../includes/Analytics.php';
+if (file_exists($analyticsFile)) {
+    $analyticsCode = file_get_contents($analyticsFile);
+    $debug['analytics_has_17_placeholders'] = strpos($analyticsCode, '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?') !== false;
+    $debug['analytics_has_fallback'] = strpos($analyticsCode, 'writeVisitDirectly') !== false;
+    $debug['analytics_has_url_skip'] = strpos($analyticsCode, 'shouldSkipUrl') !== false;
+    $debug['analytics_batch_threshold'] = preg_match('/batchThreshold\s*=\s*(\d+)/', $analyticsCode, $m) ? (int)$m[1] : 'unknown';
 }
 
 echo json_encode($debug, JSON_PRETTY_PRINT);
