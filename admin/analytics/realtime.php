@@ -8,6 +8,9 @@ require_once __DIR__ . '/../../includes/GeoIP.php';
 $pdo = getDbConnection();
 $analytics = new Analytics($pdo);
 
+// Get database time (to fix timezone mismatch with PHP server time)
+$dbTime = strtotime($pdo->query("SELECT NOW()")->fetchColumn());
+
 // Fetch real-time data
 $realTimeStats = $analytics->getRealTimeStats();
 $recentPageViews = $analytics->getRecentPageViews(30);
@@ -84,7 +87,7 @@ $recentPageViews = $analytics->getRecentPageViews(30);
             foreach ($recentPageViews as $view):
                 $isNewSession = $view['session_id'] !== $currentSession;
                 $currentSession = $view['session_id'];
-                $timeAgo = time() - strtotime($view['visited_at']);
+                $timeAgo = $dbTime - strtotime($view['visited_at']);
                 $timeAgoText = $timeAgo < 60 ? 'Just now' : ($timeAgo < 3600 ? floor($timeAgo / 60) . 'm ago' : floor($timeAgo / 3600) . 'h ago');
             ?>
                 <div class="realtime-feed-item<?= $isNewSession ? ' realtime-feed-item-new' : ''; ?>">
