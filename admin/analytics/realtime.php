@@ -222,17 +222,65 @@ $recentPageViews = $analytics->getRecentPageViews(30);
 
 <!-- Auto-refresh script -->
 <script <?= csp_nonce(); ?>>
-// Refresh real-time data every 30 seconds
-setInterval(function() {
+// Refresh real-time data every 15 seconds
+function refreshRealtime() {
     fetch('/admin/api/analytics-realtime.php')
         .then(response => response.json())
         .then(data => {
+            // Update counters
             document.getElementById('activeNow').textContent = data.active_now;
             document.getElementById('visitors30').textContent = data.visitors_30min;
             document.getElementById('pageviews30').textContent = data.pageviews_30min;
+
+            // Update top pages
+            const topPagesHtml = data.top_pages_now.length === 0
+                ? '<div class="admin-empty-state"><p>No active visitors right now.</p></div>'
+                : '<div class="analytics-list">' + data.top_pages_now.map(page =>
+                    `<div class="analytics-list-item">
+                        <a href="${page.page_url}" target="_blank" class="analytics-list-title">${page.page_url}</a>
+                        <div class="realtime-badge">${page.views} viewing</div>
+                    </div>`
+                ).join('') + '</div>';
+            document.getElementById('topPagesNow').innerHTML = topPagesHtml;
+
+            // Update activity feed
+            if (data.activity && data.activity.length > 0) {
+                let currentSession = null;
+                const feedHtml = data.activity.map(view => {
+                    const isNew = view.session_id !== currentSession;
+                    currentSession = view.session_id;
+                    const deviceIcon = view.device_type === 'mobile'
+                        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>'
+                        : view.device_type === 'tablet'
+                        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>'
+                        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+
+                    const displayUrl = view.page_url.length > 50 ? '...' + view.page_url.slice(-47) : view.page_url;
+
+                    return `<div class="realtime-feed-item${isNew ? ' realtime-feed-item-new' : ''}">
+                        <div class="realtime-feed-icon">${deviceIcon}</div>
+                        <div class="realtime-feed-content">
+                            <div class="realtime-feed-page">
+                                <a href="${view.page_url}" target="_blank">${displayUrl}</a>
+                            </div>
+                            <div class="realtime-feed-meta">
+                                ${view.country_flag ? '<span>' + view.country_flag + '</span>' : ''}
+                                ${view.city ? '<span>' + view.city + '</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="realtime-feed-time">${view.time_ago}</div>
+                    </div>`;
+                }).join('');
+                document.getElementById('activityFeed').innerHTML = feedHtml;
+            } else {
+                document.getElementById('activityFeed').innerHTML = '<div class="admin-empty-state"><p>No recent activity.</p></div>';
+            }
         })
-        .catch(err => console.log('Failed to refresh analytics'));
-}, 30000);
+        .catch(err => console.log('Failed to refresh analytics:', err));
+}
+
+// Initial refresh after 15 seconds, then every 15 seconds
+setInterval(refreshRealtime, 15000);
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
