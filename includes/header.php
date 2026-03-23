@@ -16,6 +16,9 @@ if (!isset($page_title)) {
     $page_title = $site['name'] . ' | ' . $site['tagline'];
 }
 $current_url = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+$site_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$site_host = $_SERVER['HTTP_HOST'] ?? 'alivechur.ch';
+$current_full_url = $site_scheme . '://' . $site_host . ($_SERVER['REQUEST_URI'] ?? '/');
 
 // Load hero texture helper
 require_once __DIR__ . '/hero-textures.php';
@@ -141,10 +144,11 @@ if ($current_user && $is_bible_study_page) {
     <link rel="icon" type="image/x-icon" href="/assets/imgs/icons/favicon.ico?v=2">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/imgs/icons/icon-192x192.png?v=2">
     <meta name="description" content="<?= htmlspecialchars($page_description ?? 'You Belong Here - Alive Church Norwich. Bible studies, reading plans, events, and community.'); ?>">
+    <link rel="alternate" hreflang="en-GB" href="<?= htmlspecialchars($current_full_url); ?>">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="<?= htmlspecialchars($og_type ?? 'website'); ?>">
-    <meta property="og:url" content="<?= htmlspecialchars($og_url ?? (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? '/')); ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($og_url ?? $current_full_url); ?>">
     <meta property="og:title" content="<?= htmlspecialchars($og_title ?? $page_title ?? $site['name']); ?>">
     <meta property="og:description" content="<?= htmlspecialchars($og_description ?? $page_description ?? 'You Belong Here - Alive Church Norwich'); ?>">
     <?php if (!empty($og_image)): ?>
