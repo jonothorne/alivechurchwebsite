@@ -53,16 +53,56 @@
 
     // ==================== NAV TOGGLE ====================
     const navToggle = document.getElementById('nav-toggle');
+    const navToggleLabel = document.querySelector('label[for="nav-toggle"]');
     const navLinks = document.querySelectorAll('.primary-nav a');
     navLinks.forEach((link) => {
         link.addEventListener('click', () => {
             if (navToggle && navToggle.checked) {
                 navToggle.checked = false;
+                navToggle.dispatchEvent(new Event('change'));
             }
         });
     });
 
+    if (navToggle && navToggleLabel) {
+        const syncNavToggleState = () => {
+            navToggleLabel.setAttribute('aria-expanded', navToggle.checked ? 'true' : 'false');
+        };
+
+        syncNavToggleState();
+        navToggle.addEventListener('change', syncNavToggleState);
+
+        navToggleLabel.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navToggle.checked = !navToggle.checked;
+                navToggle.dispatchEvent(new Event('change'));
+            }
+        });
+
+        navToggleLabel.addEventListener('click', () => {
+            // Delay sync so checkbox state has flipped
+            requestAnimationFrame(syncNavToggleState);
+        });
+    }
+
     // Close button for mobile nav is now a <label> that toggles the checkbox directly
+
+    // ==================== FORM MESSAGE ANNOUNCEMENTS ====================
+    document.querySelectorAll('.form-message').forEach((messageEl) => {
+        if (!messageEl.hasAttribute('role')) {
+            messageEl.setAttribute('role', 'status');
+        }
+        if (!messageEl.hasAttribute('aria-live')) {
+            messageEl.setAttribute('aria-live', 'polite');
+        }
+    });
+
+    document.querySelectorAll('.form-error').forEach((errorEl) => {
+        if (!errorEl.hasAttribute('aria-live')) {
+            errorEl.setAttribute('aria-live', 'polite');
+        }
+    });
 
     // ==================== NEWSLETTER AJAX ====================
     const newsletterForm = document.getElementById('newsletter-form');

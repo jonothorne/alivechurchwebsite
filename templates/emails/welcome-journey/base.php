@@ -137,7 +137,7 @@ $hero_emoji = $hero_emoji ?? '💜';
                             <!-- Hero Image -->
                             <tr>
                                 <td style="padding: 0; line-height: 0;">
-                                    <img src="<?= htmlspecialchars($hero_image); ?>" width="600" alt="" style="width: 100%; max-width: 600px; height: auto; display: block;">
+                                    <img src="<?= htmlspecialchars($hero_image); ?>" width="600" alt="Alive Church welcome photo" style="width: 100%; max-width: 600px; height: auto; display: block;">
                                 </td>
                             </tr>
                             <?php elseif (!empty($hero_title)): ?>

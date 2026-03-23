@@ -197,7 +197,63 @@ if (!empty($sermon['youtube_video_id'])) {
 
 $twitter_card = 'player';
 
+// Sermon Schema Markup (JSON-LD) for SEO
+$sermonSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'VideoObject',
+    'name' => $sermon['title'],
+    'description' => $page_description,
+    'thumbnailUrl' => $og_image ?? '',
+    'uploadDate' => $sermon['sermon_date'] ? date('c', strtotime($sermon['sermon_date'])) : date('c', strtotime($sermon['created_at'])),
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => $site['name'],
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/assets/imgs/icons/icon-512x512.png'
+        ]
+    ]
+];
+
+// Add video duration if available
+if (!empty($sermon['length'])) {
+    // Convert "45 min" or "1:23:45" format to ISO 8601 duration
+    if (preg_match('/(\d+)\s*min/', $sermon['length'], $matches)) {
+        $sermonSchema['duration'] = 'PT' . $matches[1] . 'M';
+    } elseif (preg_match('/(\d+):(\d+):(\d+)/', $sermon['length'], $matches)) {
+        $sermonSchema['duration'] = 'PT' . $matches[1] . 'H' . $matches[2] . 'M' . $matches[3] . 'S';
+    } elseif (preg_match('/(\d+):(\d+)/', $sermon['length'], $matches)) {
+        $sermonSchema['duration'] = 'PT' . $matches[1] . 'M' . $matches[2] . 'S';
+    }
+}
+
+// Add video embed URL
+if (!empty($sermon['youtube_video_id'])) {
+    $sermonSchema['embedUrl'] = 'https://www.youtube.com/embed/' . $sermon['youtube_video_id'];
+    $sermonSchema['contentUrl'] = 'https://www.youtube.com/watch?v=' . $sermon['youtube_video_id'];
+} elseif (!empty($sermon['video_id'])) {
+    $sermonSchema['embedUrl'] = 'https://www.youtube.com/embed/' . $sermon['video_id'];
+    $sermonSchema['contentUrl'] = 'https://www.youtube.com/watch?v=' . $sermon['video_id'];
+}
+
+// Add speaker/author info
+if ($speaker) {
+    $sermonSchema['author'] = [
+        '@type' => 'Person',
+        'name' => $speaker['full_name'],
+        'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/author/' . $speaker['username']
+    ];
+} elseif ($sermon['speaker']) {
+    $sermonSchema['author'] = [
+        '@type' => 'Person',
+        'name' => $sermon['speaker']
+    ];
+}
+
 include __DIR__ . '/includes/header.php';
+
+// Output Sermon Schema
+echo '<script type="application/ld+json">' . json_encode($sermonSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
 ?>
 
 <article class="sermon-page">
@@ -250,7 +306,7 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($speaker): ?>
                                     <a href="/author/<?= htmlspecialchars($speaker['username']); ?>" class="speaker-link">
                                         <?php if ($speaker['profile_image']): ?>
-                                            <img src="<?= htmlspecialchars($speaker['profile_image']); ?>" alt="" class="speaker-avatar">
+                                            <img src="<?= htmlspecialchars($speaker['profile_image']); ?>" alt="<?= htmlspecialchars($speaker['full_name']); ?> profile photo" class="speaker-avatar">
                                         <?php else: ?>
                                             <div class="speaker-avatar-placeholder">
                                                 <?= strtoupper(substr($speaker['full_name'], 0, 1)); ?>
@@ -495,7 +551,7 @@ include __DIR__ . '/includes/header.php';
                             <?php if ($speaker): ?>
                                 <a href="/author/<?= htmlspecialchars($speaker['username']); ?>" class="speaker-profile">
                                     <?php if ($speaker['profile_image']): ?>
-                                        <img src="<?= htmlspecialchars($speaker['profile_image']); ?>" alt="" class="speaker-img">
+                                        <img src="<?= htmlspecialchars($speaker['profile_image']); ?>" alt="<?= htmlspecialchars($speaker['full_name']); ?> profile photo" class="speaker-img">
                                     <?php else: ?>
                                         <div class="speaker-img-placeholder">
                                             <?= strtoupper(substr($speaker['full_name'], 0, 1)); ?>
@@ -618,7 +674,7 @@ include __DIR__ . '/includes/header.php';
                         <div class="comment" id="comment-<?= $comment['id']; ?>">
                             <div class="comment-header">
                                 <?php if ($comment['user_id'] && $comment['user_avatar']): ?>
-                                    <img src="<?= htmlspecialchars($comment['user_avatar']); ?>" alt="" class="comment-avatar">
+                                    <img src="<?= htmlspecialchars($comment['user_avatar']); ?>" alt="<?= htmlspecialchars($displayName); ?> avatar" class="comment-avatar">
                                 <?php elseif ($comment['user_id']): ?>
                                     <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($comment['user_avatar_color'] ?? '#4b2679'); ?>">
                                         <?= strtoupper(substr($displayName, 0, 1)); ?>
@@ -650,7 +706,7 @@ include __DIR__ . '/includes/header.php';
                                     <?php if ($currentUser): ?>
                                         <div class="comment-form-user">
                                             <?php if ($currentUser['avatar']): ?>
-                                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="<?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?> avatar" class="comment-avatar">
                                             <?php else: ?>
                                                 <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
                                                     <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>
@@ -694,7 +750,7 @@ include __DIR__ . '/includes/header.php';
                                         <div class="comment reply">
                                             <div class="comment-header">
                                                 <?php if ($reply['user_id'] && $reply['user_avatar']): ?>
-                                                    <img src="<?= htmlspecialchars($reply['user_avatar']); ?>" alt="" class="comment-avatar">
+                                                    <img src="<?= htmlspecialchars($reply['user_avatar']); ?>" alt="<?= htmlspecialchars($replyDisplayName); ?> avatar" class="comment-avatar">
                                                 <?php elseif ($reply['user_id']): ?>
                                                     <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($reply['user_avatar_color'] ?? '#4b2679'); ?>">
                                                         <?= strtoupper(substr($replyDisplayName, 0, 1)); ?>
@@ -734,7 +790,7 @@ include __DIR__ . '/includes/header.php';
                     <form method="POST" class="comment-form" id="main-comment-form" data-comment-type="sermon" data-content-id="<?= $sermon['id']; ?>">
                         <div class="comment-form-user">
                             <?php if ($currentUser['avatar']): ?>
-                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="<?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?> avatar" class="comment-avatar">
                             <?php else: ?>
                                 <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
                                     <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>
@@ -791,9 +847,9 @@ include __DIR__ . '/includes/header.php';
                         <a href="<?= $suggestedUrl; ?>" class="suggested-card">
                             <div class="suggested-thumb">
                                 <?php if (!empty($suggested['thumbnail_url'])): ?>
-                                    <img src="<?= htmlspecialchars($suggested['thumbnail_url']); ?>" alt="" loading="lazy">
+                                    <img src="<?= htmlspecialchars($suggested['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($suggested['title'] ?? 'Sermon') . ' thumbnail'); ?>" loading="lazy">
                                 <?php elseif (!empty($suggested['youtube_video_id'])): ?>
-                                    <img src="https://img.youtube.com/vi/<?= htmlspecialchars($suggested['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                                    <img src="https://img.youtube.com/vi/<?= htmlspecialchars($suggested['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($suggested['title'] ?? 'Sermon') . ' video thumbnail'); ?>" loading="lazy">
                                 <?php else: ?>
                                     <div class="thumb-placeholder"></div>
                                 <?php endif; ?>

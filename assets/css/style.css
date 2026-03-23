@@ -2849,6 +2849,11 @@ textarea {
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-y: auto;
         overscroll-behavior: contain;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .mobile-nav::-webkit-scrollbar {
+        display: none;
     }
     .nav-toggle:checked ~ .mobile-nav {
         transform: translateX(0);
@@ -2938,6 +2943,14 @@ textarea {
         transition: all 0.3s ease;
         opacity: 0;
         transform: translateX(30px);
+        border: none;
+        width: 100%;
+        text-align: left;
+        font: inherit;
+        background-clip: padding-box;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
     }
     .nav-toggle:checked ~ .mobile-nav .mobile-nav-link {
         opacity: 1;
@@ -2952,6 +2965,10 @@ textarea {
     .mobile-nav-link.is-active {
         background: rgba(255, 255, 255, 0.2);
         box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+    .mobile-nav-link:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
     }
     .mobile-nav-link-icon {
         display: flex;

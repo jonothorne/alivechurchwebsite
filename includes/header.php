@@ -173,6 +173,68 @@ if ($current_user && $is_bible_study_page) {
     <meta property="og:video:height" content="720">
     <?php endif; ?>
 
+    <!-- Local SEO Schema Markup (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Church",
+        "@id": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>/#organization",
+        "name": "<?= htmlspecialchars($site['name']); ?>",
+        "alternateName": "Alive Church",
+        "description": "<?= htmlspecialchars($site['tagline'] ?? 'A vibrant, welcoming church in Norwich where you belong before you believe.'); ?>",
+        "url": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>",
+        "logo": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>/assets/imgs/icons/icon-512x512.png",
+        "image": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>/assets/imgs/gallery/alive-church-worship-congregation.jpg",
+        "telephone": "<?= htmlspecialchars($site['phone'] ?? ''); ?>",
+        "email": "<?= htmlspecialchars($site['email'] ?? ''); ?>",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Nelson Street",
+            "addressLocality": "Norwich",
+            "addressRegion": "Norfolk",
+            "postalCode": "NR2 4DR",
+            "addressCountry": "GB"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "52.6309",
+            "longitude": "1.2933"
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Sunday",
+            "opens": "11:00",
+            "closes": "13:00"
+        },
+        "sameAs": [
+            "<?= htmlspecialchars($site['social']['facebook'] ?? ''); ?>",
+            "<?= htmlspecialchars($site['social']['instagram'] ?? ''); ?>",
+            "<?= htmlspecialchars($site['social']['youtube'] ?? ''); ?>"
+        ],
+        "hasMap": "<?= htmlspecialchars($site['maps_url'] ?? ''); ?>",
+        "priceRange": "Free"
+    }
+    </script>
+    <?php if ($current_url === '/'): ?>
+    <!-- WebSite Schema for homepage -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "<?= htmlspecialchars($site['name']); ?>",
+        "url": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "<?= htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'alivechur.ch')); ?>/sermons?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    <?php endif; ?>
+
     <!-- Resource hints for faster loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -292,7 +354,7 @@ if ($current_user && $is_bible_study_page) {
             <img src="/assets/imgs/logo-dark.png" alt="<?= htmlspecialchars($site['name']); ?>" class="logo-dark" width="976" height="256">
         </a>
         <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
-        <label class="nav-toggle-label" for="nav-toggle" aria-label="Toggle navigation">
+        <label class="nav-toggle-label" for="nav-toggle" role="button" aria-label="Toggle navigation" aria-controls="mobile-nav" aria-expanded="false" tabindex="0">
             <span></span>
         </label>
         <label class="nav-overlay" for="nav-toggle" aria-hidden="true"></label>
@@ -344,7 +406,7 @@ if ($current_user && $is_bible_study_page) {
         </nav>
 
         <!-- Mobile Full-Screen Navigation -->
-        <nav class="mobile-nav" aria-label="Mobile navigation">
+        <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
             <div class="mobile-nav-header">
                 <img src="/assets/imgs/logo-dark.png" alt="<?= htmlspecialchars($site['name']); ?>" class="mobile-nav-logo">
                 <label class="mobile-nav-close" for="nav-toggle" aria-label="Close menu">
@@ -415,11 +477,11 @@ if ($current_user && $is_bible_study_page) {
                     ?>
                         <?php if ($has_dropdown): ?>
                         <div class="mobile-nav-dropdown<?= $is_active ? ' is-active' : ''; ?>" style="--i: <?= $index; ?>">
-                            <div class="mobile-nav-link mobile-nav-link-expandable" data-href="<?= $link['url']; ?>">
+                            <button type="button" class="mobile-nav-link mobile-nav-link-expandable" data-href="<?= $link['url']; ?>" aria-expanded="false">
                                 <span class="mobile-nav-link-icon"><?= $icon; ?></span>
                                 <span class="mobile-nav-link-text"><?= $link['label']; ?></span>
                                 <svg class="mobile-nav-link-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                            </div>
+                            </button>
                             <div class="mobile-nav-subitems">
                                 <?php foreach ($link['dropdown'] as $sublink):
                                     $sub_active = $sublink['url'] === $current_url || strpos($current_url, strtok($sublink['url'], '#')) === 0;
@@ -446,7 +508,7 @@ if ($current_user && $is_bible_study_page) {
                 <?php if ($current_user): ?>
                 <div class="mobile-nav-user">
                     <?php if (!empty($current_user['avatar'])): ?>
-                        <img src="<?= htmlspecialchars($current_user['avatar']); ?>" alt="" class="mobile-nav-avatar">
+                        <img src="<?= htmlspecialchars($current_user['avatar']); ?>" alt="<?= htmlspecialchars($current_user['full_name']); ?> avatar" class="mobile-nav-avatar">
                     <?php else: ?>
                         <span class="mobile-nav-avatar" style="background-color: <?= htmlspecialchars($current_user['avatar_color'] ?? '#4b2679'); ?>;"><?= strtoupper(substr($current_user['full_name'], 0, 1)); ?></span>
                     <?php endif; ?>
@@ -501,6 +563,8 @@ if ($current_user && $is_bible_study_page) {
 
                     if (dropdown.classList.contains('is-expanded')) {
                         // Already expanded - navigate to the page
+                        dropdown.classList.remove('is-expanded');
+                        this.setAttribute('aria-expanded', 'false');
                         const href = this.getAttribute('data-href');
                         if (href) {
                             window.location.href = href;
@@ -510,10 +574,12 @@ if ($current_user && $is_bible_study_page) {
                         document.querySelectorAll('.mobile-nav-dropdown.is-expanded').forEach(function(other) {
                             if (other !== dropdown) {
                                 other.classList.remove('is-expanded');
+                                other.querySelector('.mobile-nav-link-expandable')?.setAttribute('aria-expanded', 'false');
                             }
                         });
                         // Expand this one
                         dropdown.classList.add('is-expanded');
+                        this.setAttribute('aria-expanded', 'true');
                     }
                 });
             });
@@ -525,6 +591,7 @@ if ($current_user && $is_bible_study_page) {
                     if (!this.checked) {
                         document.querySelectorAll('.mobile-nav-dropdown.is-expanded').forEach(function(dropdown) {
                             dropdown.classList.remove('is-expanded');
+                            dropdown.querySelector('.mobile-nav-link-expandable')?.setAttribute('aria-expanded', 'false');
                         });
                     }
                 });
@@ -545,7 +612,7 @@ if ($current_user && $is_bible_study_page) {
                 <div class="user-menu">
                     <button class="user-menu-trigger" aria-expanded="false" aria-haspopup="true">
                         <?php if (!empty($current_user['avatar'])): ?>
-                            <img src="<?= htmlspecialchars($current_user['avatar']); ?>" alt="" class="user-avatar user-avatar-img">
+                            <img src="<?= htmlspecialchars($current_user['avatar']); ?>" alt="<?= htmlspecialchars($current_user['full_name']); ?> avatar" class="user-avatar user-avatar-img">
                         <?php else: ?>
                             <span class="user-avatar" style="background-color: <?= htmlspecialchars($current_user['avatar_color'] ?? '#4b2679'); ?>;"><?= strtoupper(substr($current_user['full_name'], 0, 1)); ?></span>
                         <?php endif; ?>

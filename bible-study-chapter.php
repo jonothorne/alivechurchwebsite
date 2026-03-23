@@ -353,7 +353,47 @@ if ($userStudies) {
 }
 
 $page_title = $book['name'] . ' ' . $chapter . ' Study | ' . $site['name'];
+$page_description = $study['title'] ? $study['title'] . ' - ' . $book['name'] . ' ' . $chapter . ' Bible study and commentary at ' . $site['name'] : 'Study ' . $book['name'] . ' ' . $chapter . ' with commentary, questions, and practical applications at ' . $site['name'];
 $hide_block_builder_btn = true; // Don't show block builder on Bible study pages
+
+// Bible Study Schema Markup for SEO
+$bibleStudySchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Article',
+    'headline' => $study['title'] ?: $book['name'] . ' ' . $chapter . ' Study',
+    'description' => $page_description,
+    'articleSection' => 'Bible Study',
+    'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/bible-study/' . $book['slug'] . '/' . $chapter,
+    'datePublished' => date('c', strtotime($study['created_at'])),
+    'dateModified' => date('c', strtotime($study['updated_at'] ?? $study['created_at'])),
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => $site['name'],
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/assets/imgs/icons/icon-512x512.png'
+        ]
+    ],
+    'about' => [
+        '@type' => 'Book',
+        'name' => 'The Bible',
+        'bookEdition' => $book['name'] . ' Chapter ' . $chapter
+    ],
+    'isPartOf' => [
+        '@type' => 'WebSite',
+        'name' => $site['name'] . ' Bible Study Library',
+        'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/bible-study'
+    ]
+];
+
+// Add author info if available
+if ($study['author_name']) {
+    $bibleStudySchema['author'] = [
+        '@type' => 'Person',
+        'name' => $study['author_name'],
+        'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/author/' . ($study['author_username'] ?? '')
+    ];
+}
 
 // Set CMS toolbar button for published status (rendered in header.php)
 if ($canEdit && $study) {
@@ -368,6 +408,9 @@ if ($canEdit && $study) {
 }
 
 include __DIR__ . '/includes/header.php';
+
+// Output Bible Study Schema
+echo '<script type="application/ld+json">' . json_encode($bibleStudySchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
 ?>
 
 <article class="bible-study-article<?= $canEdit ? ' bible-study-editable' : ''; ?>"<?= $canEdit ? ' data-study-id="' . $study['id'] . '"' : ''; ?>>
@@ -627,9 +670,9 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($sermon['thumbnail_url'] || $sermon['youtube_video_id']): ?>
                                     <div class="sermon-thumb">
                                         <?php if ($sermon['thumbnail_url']): ?>
-                                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="">
+                                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' thumbnail'); ?>">
                                         <?php elseif ($sermon['youtube_video_id']): ?>
-                                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="">
+                                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' video thumbnail'); ?>">
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>

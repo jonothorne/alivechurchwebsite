@@ -121,9 +121,9 @@ include __DIR__ . '/includes/header.php';
 
                             <div class="sermon-thumbnail">
                                 <?php if ($sermon['thumbnail_url']): ?>
-                                    <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="" loading="lazy">
+                                    <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' thumbnail'); ?>" loading="lazy">
                                 <?php elseif ($sermon['youtube_video_id']): ?>
-                                    <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                                    <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' video thumbnail'); ?>" loading="lazy">
                                 <?php else: ?>
                                     <div class="thumb-placeholder"></div>
                                 <?php endif; ?>

@@ -122,9 +122,9 @@ if ($searchQuery || $speakerFilter):
                     <a href="<?= $sermonUrl; ?>" class="sermon-result-card">
                         <div class="sermon-result-thumb">
                             <?php if (!empty($sermon['thumbnail_url'])): ?>
-                                <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="" loading="lazy">
+                                <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' thumbnail'); ?>" loading="lazy">
                             <?php elseif (!empty($sermon['youtube_video_id'])): ?>
-                                <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                                <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' video thumbnail'); ?>" loading="lazy">
                             <?php else: ?>
                                 <div class="thumb-placeholder"></div>
                             <?php endif; ?>
@@ -159,9 +159,9 @@ if ($searchQuery || $speakerFilter):
 <section class="sermons-hero-netflix">
     <div class="hero-background">
         <?php if (!empty($heroSermon['thumbnail_url'])): ?>
-            <img src="<?= htmlspecialchars($heroSermon['thumbnail_url']); ?>" alt="">
+            <img src="<?= htmlspecialchars($heroSermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($heroSermon['title'] ?? 'Featured sermon') . ' thumbnail'); ?>">
         <?php elseif (!empty($heroSermon['youtube_video_id'])): ?>
-            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($heroSermon['youtube_video_id']); ?>/maxresdefault.jpg" alt="">
+            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($heroSermon['youtube_video_id']); ?>/maxresdefault.jpg" alt="<?= htmlspecialchars(($heroSermon['title'] ?? 'Featured sermon') . ' video thumbnail'); ?>">
         <?php endif; ?>
         <div class="hero-gradient"></div>
     </div>
@@ -244,9 +244,9 @@ if ($searchQuery || $speakerFilter):
                 <a href="<?= $sermonUrl; ?>" class="sermon-card-netflix">
                     <div class="card-thumb">
                         <?php if (!empty($sermon['thumbnail_url'])): ?>
-                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="" loading="lazy">
+                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' thumbnail'); ?>" loading="lazy">
                         <?php elseif (!empty($sermon['youtube_video_id'])): ?>
-                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' video thumbnail'); ?>" loading="lazy">
                         <?php else: ?>
                             <div class="thumb-placeholder"></div>
                         <?php endif; ?>
@@ -291,9 +291,9 @@ if ($searchQuery || $speakerFilter):
                 <a href="<?= $sermonUrl; ?>" class="sermon-card-netflix">
                     <div class="card-thumb">
                         <?php if (!empty($sermon['thumbnail_url'])): ?>
-                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="" loading="lazy">
+                            <img src="<?= htmlspecialchars($sermon['thumbnail_url']); ?>" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' thumbnail'); ?>" loading="lazy">
                         <?php elseif (!empty($sermon['youtube_video_id'])): ?>
-                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="" loading="lazy">
+                            <img src="https://img.youtube.com/vi/<?= htmlspecialchars($sermon['youtube_video_id']); ?>/mqdefault.jpg" alt="<?= htmlspecialchars(($sermon['title'] ?? 'Sermon') . ' video thumbnail'); ?>" loading="lazy">
                         <?php else: ?>
                             <div class="thumb-placeholder"></div>
                         <?php endif; ?>

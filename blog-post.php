@@ -230,7 +230,7 @@ if (!isset($cms)) {
                         <div class="comment" id="comment-<?= $comment['id']; ?>">
                             <div class="comment-header">
                                 <?php if ($comment['user_id'] && $comment['user_avatar']): ?>
-                                    <img src="<?= htmlspecialchars($comment['user_avatar']); ?>" alt="" class="comment-avatar">
+                                    <img src="<?= htmlspecialchars($comment['user_avatar']); ?>" alt="<?= htmlspecialchars($displayName); ?> avatar" class="comment-avatar">
                                 <?php elseif ($comment['user_id']): ?>
                                     <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($comment['user_avatar_color'] ?? '#4b2679'); ?>">
                                         <?= strtoupper(substr($displayName, 0, 1)); ?>
@@ -258,7 +258,7 @@ if (!isset($cms)) {
                                     <?php if ($currentUser): ?>
                                         <div class="comment-form-user">
                                             <?php if ($currentUser['avatar']): ?>
-                                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="<?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?> avatar" class="comment-avatar">
                                             <?php else: ?>
                                                 <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
                                                     <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>
@@ -302,7 +302,7 @@ if (!isset($cms)) {
                                         <div class="comment reply">
                                             <div class="comment-header">
                                                 <?php if ($reply['user_id'] && $reply['user_avatar']): ?>
-                                                    <img src="<?= htmlspecialchars($reply['user_avatar']); ?>" alt="" class="comment-avatar">
+                                                    <img src="<?= htmlspecialchars($reply['user_avatar']); ?>" alt="<?= htmlspecialchars($replyDisplayName); ?> avatar" class="comment-avatar">
                                                 <?php elseif ($reply['user_id']): ?>
                                                     <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($reply['user_avatar_color'] ?? '#4b2679'); ?>">
                                                         <?= strtoupper(substr($replyDisplayName, 0, 1)); ?>
@@ -338,7 +338,7 @@ if (!isset($cms)) {
                     <form method="POST" class="comment-form" id="main-comment-form" data-comment-type="blog" data-content-id="<?= $post['id']; ?>">
                         <div class="comment-form-user">
                             <?php if ($currentUser['avatar']): ?>
-                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="" class="comment-avatar">
+                                <img src="<?= htmlspecialchars($currentUser['avatar']); ?>" alt="<?= htmlspecialchars($currentUser['full_name'] ?? $currentUser['username']); ?> avatar" class="comment-avatar">
                             <?php else: ?>
                                 <div class="comment-avatar comment-avatar-initials" style="background-color: <?= htmlspecialchars($currentUser['avatar_color'] ?? '#4b2679'); ?>">
                                     <?= strtoupper(substr($currentUser['full_name'] ?? $currentUser['username'], 0, 1)); ?>

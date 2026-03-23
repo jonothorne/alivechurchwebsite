@@ -148,7 +148,7 @@ function buildCommentHtml($id, $authorName, $content, $user, $isReply = false): 
     $avatarHtml = '';
     if ($user) {
         if (!empty($user['avatar'])) {
-            $avatarHtml = '<img src="' . htmlspecialchars($user['avatar']) . '" alt="" class="comment-avatar">';
+            $avatarHtml = '<img src="' . htmlspecialchars($user['avatar']) . '" alt="' . htmlspecialchars($authorName) . ' avatar" class="comment-avatar">';
         } else {
             $color = htmlspecialchars($user['avatar_color'] ?? '#4b2679');
             $initial = strtoupper(substr($authorName, 0, 1));

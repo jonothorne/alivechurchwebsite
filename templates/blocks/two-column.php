@@ -20,6 +20,15 @@ $rightContent = $cms->getBlockContent($blockKey . '_right', $data['rightContent'
 
 // Layout settings from block data
 $rightImage = $data['rightImage'] ?? '';
+$imageAlt = $cms->getBlockContent($blockKey . '_image_alt', $data['imageAlt'] ?? '');
+if (!$imageAlt) {
+    $textSample = trim(strip_tags($leftContent));
+    if ($textSample !== '') {
+        $imageAlt = strlen($textSample) > 80 ? substr($textSample, 0, 80) . '…' : $textSample;
+    } else {
+        $imageAlt = 'Alive Church illustration';
+    }
+}
 $imagePosition = $data['imagePosition'] ?? 'right';
 $ratio = $data['ratio'] ?? '50-50';
 
@@ -46,7 +55,7 @@ if ($imagePosition === 'left') {
         <div class="two-column-grid" style="display: grid; grid-template-columns: <?= $leftFlex ?>fr <?= $rightFlex ?>fr; gap: 3rem; align-items: center;">
             <?php if ($imagePosition === 'left' && $rightImage): ?>
                 <div class="column-image">
-                    <img src="<?= htmlspecialchars($rightImage) ?>" alt="" style="width: 100%; border-radius: 1rem;" <?php if ($isEditMode): ?>class="cms-editable-image" data-cms-editable="<?= $blockKey ?>_image" data-cms-page="<?= htmlspecialchars($pageSlug) ?>" data-cms-type="image"<?php endif; ?>>
+                    <img src="<?= htmlspecialchars($rightImage) ?>" alt="<?= htmlspecialchars($imageAlt); ?>" style="width: 100%; border-radius: 1rem;" <?php if ($isEditMode): ?>class="cms-editable-image" data-cms-editable="<?= $blockKey ?>_image" data-cms-page="<?= htmlspecialchars($pageSlug) ?>" data-cms-type="image"<?php endif; ?>>
                 </div>
             <?php endif; ?>
 
@@ -57,7 +66,7 @@ if ($imagePosition === 'left') {
             <?php if ($imagePosition === 'right'): ?>
                 <?php if ($rightImage || $isEditMode): ?>
                     <div class="column-image">
-                        <img src="<?= htmlspecialchars($rightImage ?: '/assets/imgs/placeholder.jpg') ?>" alt="" style="width: 100%; border-radius: 1rem;" <?php if ($isEditMode): ?>class="cms-editable-image" data-cms-editable="<?= $blockKey ?>_image" data-cms-page="<?= htmlspecialchars($pageSlug) ?>" data-cms-type="image"<?php endif; ?>>
+                        <img src="<?= htmlspecialchars($rightImage ?: '/assets/imgs/placeholder.jpg') ?>" alt="<?= htmlspecialchars($imageAlt); ?>" style="width: 100%; border-radius: 1rem;" <?php if ($isEditMode): ?>class="cms-editable-image" data-cms-editable="<?= $blockKey ?>_image" data-cms-page="<?= htmlspecialchars($pageSlug) ?>" data-cms-type="image"<?php endif; ?>>
                     </div>
                 <?php elseif ($rightContent || $isEditMode): ?>
                     <div class="column-content" <?php if ($isEditMode): ?>data-cms-editable="<?= $blockKey ?>_right" data-cms-page="<?= htmlspecialchars($pageSlug) ?>" data-cms-type="html"<?php endif; ?>>
