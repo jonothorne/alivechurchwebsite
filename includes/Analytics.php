@@ -229,8 +229,9 @@ class Analytics {
      */
     private function writeVisitDirectly(array $visit): void {
         try {
+            // Use NOW() for timestamp to ensure consistency with database timezone
             $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, is_new_visitor, visited_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $visit['page_url'],
@@ -242,8 +243,7 @@ class Analytics {
                 $visit['user_agent'],
                 $visit['device_type'],
                 $visit['browser'],
-                $visit['is_new_visitor'] ?? 0,
-                $visit['timestamp']
+                $visit['is_new_visitor'] ?? 0
             ]);
         } catch (PDOException $e) {
             error_log('Analytics direct write error: ' . $e->getMessage());
@@ -285,7 +285,8 @@ class Analytics {
                 $ip = $visit['ip_address'];
                 $geo = $geoData[$ip] ?? null;
 
-                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                // Use NOW() for timestamp to ensure consistency with database timezone
+                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())';
                 $values[] = $visit['page_url'];
                 $values[] = $visit['page_title'];
                 $values[] = $visit['referrer'];
@@ -302,7 +303,7 @@ class Analytics {
                 $values[] = $geo['latitude'] ?? null;
                 $values[] = $geo['longitude'] ?? null;
                 $values[] = $visit['is_new_visitor'] ?? 0;
-                $values[] = $visit['timestamp'];
+                // timestamp is now handled by NOW() in the SQL
             }
 
             $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at) VALUES " . implode(', ', $placeholders);
