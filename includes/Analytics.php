@@ -171,57 +171,11 @@ class Analytics {
     }
 
     /**
-     * Add visit to batch file (with fallback to direct write)
+     * Add visit - writes directly to database for real-time tracking
      */
     private function addToBatch(array $visit): void {
-        $dataDir = dirname(self::$batchFile);
-
-        // Try to create data directory if it doesn't exist
-        if (!is_dir($dataDir)) {
-            @mkdir($dataDir, 0755, true);
-        }
-
-        // Check if we can use batching (directory exists and is writable)
-        $canUseBatch = is_dir($dataDir) && is_writable($dataDir);
-
-        if (!$canUseBatch) {
-            // Fall back to direct database write
-            $this->writeVisitDirectly($visit);
-            return;
-        }
-
-        // Read existing batch
-        $batch = [];
-        $firstTimestamp = time();
-        if (file_exists(self::$batchFile)) {
-            $data = json_decode(file_get_contents(self::$batchFile), true);
-            if (is_array($data)) {
-                $batch = $data['visits'] ?? [];
-                $firstTimestamp = $data['first_timestamp'] ?? time();
-            }
-        }
-
-        // Add new visit
-        $batch[] = $visit;
-
-        // Check if we should flush
-        $shouldFlush = count($batch) >= self::$batchThreshold ||
-                      (time() - $firstTimestamp) >= self::$batchTimeout;
-
-        if ($shouldFlush) {
-            $this->flushBatch($batch);
-        } else {
-            // Save batch for later
-            $written = @file_put_contents(self::$batchFile, json_encode([
-                'first_timestamp' => $firstTimestamp,
-                'visits' => $batch
-            ]), LOCK_EX);
-
-            // If write failed, write directly to database
-            if ($written === false) {
-                $this->writeVisitDirectly($visit);
-            }
-        }
+        // Always write directly to database for real-time analytics
+        $this->writeVisitDirectly($visit);
     }
 
     /**
