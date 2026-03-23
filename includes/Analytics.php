@@ -171,12 +171,23 @@ class Analytics {
     }
 
     /**
-     * Add visit to batch file
+     * Add visit to batch file (with fallback to direct write)
      */
     private function addToBatch(array $visit): void {
         $dataDir = dirname(self::$batchFile);
+
+        // Try to create data directory if it doesn't exist
         if (!is_dir($dataDir)) {
-            mkdir($dataDir, 0755, true);
+            @mkdir($dataDir, 0755, true);
+        }
+
+        // Check if we can use batching (directory exists and is writable)
+        $canUseBatch = is_dir($dataDir) && is_writable($dataDir);
+
+        if (!$canUseBatch) {
+            // Fall back to direct database write
+            $this->writeVisitDirectly($visit);
+            return;
         }
 
         // Read existing batch
@@ -201,10 +212,41 @@ class Analytics {
             $this->flushBatch($batch);
         } else {
             // Save batch for later
-            file_put_contents(self::$batchFile, json_encode([
+            $written = @file_put_contents(self::$batchFile, json_encode([
                 'first_timestamp' => $firstTimestamp,
                 'visits' => $batch
             ]), LOCK_EX);
+
+            // If write failed, write directly to database
+            if ($written === false) {
+                $this->writeVisitDirectly($visit);
+            }
+        }
+    }
+
+    /**
+     * Write a single visit directly to database (fallback when batching fails)
+     */
+    private function writeVisitDirectly(array $visit): void {
+        try {
+            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, is_new_visitor, visited_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                $visit['page_url'],
+                $visit['page_title'],
+                $visit['referrer'],
+                $visit['user_id'],
+                $visit['session_id'],
+                $visit['ip_address'],
+                $visit['user_agent'],
+                $visit['device_type'],
+                $visit['browser'],
+                $visit['is_new_visitor'] ?? 0,
+                $visit['timestamp']
+            ]);
+        } catch (PDOException $e) {
+            error_log('Analytics direct write error: ' . $e->getMessage());
         }
     }
 
