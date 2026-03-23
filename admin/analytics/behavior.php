@@ -23,6 +23,9 @@ $heatmapData = $analytics->getTrafficHeatmap($period);
 $peakTimes = $analytics->getPeakTrafficTimes($period);
 
 $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// Debug heatmap data
+echo "<!-- HEATMAP DEBUG: max_value=" . $heatmapData['max_value'] . " -->\n";
 ?>
 
 <?php require_once __DIR__ . '/../includes/analytics-subnav.php'; ?>
@@ -111,7 +114,7 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                         // Ensure minimum visibility for cells with data
                         $alpha = $value > 0 ? max(0.15, round($intensity, 2)) : 0.05;
                     ?>
-                        <div class="analytics-heatmap-cell" style="background-color: rgba(139, 92, 246, <?= $alpha; ?>) !important;" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
+                        <div class="analytics-heatmap-cell" data-value="<?= $value; ?>" data-alpha="<?= $alpha; ?>" style="background-color: rgba(139, 92, 246, <?= $alpha; ?>) !important;" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
                     <?php endfor; ?>
                 </div>
             <?php endfor; ?>
