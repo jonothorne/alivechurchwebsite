@@ -92,10 +92,39 @@ if (file_exists($gitHead)) {
 $analyticsFile = __DIR__ . '/../../includes/Analytics.php';
 if (file_exists($analyticsFile)) {
     $analyticsCode = file_get_contents($analyticsFile);
-    $debug['analytics_has_17_placeholders'] = strpos($analyticsCode, '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?') !== false;
+    $debug['analytics_uses_NOW_in_batch'] = strpos($analyticsCode, ", NOW())';") !== false;
+    $debug['analytics_uses_NOW_in_direct'] = strpos($analyticsCode, ", NOW())\"") !== false;
     $debug['analytics_has_fallback'] = strpos($analyticsCode, 'writeVisitDirectly') !== false;
     $debug['analytics_has_url_skip'] = strpos($analyticsCode, 'shouldSkipUrl') !== false;
     $debug['analytics_batch_threshold'] = preg_match('/batchThreshold\s*=\s*(\d+)/', $analyticsCode, $m) ? (int)$m[1] : 'unknown';
+}
+
+// Show batch file contents for debugging
+if (file_exists($batchFile)) {
+    $batchData = json_decode(file_get_contents($batchFile), true);
+    $debug['batch_first_timestamp'] = $batchData['first_timestamp'] ?? null;
+    $debug['batch_age_seconds'] = isset($batchData['first_timestamp']) ? time() - $batchData['first_timestamp'] : null;
+    if (!empty($batchData['visits'])) {
+        $debug['batch_sample_url'] = $batchData['visits'][0]['page_url'] ?? 'unknown';
+    }
+}
+
+// Check if GeoIP.php exists (required for batch flush)
+$debug['geoip_exists'] = file_exists(__DIR__ . '/../../includes/GeoIP.php');
+
+// Test the actual Analytics class batch flush
+if (isset($_GET['test_flush'])) {
+    try {
+        require_once __DIR__ . '/../../includes/Analytics.php';
+        $analytics = new Analytics($pdo);
+        $analytics->flushBatch();
+        $debug['flush_test'] = 'SUCCESS';
+        // Re-check batch file
+        $debug['batch_after_flush'] = file_exists($batchFile) ? 'still exists' : 'deleted';
+    } catch (Exception $e) {
+        $debug['flush_test'] = 'ERROR';
+        $debug['flush_error'] = $e->getMessage();
+    }
 }
 
 echo json_encode($debug, JSON_PRETTY_PRINT);
