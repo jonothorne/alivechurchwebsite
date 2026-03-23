@@ -180,13 +180,26 @@ class Analytics {
     }
 
     /**
-     * Write a single visit directly to database (fallback when batching fails)
+     * Write a single visit directly to database with geo lookup
      */
     private function writeVisitDirectly(array $visit): void {
         try {
+            // Geo lookup for the IP
+            $geo = null;
+            $ip = $visit['ip_address'];
+            if ($ip && $ip !== '127.0.0.1' && !str_starts_with($ip, '192.168.') && !str_starts_with($ip, '10.')) {
+                try {
+                    require_once __DIR__ . '/GeoIP.php';
+                    $geoIP = new GeoIP();
+                    $geo = $geoIP->lookup($ip);
+                } catch (Exception $e) {
+                    // Geo lookup failed, continue without it
+                }
+            }
+
             // Use NOW() for timestamp to ensure consistency with database timezone
-            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, is_new_visitor, visited_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $visit['page_url'],
@@ -198,6 +211,12 @@ class Analytics {
                 $visit['user_agent'],
                 $visit['device_type'],
                 $visit['browser'],
+                $geo['country_code'] ?? null,
+                $geo['country_name'] ?? null,
+                $geo['city'] ?? null,
+                $geo['region'] ?? null,
+                $geo['latitude'] ?? null,
+                $geo['longitude'] ?? null,
                 $visit['is_new_visitor'] ?? 0
             ]);
         } catch (PDOException $e) {

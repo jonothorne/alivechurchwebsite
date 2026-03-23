@@ -108,8 +108,9 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                     <?php for ($hour = 0; $hour < 24; $hour++):
                         $value = $heatmapData['heatmap'][$day][$hour] ?? 0;
                         $intensity = $heatmapData['max_value'] > 0 ? $value / $heatmapData['max_value'] : 0;
+                        $alpha = round($intensity, 2);
                     ?>
-                        <div class="analytics-heatmap-cell" style="--intensity: <?= $intensity; ?>;" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
+                        <div class="analytics-heatmap-cell" style="background: rgba(139, 92, 246, <?= $alpha; ?>);" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
                     <?php endfor; ?>
                 </div>
             <?php endfor; ?>
@@ -117,11 +118,11 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         <div class="analytics-heatmap-legend">
             <span>Less</span>
             <div class="analytics-heatmap-scale">
-                <div style="--intensity: 0;"></div>
-                <div style="--intensity: 0.25;"></div>
-                <div style="--intensity: 0.5;"></div>
-                <div style="--intensity: 0.75;"></div>
-                <div style="--intensity: 1;"></div>
+                <div style="background: rgba(139, 92, 246, 0);"></div>
+                <div style="background: rgba(139, 92, 246, 0.25);"></div>
+                <div style="background: rgba(139, 92, 246, 0.5);"></div>
+                <div style="background: rgba(139, 92, 246, 0.75);"></div>
+                <div style="background: rgba(139, 92, 246, 1);"></div>
             </div>
             <span>More</span>
         </div>
@@ -274,7 +275,7 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     aspect-ratio: 1;
     min-width: 16px;
     border-radius: 3px;
-    background: color-mix(in srgb, var(--color-purple) calc(var(--intensity) * 100%), var(--color-border));
+    border: 1px solid var(--color-border);
     cursor: pointer;
     transition: transform 0.1s;
 }
@@ -298,7 +299,7 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     width: 16px;
     height: 16px;
     border-radius: 3px;
-    background: color-mix(in srgb, var(--color-purple) calc(var(--intensity) * 100%), var(--color-border));
+    border: 1px solid var(--color-border);
 }
 </style>
 
