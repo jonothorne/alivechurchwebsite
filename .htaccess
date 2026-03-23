@@ -118,8 +118,18 @@ RewriteRule ^admin/sermons/comments/?$ admin/sermons/comments.php [L,QSA]
 RewriteRule ^admin/sermons/edit/?$ admin/sermons/edit.php [L,QSA]
 RewriteRule ^admin/sermons/?$ admin/sermons.php [L,QSA]
 RewriteRule ^admin/serve/?$ admin/serve.php [L,QSA]
+RewriteRule ^admin/testimonies/?$ admin/testimonies.php [L,QSA]
 RewriteRule ^admin/settings/?$ admin/settings.php [L,QSA]
 RewriteRule ^admin/users/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/welcome-journeys/?$ admin/welcome-journeys.php [L,QSA]
+RewriteRule ^admin/welcome-journey-preview/?$ admin/welcome-journey-preview.php [L,QSA]
+
+# Admin People module
+RewriteRule ^admin/people/?$ admin/people/index.php [L,QSA]
+RewriteRule ^admin/people/view/?$ admin/people/view.php [L,QSA]
+RewriteRule ^admin/people/edit/?$ admin/people/edit.php [L,QSA]
+RewriteRule ^admin/people/households/?$ admin/people/households.php [L,QSA]
+RewriteRule ^admin/people/tags/?$ admin/people/tags.php [L,QSA]
 
 # Admin Analytics sub-pages
 RewriteRule ^admin/analytics/traffic/?$ admin/analytics/traffic.php [L,QSA]
@@ -200,6 +210,9 @@ RewriteRule ^bible-study/([a-zA-Z0-9-]+)/?$ bible-study-book.php?book=$1 [L,QSA]
 # Blog post pages
 # /blog/post-slug -> blog-post.php?slug=post-slug
 RewriteRule ^blog/([a-zA-Z0-9-]+)/?$ blog-post.php?slug=$1 [L,QSA]
+
+# Testimonies/Stories page
+RewriteRule ^testimonies/?$ testimonies.php [L,QSA]
 
 # Next Steps page
 RewriteRule ^next-steps/?$ next-steps.php [L,QSA]
