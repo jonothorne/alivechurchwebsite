@@ -25,8 +25,9 @@ Thumbs.db
 *.log
 logs/
 
-# Database backups
+# Database backups (but not migrations)
 *.sql
+!migrations/*.sql
 
 # Cache
 cache/
