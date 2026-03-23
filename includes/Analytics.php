@@ -141,6 +141,7 @@ class Analytics {
             '/robots.txt',
             '/sitemap',
             '/.well-known',
+            '/.git/',
             '/assets/',
             '/uploads/',
             '/cron/',
