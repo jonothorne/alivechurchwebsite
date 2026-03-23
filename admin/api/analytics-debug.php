@@ -127,4 +127,35 @@ if (isset($_GET['test_flush'])) {
     }
 }
 
+// Test the full recordPageVisit flow
+if (isset($_GET['test_record'])) {
+    try {
+        require_once __DIR__ . '/../../includes/Analytics.php';
+        $analytics = new Analytics($pdo);
+
+        // Get visit count before
+        $beforeCount = $pdo->query("SELECT COUNT(*) FROM page_visits")->fetchColumn();
+
+        // Simulate a page visit
+        $analytics->recordPageVisit('/test-record-' . time(), 'Test Record Visit', null);
+
+        // Get visit count after
+        $afterCount = $pdo->query("SELECT COUNT(*) FROM page_visits")->fetchColumn();
+
+        $debug['record_test'] = ($afterCount > $beforeCount) ? 'SUCCESS' : 'FAILED - no insert';
+        $debug['record_before'] = (int)$beforeCount;
+        $debug['record_after'] = (int)$afterCount;
+    } catch (Exception $e) {
+        $debug['record_test'] = 'ERROR';
+        $debug['record_error'] = $e->getMessage();
+    } catch (Error $e) {
+        $debug['record_test'] = 'PHP ERROR';
+        $debug['record_error'] = $e->getMessage();
+    }
+}
+
+// Show what REQUEST_URI looks like on this server
+$debug['request_uri'] = $_SERVER['REQUEST_URI'] ?? 'not set';
+$debug['php_version'] = PHP_VERSION;
+
 echo json_encode($debug, JSON_PRETTY_PRINT);
