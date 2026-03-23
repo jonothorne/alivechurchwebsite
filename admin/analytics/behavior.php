@@ -24,8 +24,6 @@ $peakTimes = $analytics->getPeakTrafficTimes($period);
 
 $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// Debug heatmap data
-echo "<!-- HEATMAP DEBUG: max_value=" . $heatmapData['max_value'] . " -->\n";
 ?>
 
 <?php require_once __DIR__ . '/../includes/analytics-subnav.php'; ?>
@@ -114,7 +112,7 @@ echo "<!-- HEATMAP DEBUG: max_value=" . $heatmapData['max_value'] . " -->\n";
                         // Ensure minimum visibility for cells with data
                         $alpha = $value > 0 ? max(0.15, round($intensity, 2)) : 0.05;
                     ?>
-                        <div class="analytics-heatmap-cell" data-value="<?= $value; ?>" data-alpha="<?= $alpha; ?>" style="background-color: rgba(139, 92, 246, <?= $alpha; ?>) !important;" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
+                        <div class="analytics-heatmap-cell" data-value="<?= $value; ?>" data-alpha="<?= $alpha; ?>" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
                     <?php endfor; ?>
                 </div>
             <?php endfor; ?>
@@ -306,5 +304,13 @@ echo "<!-- HEATMAP DEBUG: max_value=" . $heatmapData['max_value'] . " -->\n";
     border: 1px solid var(--color-border);
 }
 </style>
+
+<script <?= csp_nonce(); ?>>
+// Apply heatmap colors via JavaScript to work around CSP blocking inline styles
+document.querySelectorAll('.analytics-heatmap-cell').forEach(function(cell) {
+    var alpha = parseFloat(cell.getAttribute('data-alpha')) || 0.05;
+    cell.style.backgroundColor = 'rgba(139, 92, 246, ' + alpha + ')';
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
