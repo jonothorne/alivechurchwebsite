@@ -15078,3 +15078,766 @@ a.study-nav-chapter:hover {
         padding: 1rem;
     }
 }
+
+/* ============================================
+   Testimonies Page Styles
+   ============================================ */
+
+/* Admin Preview Banner */
+.admin-preview-banner {
+    background: linear-gradient(135deg, var(--color-magenta), var(--color-purple));
+    color: white;
+    padding: 0.75rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.admin-preview-banner a {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Featured Testimony */
+.featured-testimony {
+    padding: 3rem 0;
+    background: var(--color-bg-subtle);
+}
+
+.featured-testimony-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    background: var(--color-card-bg);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.featured-testimony-video,
+.featured-testimony-image {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+}
+
+.featured-testimony-video .video-wrapper,
+.featured-testimony-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.featured-testimony-video .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+
+.featured-testimony-video .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.featured-testimony-content {
+    padding: 2rem 2rem 2rem 0;
+}
+
+.featured-testimony-content h2 {
+    font-size: 1.75rem;
+    margin: 0.75rem 0;
+    color: var(--color-dark);
+}
+
+.featured-testimony-content blockquote {
+    font-size: 1.125rem;
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin: 1rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--color-magenta);
+}
+
+/* Testimony Type Badge */
+.testimony-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, var(--color-magenta), var(--color-purple));
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-full);
+}
+
+.testimony-type-badge.small {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.5rem;
+}
+
+/* Testimony Author */
+.testimony-author {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 1rem 0;
+}
+
+.testimony-author strong {
+    color: var(--color-dark);
+    font-size: 1rem;
+}
+
+.testimony-author span {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+/* Filter Tabs */
+.testimonies-filter {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-tab {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: all var(--transition-base);
+    border: 1px solid var(--color-border);
+}
+
+.filter-tab:hover {
+    color: var(--color-magenta);
+    border-color: var(--color-magenta);
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, var(--color-magenta), var(--color-purple));
+    color: white;
+    border-color: transparent;
+}
+
+/* Testimonies Grid */
+.testimonies-section {
+    padding: 3rem 0;
+}
+
+.testimonies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+/* Testimony Card */
+.testimony-card {
+    background: var(--color-card-bg);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.testimony-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.testimony-card-image {
+    position: relative;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+}
+
+.testimony-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.testimony-card-image .video-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.testimony-card-content {
+    padding: 1.5rem;
+}
+
+.testimony-card-content h3 {
+    font-size: 1.125rem;
+    margin: 0.5rem 0;
+    color: var(--color-dark);
+}
+
+.testimony-quote,
+.testimony-excerpt {
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0.75rem 0;
+}
+
+.testimony-quote {
+    font-style: italic;
+}
+
+/* Share Story CTA */
+.share-story-cta {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, var(--color-magenta), var(--color-purple));
+}
+
+.share-story-cta .cta-card {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-2xl);
+    text-align: center;
+}
+
+.share-story-cta h2 {
+    color: var(--color-dark);
+    margin-bottom: 1rem;
+}
+
+.share-story-cta p {
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Testimony Modal */
+.testimony-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+}
+
+.testimony-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.testimony-modal .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.testimony-modal .modal-content {
+    position: relative;
+    background: var(--color-card-bg);
+    border-radius: var(--radius-2xl);
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 1rem;
+    width: 100%;
+}
+
+.testimony-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--color-bg-subtle);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.testimony-modal .modal-body {
+    padding: 2rem;
+}
+
+.testimony-modal-video {
+    margin: -2rem -2rem 2rem;
+    display: none;
+}
+
+.testimony-modal-video img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+}
+
+.testimony-modal-video .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+
+.testimony-modal-video .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.testimony-modal h2 {
+    font-size: 1.5rem;
+    margin: 0.75rem 0;
+    color: var(--color-dark);
+}
+
+.testimony-full-story {
+    color: var(--color-text);
+    line-height: 1.8;
+    margin: 1.5rem 0;
+}
+
+.testimony-share {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    margin-top: 1.5rem;
+}
+
+.testimony-share span {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.share-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+}
+
+.share-btn:hover {
+    background: var(--color-magenta);
+    color: white;
+    border-color: var(--color-magenta);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .featured-testimony-card {
+        grid-template-columns: 1fr;
+    }
+
+    .featured-testimony-content {
+        padding: 2rem;
+    }
+
+    .testimonies-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .share-story-cta .cta-card {
+        padding: 2rem;
+    }
+}
+
+/* =============================================
+   VISIT PAGE - I'M NEW EXPANDED SECTIONS
+   ============================================= */
+
+/* Hero CTAs */
+.hero-ctas {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+/* Welcome Video Section */
+.welcome-video-section {
+    padding: 4rem 0;
+    background: var(--color-bg-elevated);
+}
+
+.welcome-video-split {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.welcome-video-content .eyebrow {
+    color: var(--color-magenta);
+}
+
+.welcome-video-content h2 {
+    font-size: 2rem;
+    margin: 0.5rem 0 1rem;
+    color: var(--color-dark);
+}
+
+.welcome-video-content p {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.welcome-video-embed .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.welcome-video-embed .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.video-placeholder {
+    position: relative;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.video-placeholder img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-placeholder-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-placeholder-text {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+/* Why Alive Section */
+.why-alive-section {
+    padding: 4rem 0;
+    background: var(--color-bg);
+}
+
+.why-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.why-card {
+    background: var(--color-card-bg);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.why-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card);
+}
+
+.why-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.why-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-dark);
+}
+
+.why-card p {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+/* Next Steps Preview Section */
+.next-steps-preview {
+    padding: 4rem 0;
+    background: var(--color-purple);
+    color: white;
+}
+
+.next-steps-preview .section-heading {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.next-steps-preview .eyebrow {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.next-steps-preview h2 {
+    color: white;
+    font-size: 2rem;
+    margin: 0.5rem 0;
+}
+
+.next-steps-preview > .container > p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.125rem;
+}
+
+.next-steps-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.next-step-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    color: white;
+    transition: all var(--transition-base);
+}
+
+.next-step-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px);
+}
+
+.next-step-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.next-step-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.next-step-card p {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.next-step-link {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-magenta);
+}
+
+[data-theme="dark"] .next-step-link {
+    color: #f472b6;
+}
+
+/* Visit page responsive */
+@media (max-width: 1024px) {
+    .why-cards,
+    .next-steps-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-ctas {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hero-ctas .btn {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .welcome-video-split {
+        grid-template-columns: 1fr;
+    }
+
+    .why-cards,
+    .next-steps-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .why-card,
+    .next-step-card {
+        text-align: left;
+    }
+
+    .why-card-icon,
+    .next-step-icon {
+        font-size: 2rem;
+    }
+}
+
+/* =============================================
+   EVENT SHARE/INVITE SECTION
+   ============================================= */
+
+.event-share-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+.event-share-card p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.event-share-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.event-share-buttons .share-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+    text-decoration: none;
+}
+
+.event-share-buttons .share-btn:hover {
+    transform: translateY(-2px);
+}
+
+.event-share-buttons .share-facebook:hover {
+    background: #1877f2;
+    color: white;
+    border-color: #1877f2;
+}
+
+.event-share-buttons .share-twitter:hover {
+    background: #000;
+    color: white;
+    border-color: #000;
+}
+
+.event-share-buttons .share-whatsapp:hover {
+    background: #25d366;
+    color: white;
+    border-color: #25d366;
+}
+
+.event-share-buttons .share-email:hover {
+    background: var(--color-magenta);
+    color: white;
+    border-color: var(--color-magenta);
+}
+
+.event-share-buttons .share-copy:hover {
+    background: var(--color-purple);
+    color: white;
+    border-color: var(--color-purple);
+}
+
+.copy-confirmation {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: var(--color-magenta);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Event card share icon */
+.event-share-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+    margin-left: auto;
+}
+
+.event-share-icon:hover {
+    background: var(--color-magenta);
+    color: white;
+    border-color: var(--color-magenta);
+}
+
+.event-share-icon.copied {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.event-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}

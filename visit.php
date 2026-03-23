@@ -34,12 +34,50 @@ if (!isset($cms)) {
 ?>
 <section class="page-hero <?= $hero_texture_class; ?>">
     <div class="container narrow">
-        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'Plan a Visit'); ?></p>
+        <p class="eyebrow" data-cms-editable="hero_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_eyebrow', 'I\'m New'); ?></p>
         <h1 data-cms-editable="hero_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_headline', 'You belong before you believe.'); ?></h1>
-        <p data-cms-editable="hero_subtext" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_subtext', 'Tell us you\'re coming and we\'ll roll out the pink carpet with reserved parking, kids check-in help, and a friendly host.'); ?></p>
+        <p data-cms-editable="hero_subtext" data-cms-page="visit" data-cms-type="text"><?= $cms->text('hero_subtext', 'Whether you\'re exploring faith for the first time or looking for a new church home, you\'re welcome here. No perfect people allowed.'); ?></p>
+        <div class="hero-ctas">
+            <a href="#plan-visit" class="btn btn-primary">Plan Your Visit</a>
+            <a href="#watch-video" class="btn btn-outline">Watch What to Expect</a>
+        </div>
     </div>
 </section>
-<section class="content-section">
+
+<!-- Welcome Video Section -->
+<section class="welcome-video-section" id="watch-video">
+    <div class="container">
+        <div class="welcome-video-split">
+            <div class="welcome-video-content">
+                <p class="eyebrow" data-cms-editable="video_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('video_eyebrow', 'See For Yourself'); ?></p>
+                <h2 data-cms-editable="video_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('video_headline', 'What\'s it like at Alive Church?'); ?></h2>
+                <div data-cms-editable="video_text" data-cms-page="visit" data-cms-type="html"><?= $cms->html('video_text', '<p>Take a quick peek inside a Sunday service. Real people, real worship, real community.</p><p>We know walking into a new church can feel intimidating. Our hope is this video helps you feel at home before you even arrive.</p>'); ?></div>
+            </div>
+            <div class="welcome-video-embed">
+                <?php
+                $welcomeVideoUrl = $cms->text('welcome_video_url', '');
+                if ($welcomeVideoUrl && preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $welcomeVideoUrl, $matches)):
+                    $youtubeId = $matches[1];
+                ?>
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId); ?>?rel=0"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                </div>
+                <?php else: ?>
+                <div class="video-placeholder">
+                    <img src="/assets/imgs/gallery/alive-church-worship-congregation.jpg" alt="Alive Church Sunday Service">
+                    <div class="video-placeholder-overlay">
+                        <span class="video-placeholder-text">Video coming soon</span>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content-section" id="plan-visit">
     <div class="container split">
         <div>
             <h2 data-cms-editable="expect_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('expect_headline', 'What to expect'); ?></h2>
@@ -245,6 +283,42 @@ if (!isset($cms)) {
     </div>
 </section>
 
+<!-- What Makes Us Different -->
+<section class="why-alive-section">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow" data-cms-editable="why_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why_eyebrow', 'Why Alive Church?'); ?></p>
+            <h2 data-cms-editable="why_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why_headline', 'What makes us different'); ?></h2>
+        </div>
+
+        <div class="why-cards">
+            <div class="why-card">
+                <div class="why-card-icon">❤️</div>
+                <h3 data-cms-editable="why1_title" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why1_title', 'Real Community'); ?></h3>
+                <p data-cms-editable="why1_text" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why1_text', 'We\'re a family, not a performance. Expect authentic relationships, genuine conversations, and people who will actually remember your name.'); ?></p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-card-icon">📖</div>
+                <h3 data-cms-editable="why2_title" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why2_title', 'Bible-Centered Teaching'); ?></h3>
+                <p data-cms-editable="why2_text" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why2_text', 'Every message is rooted in Scripture and designed to help you apply God\'s Word to your everyday life. Practical, relevant, and life-changing.'); ?></p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-card-icon">🙌</div>
+                <h3 data-cms-editable="why3_title" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why3_title', 'Spirit-Led Worship'); ?></h3>
+                <p data-cms-editable="why3_text" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why3_text', 'Our worship is passionate but accessible. Whether you\'re a hands-raised worshipper or prefer to observe quietly, there\'s room for you.'); ?></p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-card-icon">🌍</div>
+                <h3 data-cms-editable="why4_title" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why4_title', 'Outward Focused'); ?></h3>
+                <p data-cms-editable="why4_text" data-cms-page="visit" data-cms-type="text"><?= $cms->text('why4_text', 'We exist to love Norwich and beyond. From local community projects to global missions, we believe the church should be a blessing to the world.'); ?></p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- FAQ Section -->
 <section class="faq-section">
     <div class="container narrow">
@@ -285,4 +359,46 @@ if (!isset($cms)) {
         </div>
     </div>
 </section>
+
+<!-- Next Steps After Your Visit -->
+<section class="next-steps-preview">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow" data-cms-editable="nextsteps_eyebrow" data-cms-page="visit" data-cms-type="text"><?= $cms->text('nextsteps_eyebrow', 'After Your Visit'); ?></p>
+            <h2 data-cms-editable="nextsteps_headline" data-cms-page="visit" data-cms-type="text"><?= $cms->text('nextsteps_headline', 'Ready for more?'); ?></h2>
+            <p data-cms-editable="nextsteps_subtext" data-cms-page="visit" data-cms-type="text"><?= $cms->text('nextsteps_subtext', 'Once you\'ve visited, here are some great ways to take your next step with us.'); ?></p>
+        </div>
+
+        <div class="next-steps-cards">
+            <a href="/groups" class="next-step-card">
+                <div class="next-step-icon">👥</div>
+                <h3>Join a Group</h3>
+                <p>Life is better together. Find a group that fits your stage of life.</p>
+                <span class="next-step-link">Explore Groups →</span>
+            </a>
+
+            <a href="/serve" class="next-step-card">
+                <div class="next-step-icon">🤲</div>
+                <h3>Serve With Us</h3>
+                <p>Use your gifts to make a difference. There's a place for everyone.</p>
+                <span class="next-step-link">Find Your Fit →</span>
+            </a>
+
+            <a href="/next-steps/baptism" class="next-step-card">
+                <div class="next-step-icon">💧</div>
+                <h3>Get Baptized</h3>
+                <p>Ready to declare your faith? Baptism is your next step.</p>
+                <span class="next-step-link">Learn More →</span>
+            </a>
+
+            <a href="/next-steps" class="next-step-card">
+                <div class="next-step-icon">🚀</div>
+                <h3>Growth Track</h3>
+                <p>Discover your purpose and find your place in the church.</p>
+                <span class="next-step-link">Start Your Journey →</span>
+            </a>
+        </div>
+    </div>
+</section>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
