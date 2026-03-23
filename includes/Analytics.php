@@ -189,7 +189,7 @@ class Analytics {
                 $ip = $visit['ip_address'];
                 $geo = $geoData[$ip] ?? null;
 
-                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                $placeholders[] = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
                 $values[] = $visit['page_url'];
                 $values[] = $visit['page_title'];
                 $values[] = $visit['referrer'];
