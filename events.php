@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/includes/bootstrap.php';
 $page_title = 'Events | ' . $site['name'];
+$page_description = 'Upcoming events at Alive Church Norwich. Join us for services, community gatherings, conferences, and special events in Norwich.';
 include __DIR__ . '/includes/header.php';
 
 // Initialize CMS
@@ -107,6 +108,19 @@ if (!isset($cms)) {
                                     Register
                                 </a>
                             <?php endif; ?>
+                            <button class="event-share-icon"
+                                    data-action="share-event"
+                                    data-title="<?= htmlspecialchars($event['title']); ?>"
+                                    data-url="/events/<?= htmlspecialchars($event['slug']); ?>"
+                                    title="Share this event">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="5" r="3"/>
+                                    <circle cx="6" cy="12" r="3"/>
+                                    <circle cx="18" cy="19" r="3"/>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -126,5 +140,36 @@ if (!isset($cms)) {
         <?php endif; ?>
     </div>
 </section>
+<script <?= csp_nonce(); ?>>
+// Share event using Web Share API or fallback
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action="share-event"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    const title = btn.dataset.title;
+    const url = window.location.origin + btn.dataset.url;
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: 'Join me at ' + title + '!',
+            url: url
+        }).catch(() => {});
+    } else {
+        // Fallback: copy link to clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            const originalTitle = btn.title;
+            btn.title = 'Link copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.title = originalTitle;
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+});
+</script>
+
 <?php include __DIR__ . '/includes/newsletter.php'; ?>
 <?php include __DIR__ . '/includes/footer.php'; ?>

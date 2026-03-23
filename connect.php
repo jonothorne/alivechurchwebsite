@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/db-config.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = 'Connect | ' . $site['name'];
+$page_description = 'Connect with Alive Church Norwich. Join a small group, serve on a team, and find your community in the heart of Norwich.';
 
 // Initialize CMS
 if (!isset($cms)) {

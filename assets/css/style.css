@@ -1226,6 +1226,17 @@ main section {
 .profile-grid {
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
+.profile-card .cms-img-wrapper {
+    width: 100%;
+    display: block;
+}
+.profile-card img {
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
 .form-card {
     display: grid;
     gap: 1rem;
@@ -15501,8 +15512,8 @@ a.study-nav-chapter:hover {
    VISIT PAGE - I'M NEW EXPANDED SECTIONS
    ============================================= */
 
-/* Hero CTAs */
-.hero-ctas {
+/* Hero CTAs - centered for page-hero (visit page etc), left-aligned for homepage hero */
+.page-hero .hero-ctas {
     display: flex;
     gap: 1rem;
     justify-content: center;

@@ -50,9 +50,15 @@ class Analytics {
      * Record a page visit - uses batching for performance
      */
     public function recordPageVisit(string $pageUrl, ?string $pageTitle = null, ?int $userId = null): void {
-        // Skip bots and crawlers
+        // Check for bots using BotDetector
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        if ($this->isBot($userAgent)) {
+        require_once __DIR__ . '/BotDetector.php';
+        $botDetector = new BotDetector($this->pdo);
+        $botInfo = $botDetector->detect($userAgent);
+
+        // If it's a bot, log to bot_visits instead and return
+        if ($botInfo['is_bot']) {
+            $botDetector->logVisit($botInfo, $pageUrl);
             return;
         }
 

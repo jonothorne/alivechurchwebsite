@@ -101,6 +101,7 @@ if ($page === 1 && !$categorySlug && !$tagSlug && !$search) {
 }
 
 $page_title = 'Blog | ' . $site['name'];
+$page_description = 'Insights and stories from Alive Church Norwich. Explore faith, community life, and spiritual growth from our church family in Norwich.';
 if ($categorySlug) {
     $currentCategory = array_filter($categories, fn($c) => $c['slug'] === $categorySlug);
     $currentCategory = reset($currentCategory);

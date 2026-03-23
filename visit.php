@@ -3,6 +3,7 @@ require __DIR__ . '/config.php';
 require __DIR__ . '/includes/form-handler.php';
 
 $page_title = 'Plan a Visit | ' . $site['name'];
+$page_description = 'Plan your visit to Alive Church Norwich. Find service times, location, parking info, and what to expect when you visit our welcoming church in Norwich.';
 $visit_notice = null;
 $visit_values = [
     'name' => '',

@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Ministries | ' . $site['name'];
+$page_description = 'Explore ministries at Alive Church Norwich. From small groups to outreach projects, find your place to belong and make a difference in our city.';
 include __DIR__ . '/includes/header.php';
 
 // Initialize CMS
@@ -35,10 +36,10 @@ if (!isset($cms)) {
             <h2 data-cms-editable="groups_headline" data-cms-page="ministries" data-cms-type="text"><?= $cms->text('groups_headline', 'Alive Groups'); ?></h2>
             <p data-cms-editable="groups_text" data-cms-page="ministries" data-cms-type="text"><?= $cms->text('groups_text', 'Groups meet all across Norwich and online—Alpha, prayer, running clubs, creative collectives, and more. We will help you find a circle that fits your rhythm.'); ?></p>
             <a class="btn btn-primary" href="/next-steps">Find a group</a>
-            <img src="/assets/imgs/gallery/alive-church-community-craft-activity.jpg" alt="Alive Church community group activity" class="content-image">
+            <img src="/assets/imgs/gallery/alive-church-community-craft-activity.jpg" alt="Alive Church Norwich community group gathering" class="content-image">
         </div>
         <div class="card">
-            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church serve Saturday outdoor event" class="content-image-small" data-cms-editable="serve_image" data-cms-page="ministries" data-cms-type="image">
+            <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg" alt="Alive Church Norwich community outreach event" class="content-image-small" data-cms-editable="serve_image" data-cms-page="ministries" data-cms-type="image">
             <h3 data-cms-editable="serve_title" data-cms-page="ministries" data-cms-type="text"><?= $cms->text('serve_title', 'Serve Saturday'); ?></h3>
             <p data-cms-editable="serve_text" data-cms-page="ministries" data-cms-type="text"><?= $cms->text('serve_text', 'Once a month we mobilize hundreds of volunteers for neighborhood makeovers, litter picks, home makeovers, and care packages.'); ?></p>
             <a class="text-link" href="/connect">Sign up to serve →</a>

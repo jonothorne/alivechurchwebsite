@@ -3,6 +3,7 @@ require __DIR__ . '/../config.php';
 require __DIR__ . '/../includes/form-handler.php';
 
 $page_title = 'Baptism Signup | ' . $site['name'];
+$page_description = 'Get baptised at Alive Church Norwich. Take this important step of faith and publicly declare your commitment to following Jesus.';
 
 $baptism_notice = null;
 $baptism_values = [

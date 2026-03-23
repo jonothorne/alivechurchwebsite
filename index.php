@@ -81,7 +81,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <div class="cta-image">
                 <img src="<?= htmlspecialchars($cms->text('newhere_image', '/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg')); ?>"
-                     alt="Welcoming team at Alive Church"
+                     alt="Welcoming team at Alive Church Norwich"
                      width="960" height="720"
                      fetchpriority="high"
                      data-cms-editable="newhere_image" data-cms-page="home" data-cms-type="image">
@@ -178,7 +178,7 @@ include __DIR__ . '/includes/header.php';
                     <p class="stat-label" data-cms-editable="stat3_label" data-cms-page="home" data-cms-type="text"><?= $cms->text('stat3_label', 'meals served last month'); ?></p>
                 </div>
             </div>
-            <img src="<?= htmlspecialchars($cms->text('about_image', '/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg')); ?>" alt="Alive Church community worship in Lincolnshire" class="content-image" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
+            <img src="<?= htmlspecialchars($cms->text('about_image', '/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg')); ?>" alt="Alive Church Norwich community worship gathering" class="content-image" data-cms-editable="about_image" data-cms-page="home" data-cms-type="image" loading="lazy">
         </div>
         <div class="card">
             <p class="eyebrow light">New here?</p>
@@ -294,12 +294,12 @@ include __DIR__ . '/includes/header.php';
             <h2 data-cms-editable="gallery_headline" data-cms-page="home" data-cms-type="text"><?= $cms->text('gallery_headline', 'See what happens when we gather.'); ?></h2>
         </div>
         <div class="gallery-grid">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_1', '/assets/imgs/gallery/alive-church-worship-congregation.jpg')); ?>" alt="Alive Church worship service" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_1" data-cms-page="home" data-cms-type="image">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_2', '/assets/imgs/gallery/alive-church-drummer-worship-team.jpg')); ?>" alt="Alive Church worship team" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_2" data-cms-page="home" data-cms-type="image">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_3', '/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg')); ?>" alt="Alive Church community" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_3" data-cms-page="home" data-cms-type="image">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_4', '/assets/imgs/gallery/alive-church-christmas-worship-service.jpg')); ?>" alt="Alive Church service" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_4" data-cms-page="home" data-cms-type="image">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_5', '/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg')); ?>" alt="Alive Church celebration" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_5" data-cms-page="home" data-cms-type="image">
-            <img src="<?= htmlspecialchars($cms->text('gallery_img_6', '/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg')); ?>" alt="Alive Church prayer" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_6" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_1', '/assets/imgs/gallery/alive-church-worship-congregation.jpg')); ?>" alt="Sunday worship service at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_1" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_2', '/assets/imgs/gallery/alive-church-drummer-worship-team.jpg')); ?>" alt="Worship team at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_2" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_3', '/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg')); ?>" alt="Community gathering at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_3" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_4', '/assets/imgs/gallery/alive-church-christmas-worship-service.jpg')); ?>" alt="Church service at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_4" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_5', '/assets/imgs/gallery/alive-church-christmas-service-celebration.jpg')); ?>" alt="Celebration at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_5" data-cms-page="home" data-cms-type="image">
+            <img src="<?= htmlspecialchars($cms->text('gallery_img_6', '/assets/imgs/gallery/alive-church-acoustic-worship-prayer.jpg')); ?>" alt="Prayer and worship at Alive Church Norwich" class="gallery-img" loading="lazy" data-cms-editable="gallery_img_6" data-cms-page="home" data-cms-type="image">
         </div>
     </div>
 </section>

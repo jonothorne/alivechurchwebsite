@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/helpers.php';
 require __DIR__ . '/../includes/form-handler.php';
 
 $page_title = 'Join a Group | ' . $site['name'];
+$page_description = 'Join a small group at Alive Church Norwich. Connect with others across Norwich through Bible study, prayer, and community.';
 
 // Load groups from database
 $pdo = getDbConnection();

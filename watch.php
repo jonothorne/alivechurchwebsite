@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/db-config.php';
 require_once __DIR__ . '/includes/SermonManager.php';
 
 $page_title = 'Watch | ' . $site['name'];
+$page_description = 'Watch sermons and teachings from Alive Church Norwich. Stream our latest messages online and grow in your faith from anywhere.';
 
 // Initialize CMS
 if (!isset($cms)) {

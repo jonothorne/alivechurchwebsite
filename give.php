@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/config.php';
 $page_title = 'Give | ' . $site['name'];
+$page_description = 'Support the mission of Alive Church Norwich. Your generosity helps us reach our city, support families, and share hope across Norwich and beyond.';
 include __DIR__ . '/includes/header.php';
 
 // Initialize CMS
@@ -251,7 +252,7 @@ if (!isset($cms)) {
         <div class="impact-stories">
             <article class="impact-card">
                 <img src="/assets/imgs/gallery/alive-church-community-cafe-outdoor.jpg"
-                     alt="Alive Church foodbank and community outreach"
+                     alt="Alive Church Norwich foodbank and community outreach"
                      class="impact-image">
                 <div class="impact-content">
                     <h3>Feeding Families</h3>
@@ -262,7 +263,7 @@ if (!isset($cms)) {
 
             <article class="impact-card">
                 <img src="/assets/imgs/gallery/alive-church-family-worship-lincolnshire.jpg"
-                     alt="Alive Church community impact"
+                     alt="Alive Church Norwich community impact"
                      class="impact-image">
                 <div class="impact-content">
                     <h3>Youth Transformed</h3>

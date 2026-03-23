@@ -68,7 +68,7 @@ foreach ($allSeriesSermons as $sermon) {
 }
 
 $page_title = 'Sermons | ' . $site['name'];
-$page_description = 'Watch and listen to sermons from ' . $site['name'] . '. Browse by series, speaker, or search our message archive.';
+$page_description = 'Watch and listen to sermons from Alive Church Norwich. Browse by series, speaker, or search our message archive for Bible teaching that transforms lives.';
 
 include __DIR__ . '/includes/header.php';
 ?>
