@@ -56,6 +56,11 @@ class Analytics {
             return;
         }
 
+        // Skip admin pages and system URLs
+        if ($this->shouldSkipUrl($pageUrl)) {
+            return;
+        }
+
         // Generate or retrieve session ID and track new vs returning
         $isNewVisitor = 0;
         if (!isset($_COOKIE['analytics_session'])) {
@@ -113,6 +118,55 @@ class Analytics {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Check if URL should be skipped from tracking
+     */
+    private function shouldSkipUrl(string $url): bool {
+        // Skip admin pages
+        if (strpos($url, '/admin') === 0) {
+            return true;
+        }
+
+        // Skip API endpoints
+        if (strpos($url, '/api/') !== false) {
+            return true;
+        }
+
+        // Skip system files and assets
+        $skipPatterns = [
+            '/favicon',
+            '/robots.txt',
+            '/sitemap',
+            '/.well-known',
+            '/assets/',
+            '/uploads/',
+            '/cron/',
+            '.php',  // Direct PHP file access (we use clean URLs)
+            '.css',
+            '.js',
+            '.map',
+            '.ico',
+            '.png',
+            '.jpg',
+            '.jpeg',
+            '.gif',
+            '.svg',
+            '.woff',
+            '.woff2',
+            '.ttf',
+            '.eot',
+        ];
+
+        $urlLower = strtolower($url);
+        foreach ($skipPatterns as $pattern) {
+            if (strpos($urlLower, $pattern) !== false) {
+                return true;
+            }
+        }
+
         return false;
     }
 
