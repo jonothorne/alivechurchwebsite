@@ -108,7 +108,8 @@ $dayNames = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                     <?php for ($hour = 0; $hour < 24; $hour++):
                         $value = $heatmapData['heatmap'][$day][$hour] ?? 0;
                         $intensity = $heatmapData['max_value'] > 0 ? $value / $heatmapData['max_value'] : 0;
-                        $alpha = round($intensity, 2);
+                        // Ensure minimum visibility for cells with data
+                        $alpha = $value > 0 ? max(0.15, round($intensity, 2)) : 0.05;
                     ?>
                         <div class="analytics-heatmap-cell" style="background: rgba(139, 92, 246, <?= $alpha; ?>);" title="<?= $dayNames[$day]; ?> <?= sprintf('%02d:00', $hour); ?>: <?= $value; ?> visits"></div>
                     <?php endfor; ?>
