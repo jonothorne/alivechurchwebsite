@@ -364,6 +364,56 @@ function process_form_submission(string $type, array $data): bool
     // Send email notification
     $emailSent = send_form_notification($type, $data);
 
+    // Start welcome journey for visit registrations
+    if ($type === 'visit' && !empty($data['email'])) {
+        start_welcome_journey($data);
+    }
+
     // Return true if at least one method succeeded
     return $storedDb || $storedJson || $emailSent;
+}
+
+/**
+ * Start a welcome journey for a new visitor
+ */
+function start_welcome_journey(array $data): bool
+{
+    try {
+        require_once __DIR__ . '/db-config.php';
+        require_once __DIR__ . '/WelcomeJourney.php';
+
+        $pdo = getDbConnection();
+        $welcomeJourney = new WelcomeJourney($pdo);
+
+        // Get the form submission ID if available
+        $formSubmissionId = 0;
+        try {
+            $stmt = $pdo->prepare(
+                "SELECT id FROM form_submissions
+                 WHERE form_type = 'visit' AND JSON_EXTRACT(form_data, '$.email') = ?
+                 ORDER BY id DESC LIMIT 1"
+            );
+            $stmt->execute([$data['email']]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                $formSubmissionId = (int)$result['id'];
+            }
+        } catch (Exception $e) {
+            // Non-critical - continue without linking to form submission
+            error_log("Could not link welcome journey to form submission: " . $e->getMessage());
+        }
+
+        // Start the journey - pass formSubmissionId and visitor data array
+        $result = $welcomeJourney->startJourney($formSubmissionId, $data);
+
+        if ($result) {
+            error_log("Welcome journey started for {$data['email']}");
+            return true;
+        }
+
+        return false;
+    } catch (Exception $e) {
+        error_log("Failed to start welcome journey: " . $e->getMessage());
+        return false;
+    }
 }
