@@ -445,32 +445,33 @@ if ($connected) {
 }
 .gsc-chart {
     display: flex;
-    align-items: stretch;
+    align-items: flex-end;
     gap: 2px;
     height: 180px;
     padding-bottom: 1.5rem;
+    position: relative;
 }
 .gsc-chart-bar-wrap {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
     position: relative;
-    min-width: 0;
-    cursor: default;
 }
 .gsc-chart-bar {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 0;
-    right: 0;
+    width: 100%;
     min-height: 4px;
     background: var(--color-purple, #8b5cf6);
-    border-radius: 4px 4px 0 0;
-    transition: opacity 0.15s;
+    border-radius: 2px 2px 0 0;
 }
 .gsc-chart-label {
     position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: -1.25rem;
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
 }
 .gsc-chart-bar-wrap:hover .gsc-chart-bar {
     opacity: 0.75;
