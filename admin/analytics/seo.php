@@ -54,7 +54,7 @@ if ($gscConnected) {
     <div class="analytics-metric">
         <div class="analytics-metric-value"><?= number_format($googlebotStats['total_crawls']); ?></div>
         <div class="analytics-metric-label">Googlebot Crawls</div>
-        <div class="analytics-metric-sub"><?= number_format($googlebotStats['crawls_per_day'], 1); ?> crawls/day</div>
+        <div class="analytics-metric-sub"><?= number_format($googlebotStats['crawls_per_day'] ?? 0, 1); ?> crawls/day</div>
     </div>
     <div class="analytics-metric">
         <div class="analytics-metric-value"><?= number_format($referrerStats['unique_domains']); ?></div>

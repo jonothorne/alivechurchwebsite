@@ -524,7 +524,7 @@ class SeoAnalytics {
                 SELECT
                     COUNT(*) as total_crawls,
                     COUNT(DISTINCT request_url) as unique_pages,
-                    ROUND(COUNT(*) / GREATEST(DATEDIFF(NOW(), MIN(visited_at)), 1), 1) as crawls_per_day
+                    COALESCE(ROUND(COUNT(*) / GREATEST(DATEDIFF(NOW(), MIN(visited_at)), 1), 1), 0) as crawls_per_day
                 FROM bot_visits
                 WHERE {$periodWhere}
                   AND (bot_name LIKE '%Google%' OR bot_name = 'Googlebot' OR bot_name = 'GoogleOther'

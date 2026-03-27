@@ -15,10 +15,10 @@ $stats = [
 
 // Get combined recent activity (edits + submissions)
 $recent_activity = $pdo->query("
-    (SELECT 'edit' as type, page_slug as title, block_key as detail, updated_at as activity_time, u.username
+    (SELECT 'edit' as type, page_slug as title, block_key as detail, cb.updated_at as activity_time, u.username
      FROM content_blocks cb
      LEFT JOIN users u ON cb.updated_by = u.id
-     ORDER BY updated_at DESC LIMIT 5)
+     ORDER BY cb.updated_at DESC LIMIT 5)
     UNION ALL
     (SELECT 'submission' as type, form_type as title, '' as detail, submitted_at as activity_time, '' as username
      FROM form_submissions WHERE processed = 0
