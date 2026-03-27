@@ -64,6 +64,13 @@ try {
         ];
     }, $results);
 
+    // Track search in analytics
+    if (!empty($query)) {
+        require_once __DIR__ . '/../../includes/Analytics.php';
+        $analytics = new Analytics($pdo);
+        $analytics->recordSearch($query, count($results), 'sermons-api');
+    }
+
     echo json_encode([
         'success' => true,
         'query' => $query,

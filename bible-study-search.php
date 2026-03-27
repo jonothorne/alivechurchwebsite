@@ -125,6 +125,11 @@ function getSnippet($content, $query, $length = 200) {
 
 $page_title = 'Search Bible Studies | ' . $site['name'];
 include __DIR__ . '/includes/header.php';
+
+// Track Bible study search in analytics
+if (!empty($query) && isset($analytics)) {
+    $analytics->recordSearch($query, count($results), 'bible-study');
+}
 ?>
 
 <section class="page-hero <?= $hero_texture_class; ?>">

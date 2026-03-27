@@ -112,6 +112,11 @@ if ($categorySlug) {
 
 include __DIR__ . '/includes/header.php';
 
+// Track blog search in analytics
+if (!empty($search) && isset($analytics)) {
+    $analytics->recordSearch($search, (int)$totalPosts, 'blog');
+}
+
 // Initialize CMS
 if (!isset($cms)) {
     require_once __DIR__ . '/includes/cms/ContentManager.php';

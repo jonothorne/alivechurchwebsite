@@ -224,6 +224,11 @@ try {
     // Combine results: topics first, then questions
     $allResults = array_merge($formattedTopics, $formattedQuestions);
 
+    // Track search in analytics
+    require_once __DIR__ . '/../includes/Analytics.php';
+    $analytics = new Analytics($pdo);
+    $analytics->recordSearch($query, count($allResults), 'bible-study-questions');
+
     echo json_encode([
         'query' => $query,
         'count' => count($allResults),

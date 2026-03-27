@@ -84,6 +84,11 @@ if ($searchQuery || $speakerFilter):
         $filters['speaker'] = $speakerFilter;
     }
     $searchResults = $sermonManager->searchSermons($searchQuery, $filters);
+
+    // Track search in analytics
+    if ($searchQuery && isset($analytics)) {
+        $analytics->recordSearch($searchQuery, count($searchResults), 'sermons');
+    }
 ?>
 
 <!-- Search Results View -->
