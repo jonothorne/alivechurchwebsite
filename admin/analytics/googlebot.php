@@ -75,7 +75,7 @@ foreach ($crawlFrequency as $day) {
                 <?php foreach ($crawlFrequency as $i => $day): ?>
                     <?php $height = $maxCrawls > 0 ? ($day['crawls'] / $maxCrawls) * 100 : 0; ?>
                     <div class="googlebot-chart-bar-wrapper">
-                        <div class="googlebot-chart-bar" style="height: <?= $height; ?>%;" title="<?= htmlspecialchars($day['date']); ?>: <?= number_format($day['crawls']); ?> crawls"></div>
+                        <div class="googlebot-chart-bar" style="height: <?= round($height * 1.36); ?>px;" title="<?= htmlspecialchars($day['date']); ?>: <?= number_format($day['crawls']); ?> crawls"></div>
                         <?php if ($i % 7 === 0): ?>
                             <div class="googlebot-chart-label"><?= date('M j', strtotime($day['date'])); ?></div>
                         <?php endif; ?>

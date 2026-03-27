@@ -199,7 +199,7 @@ if ($connected) {
                         $dateLabel = date('j M', strtotime($day['date']));
                 ?>
                     <div class="gsc-chart-bar-wrap" title="<?= htmlspecialchars($dateLabel); ?>: Position <?= number_format($pos, 1); ?>, <?= number_format($day['total_clicks'] ?? 0); ?> clicks, <?= number_format($day['total_impressions'] ?? 0); ?> impressions">
-                        <div class="gsc-chart-bar" style="height: <?= $heightPct; ?>%;"></div>
+                        <div class="gsc-chart-bar" style="height: <?= round($heightPct * 1.56); ?>px;"></div>
                         <div class="gsc-chart-label"><?= date('j', strtotime($day['date'])); ?></div>
                     </div>
                 <?php endforeach; ?>
