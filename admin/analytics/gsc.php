@@ -187,10 +187,15 @@ if ($connected) {
         <div class="gsc-chart-container">
             <div class="gsc-chart">
                 <?php
-                    $maxPosition = 50;
+                    // Scale chart to actual data range
+                    $positions = array_map(fn($d) => (float)($d['avg_position'] ?? 0), $positionTrend);
+                    $minPos = max(1, floor(min($positions)));
+                    $maxPos = ceil(max($positions));
+                    $range = max($maxPos - $minPos, 1);
                     foreach ($positionTrend as $day):
-                        $pos = min((float)($day['avg_position'] ?? $maxPosition), $maxPosition);
-                        $heightPct = max(0, (1 - ($pos / $maxPosition)) * 100);
+                        $pos = (float)($day['avg_position'] ?? $maxPos);
+                        // Invert: lower position = taller bar
+                        $heightPct = max(5, (1 - (($pos - $minPos) / $range)) * 100);
                         $dateLabel = date('j M', strtotime($day['date']));
                 ?>
                     <div class="gsc-chart-bar-wrap" title="<?= htmlspecialchars($dateLabel); ?>: Position <?= number_format($pos, 1); ?>, <?= number_format($day['total_clicks'] ?? 0); ?> clicks, <?= number_format($day['total_impressions'] ?? 0); ?> impressions">
@@ -200,8 +205,8 @@ if ($connected) {
                 <?php endforeach; ?>
             </div>
             <div class="gsc-chart-y-axis">
-                <span>Pos 1</span>
-                <span>Pos <?= $maxPosition; ?></span>
+                <span>Pos <?= $minPos; ?></span>
+                <span>Pos <?= $maxPos; ?></span>
             </div>
         </div>
     </div>
@@ -446,7 +451,7 @@ if ($connected) {
     padding-bottom: 1.5rem;
 }
 .gsc-chart-bar-wrap {
-    flex: 1;
+    flex: 0 1 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -457,9 +462,9 @@ if ($connected) {
 }
 .gsc-chart-bar {
     width: 100%;
-    min-height: 2px;
+    min-height: 4px;
     background: var(--color-purple, #8b5cf6);
-    border-radius: 2px 2px 0 0;
+    border-radius: 4px 4px 0 0;
     transition: opacity 0.15s;
 }
 .gsc-chart-bar-wrap:hover .gsc-chart-bar {
