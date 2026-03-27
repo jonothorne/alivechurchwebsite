@@ -87,6 +87,40 @@ class BotDetector {
         'http', 'index', 'archive',
     ];
 
+    // URL query parameters that indicate bot/monitoring cache-busting
+    private array $botQueryParams = [
+        'rnd', '_nocache', 'cachebust', 'nocache', 'cache_bust',
+        'checkwaf', 'checkwaf_comment', 'canary',
+    ];
+
+    // URL path patterns that indicate bot/scanner activity
+    private array $botUrlPatterns = [
+        // WordPress probes
+        'wp-includes/wlwmanifest.xml',
+        'wp-login.php',
+        'wp-admin',
+        'wp-content',
+        'xmlrpc.php',
+        // Server path leak attempts
+        '/home/',
+        // Credential/config file probes
+        'sftp.json',
+        'ftp-config.json',
+        'sftp-config.json',
+        'crossdomain.xml',
+        'clientaccesspolicy.xml',
+        // Double-slash prefix probes
+    ];
+
+    // Job page spider - foreign-language job pages that real visitors wouldn't hit in bulk
+    private array $jobSpiderPaths = [
+        '/emploi', '/karriere', '/carrieres', '/stellenangebote',
+        '/offres-emploi', '/stellen', '/hiring', '/jobs', '/job',
+        '/careers', '/career', '/work-with-us', '/company/careers',
+        '/about/careers', '/about/jobs', '/en/jobs', '/en/careers',
+        '/join-us', '/join', '/hiring',
+    ];
+
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
     }
@@ -236,6 +270,87 @@ class BotDetector {
         $userAgent = $userAgent ?? $_SERVER['HTTP_USER_AGENT'] ?? '';
         $result = $this->detect($userAgent);
         return $result['is_bot'] && $result['classification'] === 'suspicious';
+    }
+
+    /**
+     * Detect bot activity based on URL patterns (cache-busting params, etc.)
+     * Use this for visitors that pass UA detection but have bot-like URLs.
+     */
+    public function detectByUrl(string $url): array {
+        $parsed = parse_url($url);
+        $path = $parsed['path'] ?? '/';
+        $query = $parsed['query'] ?? '';
+
+        // Check for bot query parameters (cache-busting, WAF testing, etc.)
+        if ($query) {
+            parse_str($query, $params);
+            foreach ($this->botQueryParams as $botParam) {
+                if (isset($params[$botParam])) {
+                    $name = match($botParam) {
+                        'checkwaf', 'checkwaf_comment' => 'WAF Security Scanner',
+                        'canary' => 'Canary Probe',
+                        default => 'Uptime Monitor',
+                    };
+                    $classification = in_array($botParam, ['checkwaf', 'checkwaf_comment', 'canary']) ? 'suspicious' : 'good';
+                    return [
+                        'is_bot' => true,
+                        'classification' => $classification,
+                        'name' => $name,
+                        'category' => $classification === 'suspicious' ? 'Security Scanner' : 'Monitoring',
+                        'owner' => 'Unknown',
+                        'pattern_matched' => 'url_param:' . $botParam
+                    ];
+                }
+            }
+        }
+
+        // Check for double-slash prefix probes (e.g. //wp-includes/...)
+        if (str_starts_with($url, '//')) {
+            return [
+                'is_bot' => true,
+                'classification' => 'suspicious',
+                'name' => 'Path Probe Scanner',
+                'category' => 'Security Scanner',
+                'owner' => 'Unknown',
+                'pattern_matched' => 'url:double_slash'
+            ];
+        }
+
+        // Check for known bot URL path patterns
+        $urlLower = strtolower($url);
+        foreach ($this->botUrlPatterns as $pattern) {
+            if (strpos($urlLower, strtolower($pattern)) !== false) {
+                return [
+                    'is_bot' => true,
+                    'classification' => 'suspicious',
+                    'name' => 'Vulnerability Scanner',
+                    'category' => 'Security Scanner',
+                    'owner' => 'Unknown',
+                    'pattern_matched' => 'url_path:' . $pattern
+                ];
+            }
+        }
+
+        // Check for job page spider (exact path matches)
+        if (in_array($path, $this->jobSpiderPaths)) {
+            return [
+                'is_bot' => true,
+                'classification' => 'unknown',
+                'name' => 'Job Page Spider',
+                'category' => 'Crawler',
+                'owner' => 'Unknown',
+                'pattern_matched' => 'url_path:job_spider'
+            ];
+        }
+
+        return [
+            'is_bot' => false,
+            'classification' => 'human',
+            'name' => null,
+            'category' => null,
+            'owner' => null,
+            'pattern_matched' => null
+        ];
     }
 
     // ========================================

@@ -62,6 +62,13 @@ class Analytics {
             return;
         }
 
+        // Check for bot-like URL patterns (cache-busting params from monitors etc.)
+        $urlBotInfo = $botDetector->detectByUrl($pageUrl);
+        if ($urlBotInfo['is_bot']) {
+            $botDetector->logVisit($urlBotInfo, $pageUrl);
+            return;
+        }
+
         // Skip admin pages and system URLs
         if ($this->shouldSkipUrl($pageUrl)) {
             return;

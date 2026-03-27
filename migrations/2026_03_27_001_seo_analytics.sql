@@ -1,58 +1,13 @@
 -- SEO Analytics Migration
 -- Adds tables for 404 tracking, Google Search Console data, and referrer domain analysis
-
-DELIMITER //
-
--- Helper procedure to add column if not exists
-DROP PROCEDURE IF EXISTS add_column_if_not_exists//
-CREATE PROCEDURE add_column_if_not_exists(
-    IN table_name VARCHAR(64),
-    IN column_name VARCHAR(64),
-    IN column_definition VARCHAR(255)
-)
-BEGIN
-    IF NOT EXISTS (
-        SELECT * FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = table_name
-        AND COLUMN_NAME = column_name
-    ) THEN
-        SET @sql = CONCAT('ALTER TABLE ', table_name, ' ADD COLUMN ', column_name, ' ', column_definition);
-        PREPARE stmt FROM @sql;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt;
-    END IF;
-END//
-
--- Helper procedure to add index if not exists
-DROP PROCEDURE IF EXISTS add_index_if_not_exists//
-CREATE PROCEDURE add_index_if_not_exists(
-    IN table_name VARCHAR(64),
-    IN index_name VARCHAR(64),
-    IN index_columns VARCHAR(255)
-)
-BEGIN
-    IF NOT EXISTS (
-        SELECT * FROM INFORMATION_SCHEMA.STATISTICS
-        WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = table_name
-        AND INDEX_NAME = index_name
-    ) THEN
-        SET @sql = CONCAT('CREATE INDEX ', index_name, ' ON ', table_name, '(', index_columns, ')');
-        PREPARE stmt FROM @sql;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt;
-    END IF;
-END//
-
-DELIMITER ;
+-- Run each statement individually in phpMyAdmin, or execute the whole file via CLI
 
 -- =====================================================
 -- 1. Add referrer_domain column to page_visits
 -- =====================================================
 
-CALL add_column_if_not_exists('page_visits', 'referrer_domain', 'VARCHAR(255) NULL');
-CALL add_index_if_not_exists('page_visits', 'idx_page_visits_referrer_domain', 'referrer_domain');
+ALTER TABLE page_visits ADD COLUMN referrer_domain VARCHAR(255) NULL;
+CREATE INDEX idx_page_visits_referrer_domain ON page_visits(referrer_domain);
 
 -- Backfill existing referrer_domain data
 UPDATE page_visits
@@ -128,10 +83,3 @@ CREATE TABLE IF NOT EXISTS seo_gsc_config (
     config_value TEXT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =====================================================
--- Cleanup helper procedures
--- =====================================================
-
-DROP PROCEDURE IF EXISTS add_column_if_not_exists;
-DROP PROCEDURE IF EXISTS add_index_if_not_exists;
