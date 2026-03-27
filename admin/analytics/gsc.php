@@ -451,7 +451,7 @@ if ($connected) {
     padding-bottom: 1.5rem;
 }
 .gsc-chart-bar-wrap {
-    flex: 0 1 40px;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
