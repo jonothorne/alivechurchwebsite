@@ -3,47 +3,52 @@ $page_title = 'Search Console';
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../../includes/db-config.php';
 require_once __DIR__ . '/../../includes/SeoAnalytics.php';
-require_once __DIR__ . '/../../includes/services/GoogleSearchConsoleAPI.php';
 
 $pdo = getDbConnection();
 $seo = new SeoAnalytics($pdo);
-$gsc = new GoogleSearchConsoleAPI($pdo);
 $message = '';
 $error = '';
+$connected = false;
 
-// Handle form actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['csrf_token'] ?? '') === ($_SESSION['csrf_token'] ?? '')) {
-    $action = $_POST['action'] ?? '';
+try {
+    require_once __DIR__ . '/../../includes/services/GoogleSearchConsoleAPI.php';
+    $gsc = new GoogleSearchConsoleAPI($pdo);
 
-    if ($action === 'save_credentials') {
-        $gsc->saveCredentials($_POST['client_id'], $_POST['client_secret'], $_POST['redirect_uri'], $_POST['site_url']);
-        $message = 'Credentials saved. Click "Authorize with Google" to connect.';
-    } elseif ($action === 'disconnect') {
-        $gsc->disconnect();
-        $message = 'Disconnected from Google Search Console.';
-    } elseif ($action === 'sync') {
-        try {
-            $result = $gsc->sync(28);
-            $message = "Synced {$result['fetched']} rows from the last {$result['period']}.";
-        } catch (Exception $e) {
-            $error = 'Sync failed: ' . $e->getMessage();
+    // Handle form actions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['csrf_token'] ?? '') === ($_SESSION['csrf_token'] ?? '')) {
+        $action = $_POST['action'] ?? '';
+
+        if ($action === 'save_credentials') {
+            $gsc->saveCredentials($_POST['client_id'], $_POST['client_secret'], $_POST['redirect_uri'], $_POST['site_url']);
+            $message = 'Credentials saved. Click "Authorize with Google" to connect.';
+        } elseif ($action === 'disconnect') {
+            $gsc->disconnect();
+            $message = 'Disconnected from Google Search Console.';
+        } elseif ($action === 'sync') {
+            try {
+                $result = $gsc->sync(28);
+                $message = "Synced {$result['fetched']} rows from the last {$result['period']}.";
+            } catch (Exception $e) {
+                $error = 'Sync failed: ' . $e->getMessage();
+            }
         }
     }
-}
 
-// Handle OAuth callback
-if (isset($_GET['code'])) {
-    try {
-        $gsc->exchangeCode($_GET['code']);
-        $message = 'Successfully connected to Google Search Console!';
-        // Trigger initial sync
-        try { $gsc->sync(28); $message .= ' Initial data sync complete.'; } catch (Exception $e) {}
-    } catch (Exception $e) {
-        $error = 'Authorization failed: ' . $e->getMessage();
+    // Handle OAuth callback
+    if (isset($_GET['code'])) {
+        try {
+            $gsc->exchangeCode($_GET['code']);
+            $message = 'Successfully connected to Google Search Console!';
+            try { $gsc->sync(28); $message .= ' Initial data sync complete.'; } catch (Exception $e) {}
+        } catch (Exception $e) {
+            $error = 'Authorization failed: ' . $e->getMessage();
+        }
     }
-}
 
-$connected = $gsc->isConnected();
+    $connected = $gsc->isConnected();
+} catch (Throwable $e) {
+    $error = 'GSC initialization error: ' . $e->getMessage();
+}
 
 if ($connected) {
     $period = $_GET['period'] ?? 'month';
@@ -122,7 +127,7 @@ if ($connected) {
                 <button type="submit" class="admin-btn admin-btn-primary">Save Credentials</button>
             </form>
 
-            <?php if ($gsc->isConfigured()): ?>
+            <?php if (isset($gsc) && $gsc->isConfigured()): ?>
                 <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
                     <p style="margin-bottom: 0.75rem; color: var(--color-text-muted);">Credentials are configured. Authorize with Google to complete the connection.</p>
                     <a href="<?= htmlspecialchars($gsc->getAuthorizationUrl()); ?>" class="admin-btn admin-btn-primary">Authorize with Google</a>
