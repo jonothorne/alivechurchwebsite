@@ -131,12 +131,66 @@ RewriteRule ^admin/people/edit/?$ admin/people/edit.php [L,QSA]
 RewriteRule ^admin/people/households/?$ admin/people/households.php [L,QSA]
 RewriteRule ^admin/people/tags/?$ admin/people/tags.php [L,QSA]
 
+# New Admin Panel (path-based routing)
+RewriteRule ^adminnew/?$ adminnew/index.php [L,QSA]
+
+# New Admin - API endpoints (MUST come first before any module patterns)
+RewriteRule ^adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)\.php$ adminnew/$1/api/$2.php [L,QSA]
+RewriteRule ^adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)/?$ adminnew/$1/api/$2.php [L,QSA]
+
+# New Admin - Module/Page/ID pattern (MUST come before 2-part patterns)
+RewriteRule ^adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/(\d+)/?$ adminnew/index.php?module=$1&page=$2&id=$3 [L,QSA]
+
+# New Admin - Analytics App
+RewriteRule ^adminnew/analytics/?$ adminnew/index.php?module=analytics [L,QSA]
+RewriteRule ^adminnew/analytics/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=analytics&page=$1 [L,QSA]
+
+# New Admin - Website App
+RewriteRule ^adminnew/website/?$ adminnew/index.php?module=website [L,QSA]
+RewriteRule ^adminnew/pages/?$ adminnew/index.php?module=pages [L,QSA]
+RewriteRule ^adminnew/pages/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=pages&page=$1 [L,QSA]
+RewriteRule ^adminnew/blog/?$ adminnew/index.php?module=blog [L,QSA]
+RewriteRule ^adminnew/blog/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=blog&page=$1 [L,QSA]
+RewriteRule ^adminnew/events/?$ adminnew/index.php?module=events [L,QSA]
+RewriteRule ^adminnew/events/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=events&page=$1 [L,QSA]
+RewriteRule ^adminnew/sermons/?$ adminnew/index.php?module=sermons [L,QSA]
+RewriteRule ^adminnew/sermons/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=sermons&page=$1 [L,QSA]
+RewriteRule ^adminnew/media/?$ adminnew/index.php?module=media [L,QSA]
+RewriteRule ^adminnew/forms/?$ adminnew/index.php?module=forms [L,QSA]
+RewriteRule ^adminnew/navigation/?$ adminnew/index.php?module=navigation [L,QSA]
+RewriteRule ^adminnew/settings/?$ adminnew/index.php?module=settings [L,QSA]
+RewriteRule ^adminnew/users/?$ adminnew/index.php?module=users [L,QSA]
+RewriteRule ^adminnew/bible-study/?$ adminnew/index.php?module=bible-study [L,QSA]
+RewriteRule ^adminnew/bible-study/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=bible-study&page=$1 [L,QSA]
+RewriteRule ^adminnew/reading-plans/?$ adminnew/index.php?module=reading-plans [L,QSA]
+RewriteRule ^adminnew/reading-plans/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=reading-plans&page=$1 [L,QSA]
+RewriteRule ^adminnew/ministries/?$ adminnew/index.php?module=ministries [L,QSA]
+RewriteRule ^adminnew/testimonies/?$ adminnew/index.php?module=testimonies [L,QSA]
+RewriteRule ^adminnew/newsletter/?$ adminnew/index.php?module=newsletter [L,QSA]
+RewriteRule ^adminnew/welcome-journeys/?$ adminnew/index.php?module=welcome-journeys [L,QSA]
+RewriteRule ^adminnew/profanity-filter/?$ adminnew/index.php?module=profanity-filter [L,QSA]
+
+# New Admin - People App
+RewriteRule ^adminnew/people/?$ adminnew/index.php?module=people [L,QSA]
+RewriteRule ^adminnew/people/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=people&page=$1 [L,QSA]
+
+# New Admin - Generic module catch-all (must be last)
+RewriteRule ^adminnew/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=$1 [L,QSA]
+RewriteRule ^adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/?$ adminnew/index.php?module=$1&page=$2 [L,QSA]
+
 # Admin Analytics sub-pages
 RewriteRule ^admin/analytics/traffic/?$ admin/analytics/traffic.php [L,QSA]
 RewriteRule ^admin/analytics/geographic/?$ admin/analytics/geographic.php [L,QSA]
 RewriteRule ^admin/analytics/behavior/?$ admin/analytics/behavior.php [L,QSA]
 RewriteRule ^admin/analytics/content/?$ admin/analytics/content.php [L,QSA]
 RewriteRule ^admin/analytics/realtime/?$ admin/analytics/realtime.php [L,QSA]
+RewriteRule ^admin/analytics/seo/?$ admin/analytics/seo.php [L,QSA]
+RewriteRule ^admin/analytics/landing-pages/?$ admin/analytics/landing-pages.php [L,QSA]
+RewriteRule ^admin/analytics/404s/?$ admin/analytics/404s.php [L,QSA]
+RewriteRule ^admin/analytics/trends/?$ admin/analytics/trends.php [L,QSA]
+RewriteRule ^admin/analytics/referrers/?$ admin/analytics/referrers.php [L,QSA]
+RewriteRule ^admin/analytics/googlebot/?$ admin/analytics/googlebot.php [L,QSA]
+RewriteRule ^admin/analytics/gsc/?$ admin/analytics/gsc.php [L,QSA]
 
 # Admin API endpoints
 RewriteRule ^admin/api/analytics-realtime/?$ admin/api/analytics-realtime.php [L,QSA]
@@ -144,6 +198,12 @@ RewriteRule ^admin/api/blog/?$ admin/api/blog.php [L,QSA]
 RewriteRule ^admin/api/media/?$ admin/api/media.php [L,QSA]
 RewriteRule ^admin/api/tag-media/?$ admin/api/tag-media.php [L,QSA]
 RewriteRule ^admin/api/rotate-media/?$ admin/api/rotate-media.php [L,QSA]
+
+# Music Stand PWA - route all requests to its index.php
+RewriteRule ^musicstand/?$ musicstand/index.php [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^musicstand/(.+)$ musicstand/index.php [L,QSA]
 
 # My Studies pages
 RewriteRule ^my-studies/?$ my-studies.php [L,QSA]

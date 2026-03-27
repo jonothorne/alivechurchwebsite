@@ -89,10 +89,18 @@ class Analytics {
             $ipAddress = trim(explode(',', $ipAddress)[0]);
         }
 
+        $referrer = $_SERVER['HTTP_REFERER'] ?? null;
+        $referrerDomain = null;
+        if ($referrer) {
+            $parsed = parse_url($referrer);
+            $referrerDomain = $parsed['host'] ?? null;
+        }
+
         $visit = [
             'page_url' => $pageUrl,
             'page_title' => $pageTitle,
-            'referrer' => $_SERVER['HTTP_REFERER'] ?? null,
+            'referrer' => $referrer,
+            'referrer_domain' => $referrerDomain,
             'user_id' => $userId,
             'session_id' => $sessionId,
             'ip_address' => $ipAddress,
@@ -209,13 +217,14 @@ class Analytics {
 
         try {
             // Use NOW() for timestamp to ensure consistency with database timezone
-            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO page_visits (page_url, page_title, referrer, referrer_domain, user_id, session_id, ip_address, user_agent, device_type, browser, country_code, country_name, city, region, latitude, longitude, is_new_visitor, visited_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
                 $visit['page_url'],
                 $visit['page_title'],
                 $visit['referrer'],
+                $visit['referrer_domain'] ?? null,
                 $visit['user_id'],
                 $visit['session_id'],
                 $visit['ip_address'],

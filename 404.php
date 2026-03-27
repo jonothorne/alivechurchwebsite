@@ -1,5 +1,17 @@
 <?php
 require __DIR__ . '/config.php';
+
+// Track the 404 hit for SEO analytics
+try {
+    require_once __DIR__ . '/includes/db-config.php';
+    require_once __DIR__ . '/includes/SeoAnalytics.php';
+    $seo404Pdo = getDbConnection();
+    $seo404 = new SeoAnalytics($seo404Pdo);
+    $seo404->record404($_SERVER['REQUEST_URI'] ?? '/unknown');
+} catch (Exception $e) {
+    // Silently fail - don't break 404 page
+}
+
 $page_title = 'Page Not Found | ' . $site['name'];
 http_response_code(404);
 include __DIR__ . '/includes/header.php';
