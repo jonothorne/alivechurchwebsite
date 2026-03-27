@@ -71,15 +71,16 @@ foreach ($crawlFrequency as $day) {
         </div>
     <?php else: ?>
         <div class="googlebot-chart-container">
-            <div class="googlebot-chart">
+            <?php $chartHeight = 136; ?>
+            <div class="googlebot-chart-bars">
+                <?php foreach ($crawlFrequency as $day): ?>
+                    <?php $barHeight = $maxCrawls > 0 ? max(2, round(($day['crawls'] / $maxCrawls) * $chartHeight)) : 2; ?>
+                    <div class="googlebot-bar" style="height:<?= $barHeight; ?>px" title="<?= htmlspecialchars($day['date']); ?>: <?= number_format($day['crawls']); ?> crawls"></div>
+                <?php endforeach; ?>
+            </div>
+            <div class="googlebot-chart-labels">
                 <?php foreach ($crawlFrequency as $i => $day): ?>
-                    <?php $height = $maxCrawls > 0 ? ($day['crawls'] / $maxCrawls) * 100 : 0; ?>
-                    <div class="googlebot-chart-bar-wrapper">
-                        <div class="googlebot-chart-bar" style="height: <?= round($height * 1.36); ?>px;" title="<?= htmlspecialchars($day['date']); ?>: <?= number_format($day['crawls']); ?> crawls"></div>
-                        <?php if ($i % 7 === 0): ?>
-                            <div class="googlebot-chart-label"><?= date('M j', strtotime($day['date'])); ?></div>
-                        <?php endif; ?>
-                    </div>
+                    <span><?= $i % 7 === 0 ? date('M j', strtotime($day['date'])) : ''; ?></span>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -212,39 +213,31 @@ foreach ($crawlFrequency as $day) {
 .googlebot-chart-container {
     padding: 1rem;
 }
-.googlebot-chart {
+.googlebot-chart-bars {
     display: flex;
     align-items: flex-end;
     gap: 2px;
-    height: 160px;
-    padding-bottom: 1.5rem;
-    position: relative;
+    height: 136px;
 }
-.googlebot-chart-bar-wrapper {
+.googlebot-bar {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-    justify-content: flex-end;
-    position: relative;
-}
-.googlebot-chart-bar {
-    width: 100%;
-    min-height: 2px;
     background: var(--admin-primary, #6366f1);
     border-radius: 2px 2px 0 0;
-    transition: opacity 0.2s;
+    min-width: 0;
 }
-.googlebot-chart-bar:hover {
+.googlebot-bar:hover {
     opacity: 0.8;
 }
-.googlebot-chart-label {
-    position: absolute;
-    bottom: -1.25rem;
+.googlebot-chart-labels {
+    display: flex;
+    gap: 2px;
+    margin-top: 0.375rem;
+}
+.googlebot-chart-labels span {
+    flex: 1;
+    text-align: center;
     font-size: 0.65rem;
     color: var(--color-text-muted);
-    white-space: nowrap;
 }
 </style>
 

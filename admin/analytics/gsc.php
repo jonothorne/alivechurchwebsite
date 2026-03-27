@@ -185,23 +185,25 @@ if ($connected) {
             <span class="admin-muted">Last 28 days (lower is better)</span>
         </div>
         <div class="gsc-chart-container">
-            <div class="gsc-chart">
-                <?php
-                    // Scale chart to actual data range
-                    $positions = array_map(fn($d) => (float)($d['avg_position'] ?? 0), $positionTrend);
-                    $minPos = max(1, floor(min($positions)));
-                    $maxPos = ceil(max($positions));
-                    $range = max($maxPos - $minPos, 1);
-                    foreach ($positionTrend as $day):
-                        $pos = (float)($day['avg_position'] ?? $maxPos);
-                        // Invert: lower position = taller bar
-                        $heightPct = max(5, (1 - (($pos - $minPos) / $range)) * 100);
-                        $dateLabel = date('j M', strtotime($day['date']));
+            <?php
+                $chartHeight = 156;
+                $positions = array_map(fn($d) => (float)($d['avg_position'] ?? 0), $positionTrend);
+                $minPos = max(1, floor(min($positions)));
+                $maxPos = ceil(max($positions));
+                $range = max($maxPos - $minPos, 1);
+            ?>
+            <div class="gsc-chart-bars">
+                <?php foreach ($positionTrend as $day):
+                    $pos = (float)($day['avg_position'] ?? $maxPos);
+                    $barHeight = max(4, round((1 - (($pos - $minPos) / $range)) * $chartHeight));
+                    $dateLabel = date('j M', strtotime($day['date']));
                 ?>
-                    <div class="gsc-chart-bar-wrap" title="<?= htmlspecialchars($dateLabel); ?>: Position <?= number_format($pos, 1); ?>, <?= number_format($day['total_clicks'] ?? 0); ?> clicks, <?= number_format($day['total_impressions'] ?? 0); ?> impressions">
-                        <div class="gsc-chart-bar" style="height: <?= round($heightPct * 1.56); ?>px;"></div>
-                        <div class="gsc-chart-label"><?= date('j', strtotime($day['date'])); ?></div>
-                    </div>
+                <div class="gsc-bar" style="height:<?= $barHeight; ?>px" title="<?= htmlspecialchars($dateLabel); ?>: Position <?= number_format($pos, 1); ?>, <?= number_format($day['total_clicks'] ?? 0); ?> clicks, <?= number_format($day['total_impressions'] ?? 0); ?> impressions"></div>
+                <?php endforeach; ?>
+            </div>
+            <div class="gsc-chart-labels">
+                <?php foreach ($positionTrend as $day): ?>
+                <span><?= date('j', strtotime($day['date'])); ?></span>
                 <?php endforeach; ?>
             </div>
             <div class="gsc-chart-y-axis">
@@ -443,38 +445,31 @@ if ($connected) {
     padding: 1.5rem;
     position: relative;
 }
-.gsc-chart {
+.gsc-chart-bars {
     display: flex;
     align-items: flex-end;
     gap: 2px;
-    height: 180px;
-    padding-bottom: 1.5rem;
-    position: relative;
+    height: 156px;
 }
-.gsc-chart-bar-wrap {
+.gsc-bar {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-    justify-content: flex-end;
-    position: relative;
-}
-.gsc-chart-bar {
-    width: 100%;
-    min-height: 4px;
     background: var(--color-purple, #8b5cf6);
     border-radius: 2px 2px 0 0;
+    min-width: 0;
 }
-.gsc-chart-label {
-    position: absolute;
-    bottom: -1.25rem;
+.gsc-bar:hover {
+    opacity: 0.75;
+}
+.gsc-chart-labels {
+    display: flex;
+    gap: 2px;
+    margin-top: 0.375rem;
+}
+.gsc-chart-labels span {
+    flex: 1;
+    text-align: center;
     font-size: 0.65rem;
     color: var(--color-text-muted);
-    white-space: nowrap;
-}
-.gsc-chart-bar-wrap:hover .gsc-chart-bar {
-    opacity: 0.75;
 }
 .gsc-chart-label {
     font-size: 0.65rem;
