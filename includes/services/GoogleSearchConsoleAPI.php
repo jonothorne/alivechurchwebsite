@@ -22,9 +22,13 @@ class GoogleSearchConsoleAPI {
     // ========================================
 
     private function getConfig(string $key): ?string {
-        $stmt = $this->pdo->prepare("SELECT config_value FROM seo_gsc_config WHERE config_key = ?");
-        $stmt->execute([$key]);
-        return $stmt->fetchColumn() ?: null;
+        try {
+            $stmt = $this->pdo->prepare("SELECT config_value FROM seo_gsc_config WHERE config_key = ?");
+            $stmt->execute([$key]);
+            return $stmt->fetchColumn() ?: null;
+        } catch (PDOException $e) {
+            return null;
+        }
     }
 
     private function setConfig(string $key, ?string $value): void {
