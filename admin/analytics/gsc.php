@@ -445,27 +445,32 @@ if ($connected) {
 }
 .gsc-chart {
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     gap: 2px;
     height: 180px;
     padding-bottom: 1.5rem;
 }
 .gsc-chart-bar-wrap {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
+    position: relative;
     min-width: 0;
     cursor: default;
 }
 .gsc-chart-bar {
-    width: 100%;
+    position: absolute;
+    bottom: 1.25rem;
+    left: 0;
+    right: 0;
     min-height: 4px;
     background: var(--color-purple, #8b5cf6);
     border-radius: 4px 4px 0 0;
     transition: opacity 0.15s;
+}
+.gsc-chart-label {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .gsc-chart-bar-wrap:hover .gsc-chart-bar {
     opacity: 0.75;
@@ -473,7 +478,6 @@ if ($connected) {
 .gsc-chart-label {
     font-size: 0.65rem;
     color: var(--color-text-muted);
-    margin-top: 0.375rem;
     white-space: nowrap;
 }
 .gsc-chart-y-axis {
