@@ -93,7 +93,7 @@ foreach ($planningCenterEvents as $e) {
                             <td>
                                 <div class="admin-table-actions">
                                     <a href="/events/<?= htmlspecialchars($detail['slug']); ?>" target="_blank" class="admin-btn admin-btn-sm admin-btn-secondary">View</a>
-                                    <a href="/adminnew/events/edit&slug=<?= urlencode($detail['slug']); ?>" class="admin-btn admin-btn-sm admin-btn-secondary">Edit</a>
+                                    <a href="/adminnew/events/edit?slug=<?= urlencode($detail['slug']); ?>" class="admin-btn admin-btn-sm admin-btn-secondary">Edit</a>
                                     <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this event\'s details?')">
                                         <input type="hidden" name="slug" value="<?= htmlspecialchars($detail['slug']); ?>">
                                         <button type="submit" name="delete" class="admin-btn admin-btn-sm admin-btn-danger">×</button>
@@ -155,9 +155,9 @@ foreach ($planningCenterEvents as $e) {
                                 <div class="admin-table-actions">
                                     <a href="/events/<?= htmlspecialchars($event['slug']); ?>" target="_blank" class="admin-btn admin-btn-sm admin-btn-secondary">View</a>
                                     <?php if ($hasDetails): ?>
-                                        <a href="/adminnew/events/edit&slug=<?= urlencode($event['slug']); ?>" class="admin-btn admin-btn-sm admin-btn-secondary">Edit</a>
+                                        <a href="/adminnew/events/edit?slug=<?= urlencode($event['slug']); ?>" class="admin-btn admin-btn-sm admin-btn-secondary">Edit</a>
                                     <?php else: ?>
-                                        <a href="/adminnew/events/edit&slug=<?= urlencode($event['slug']); ?>&title=<?= urlencode($event['title']); ?>" class="admin-btn admin-btn-sm admin-btn-primary">+ Details</a>
+                                        <a href="/adminnew/events/edit?slug=<?= urlencode($event['slug']); ?>&title=<?= urlencode($event['title']); ?>" class="admin-btn admin-btn-sm admin-btn-primary">+ Details</a>
                                     <?php endif; ?>
                                 </div>
                             </td>

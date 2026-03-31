@@ -47,7 +47,7 @@ $apps = [
         'url' => '/adminnew/groups',
         'coming_soon' => true,
     ],
-    'events' => [
+    'calendar' => [
         'name' => 'Calendar',
         'icon' => 'calendar',
         'color' => 'events',
@@ -110,7 +110,7 @@ $app_nav = [
         ['label' => 'Groups', 'url' => '/adminnew/groups'],
         ['label' => 'Ministries', 'url' => '/adminnew/ministries'],
     ],
-    'events' => [
+    'calendar' => [
         ['label' => 'Calendar', 'url' => '/adminnew/calendar'],
         ['label' => 'Registrations', 'url' => '/adminnew/registrations'],
     ],
