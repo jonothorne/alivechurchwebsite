@@ -1,4 +1,11 @@
 <?php
+// Redirect directories that need trailing slashes (DirectorySlash is Off)
+$uri = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
+if ($uri === '/adminnew') {
+    header('Location: /adminnew/' . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : ''), true, 301);
+    exit;
+}
+
 require __DIR__ . '/config.php';
 
 // Track the 404 hit for SEO analytics
