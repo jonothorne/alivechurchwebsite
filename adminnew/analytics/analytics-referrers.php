@@ -87,8 +87,8 @@ $referralRate = $stats['total_visits'] > 0
                         <?php $barWidth = round($domain['visits'] / $maxVisits * 100); ?>
                         <tr>
                             <td>
-                                <a href="https://<?= htmlspecialchars($domain['domain']); ?>" target="_blank" rel="noopener" class="referrer-domain-link">
-                                    <strong><?= htmlspecialchars($domain['domain']); ?></strong>
+                                <a href="https://<?= htmlspecialchars($domain['referrer_domain']); ?>" target="_blank" rel="noopener" class="referrer-domain-link">
+                                    <strong><?= htmlspecialchars($domain['referrer_domain']); ?></strong>
                                 </a>
                                 <div class="referrer-bar-track">
                                     <div class="referrer-bar-fill" style="width: <?= $barWidth; ?>%;"></div>
