@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="64" fill="#6366f1"/>
+  <g fill="#fff">
+    <!-- Music note -->
+    <ellipse cx="186" cy="346" rx="53" ry="43"/>
+    <rect x="229" y="133" width="21" height="213"/>
+    <path d="M250 133 Q346 107 346 187 Q346 240 250 213 L250 133"/>
+    <!-- Second note -->
+    <ellipse cx="346" cy="346" rx="53" ry="43"/>
+    <rect x="389" y="133" width="21" height="213"/>
+  </g>
+</svg>

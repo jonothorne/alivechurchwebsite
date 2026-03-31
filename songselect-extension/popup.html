@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      color: #1a1a2e;
+      background: #f8f9fb;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header h1 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .header p {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    .status-bar {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .status-bar.ok { background: #ecfdf5; color: #065f46; }
+    .status-bar.error { background: #fef2f2; color: #991b1b; }
+    .status-bar.unconfigured { background: #fffbeb; color: #92400e; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-bar.ok .status-dot { background: #10b981; }
+    .status-bar.error .status-dot { background: #ef4444; }
+    .status-bar.unconfigured .status-dot { background: #f59e0b; }
+
+    .section {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      background: white;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+    }
+
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .form-help {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 3px;
+    }
+
+    .actions {
+      padding: 14px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #6366f1;
+      color: white;
+    }
+
+    .btn-primary:hover { background: #4f46e5; }
+    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: white;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover { background: #f9fafb; }
+
+    .sync-info {
+      font-size: 11px;
+      color: #9ca3af;
+      padding: 8px 16px 12px;
+    }
+
+    .sync-info strong {
+      color: #6b7280;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    </div>
+    <div>
+      <h1>SongSelect Sync</h1>
+      <p>Auto-sync cookies for chord imports</p>
+    </div>
+  </div>
+
+  <div id="statusBar" class="status-bar unconfigured">
+    <div class="status-dot"></div>
+    <span id="statusText">Loading...</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="form-group">
+      <label class="form-label">Site URL</label>
+      <input type="url" id="siteUrl" class="form-input" placeholder="https://yourchurch.com">
+      <div class="form-help">Your church website URL</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">API Key</label>
+      <input type="text" id="apiKey" class="form-input" placeholder="Paste from Services Settings">
+      <div class="form-help">Copy from Services &rarr; Settings in your admin panel</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="saveBtn" class="btn btn-secondary">Save</button>
+    <button id="syncBtn" class="btn btn-primary" disabled>Sync Now</button>
+  </div>
+
+  <div id="syncInfo" class="sync-info" style="display:none;"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

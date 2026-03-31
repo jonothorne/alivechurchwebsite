@@ -20,7 +20,7 @@ require_once __DIR__ . '/admin-subnav.php';
 ?>
 
 <!-- Admin Page Container -->
-<main class="admin-page">
+<div class="admin-page">
     <div class="container">
         <?php if (!empty($page_title)): ?>
         <div class="admin-page-header">

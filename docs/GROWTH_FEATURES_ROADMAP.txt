@@ -1,0 +1,147 @@
+ALIVE CHURCH WEBSITE - GROWTH FEATURES ROADMAP
+================================================
+Created: March 2026
+Purpose: Make this the best church website ever and help the church grow
+
+================================================================================
+HIGH IMPACT - QUICK WINS
+================================================================================
+
+1. AUTOMATED WELCOME JOURNEY (Email sequences)
+   When someone plans a visit or registers, trigger a nurture sequence:
+   - Day 0: "We're excited to meet you!"
+   - Day 1 after visit: "How was your first visit?"
+   - Week 2: "Join a group" invitation
+   - Week 4: "Serve with us" invitation
+   Status: FUTURE
+
+2. TESTIMONIES/STORIES PAGE [IMPLEMENTED]
+   Nothing converts like real stories. A dedicated page for:
+   - Salvation stories
+   - Life transformation stories
+   - "Why I serve" stories
+   - Video testimonies
+   Status: BUILT (with admin toggle to show/hide until content ready)
+
+3. "I'M NEW" LANDING PAGE EXPANSION [IMPLEMENTED]
+   A dedicated, optimized page for first-time visitors with:
+   - What to expect video
+   - Service times prominently displayed
+   - One-click visit planning
+   - FAQ section
+   - Google Maps embed
+   Status: EXPANDED from existing visit.php
+
+4. SHARE/INVITE FEATURES [IMPLEMENTED]
+   Make it easy for members to invite friends:
+   - "Invite a friend" buttons on events
+   - Shareable sermon clips
+   - Social media share cards for sermons/events
+   Status: BUILT
+
+================================================================================
+MEDIUM IMPACT - ENGAGEMENT BUILDERS
+================================================================================
+
+5. COMMUNITY FEED/ACTIVITY WALL
+   A private social feed showing:
+   - New members who joined
+   - Baptisms celebrated
+   - Sermon highlights
+   - Prayer requests (opted-in)
+   - Group activities
+   Status: FUTURE
+
+6. DISCIPLESHIP PATHWAY TRACKER
+   Visual journey showing progress:
+   - [ ] First Visit
+   - [ ] Plan Your Visit form completed
+   - [ ] Joined a Group
+   - [ ] Started a Reading Plan
+   - [ ] Completed Baptism Class
+   - [ ] Serving on a Team
+   - [ ] Leading/Mentoring
+   Status: FUTURE
+
+7. RESOURCE LIBRARY
+   Downloadable content:
+   - Study guides
+   - Sermon notes PDF
+   - Small group discussion guides
+   - Parenting resources
+   - Marriage resources
+   Status: FUTURE
+
+8. PRAYER WALL (Public/Private)
+   - Public prayer requests (with permission)
+   - "I prayed for this" counter
+   - Prayer answered celebrations
+   - Anonymous option
+   Status: FUTURE
+
+9. MEMBER DIRECTORY (Opt-in)
+   Privacy-respecting directory where members can:
+   - Find others in their area
+   - Connect with people in their group
+   - Find serving team members
+   Status: FUTURE
+
+================================================================================
+STRATEGIC - LONG-TERM GROWTH (Planning Center Replacement)
+================================================================================
+
+10. VOLUNTEER SCHEDULING SYSTEM
+    - Sign up for serving slots
+    - Automated reminders
+    - Easy swap requests
+    - Team leader dashboards
+    Status: FUTURE (Part of Planning Center replacement)
+
+11. GIVING DASHBOARD
+    - Personal giving history
+    - Annual giving statements
+    - Recurring donation management
+    - Giving goals/pledges
+    Status: FUTURE (Part of Planning Center replacement)
+
+12. SMALL GROUP DISCUSSION BOARDS
+    - Private group messaging
+    - Discussion threads for weekly content
+    - Prayer request sharing within groups
+    - Resource sharing
+    Status: FUTURE (Part of Planning Center replacement)
+
+13. FIRST-TIME GUEST FOLLOW-UP SYSTEM
+    - Admin dashboard for tracking guests
+    - Automated + personal follow-up workflow
+    - Connection card digitization
+    - Assimilation tracking
+    Status: FUTURE (Part of Planning Center replacement)
+
+================================================================================
+SEO WINS FOR DISCOVERABILITY
+================================================================================
+
+14. LOCAL SEO OPTIMIZATION [IMPLEMENTED]
+    - Schema markup for church (LocalBusiness/Church)
+    - Google Business Profile optimization
+    - Location pages if multi-site
+    - "Churches near me" content
+    Status: BUILT
+
+15. SERMON SEO [IMPLEMENTED]
+    - Auto-generate transcripts (AI)
+    - Sermon topic landing pages
+    - Bible verse landing pages (rank for "John 3:16 meaning")
+    Status: BUILT
+
+================================================================================
+NOTES
+================================================================================
+
+- Testimonies page has admin toggle - enable when content is ready
+- I'm New page needs beautiful, branded church photos
+- Strategic features 10-13 will be part of custom Planning Center replacement
+- Consider automated email sequences as next priority after current batch
+
+================================================================================

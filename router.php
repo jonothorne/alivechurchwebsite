@@ -14,6 +14,88 @@ if ($uri !== '/' && substr($uri, -1) === '/') {
     $uri = substr($uri, 0, -1);
 }
 
+// Handle /musicstand/* routes FIRST (PWA app)
+// Routes all musicstand requests through its index.php
+if ($uri === '/musicstand' || strpos($uri, '/musicstand/') === 0) {
+    // Check for static files in musicstand directory
+    $musicstandPath = __DIR__ . $uri;
+    if (file_exists($musicstandPath) && is_file($musicstandPath)) {
+        // Serve static files (CSS, JS, icons, manifest, sw.js)
+        $ext = pathinfo($musicstandPath, PATHINFO_EXTENSION);
+        $mimeTypes = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'ico' => 'image/x-icon',
+        ];
+        if (isset($mimeTypes[$ext])) {
+            header('Content-Type: ' . $mimeTypes[$ext]);
+        }
+        readfile($musicstandPath);
+        return true;
+    }
+    // API routes
+    if ($uri === '/musicstand/api/annotations') {
+        require __DIR__ . '/musicstand/api/annotations.php';
+        return true;
+    }
+    // Route everything else to musicstand/index.php
+    require __DIR__ . '/musicstand/index.php';
+    return true;
+}
+
+// Handle /adminnew/* routes FIRST (before static file check)
+// This ensures directory-based routes don't 404
+if (strpos($uri, '/adminnew/') === 0 && $uri !== '/adminnew/') {
+    // Handle API routes with deeper paths (e.g., /adminnew/services/api/worshiptogether)
+    // Match both with and without .php extension
+    if (preg_match('#^/adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)(\.php)?/?$#', $uri, $matches)) {
+        $api_file = __DIR__ . '/adminnew/' . $matches[1] . '/api/' . $matches[2] . '.php';
+        if (file_exists($api_file)) {
+            require $api_file;
+            return true;
+        }
+    }
+    // Check for /adminnew/module/page/id pattern (e.g., /adminnew/blog/edit/123)
+    if (preg_match('#^/adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/(\d+)/?$#', $uri, $matches)) {
+        $_GET['module'] = $matches[1];
+        $_GET['page'] = $matches[2];
+        $_GET['id'] = $matches[3];
+        $stub_file = __DIR__ . '/adminnew/' . $matches[1] . '/' . $matches[2] . '.php';
+        if (file_exists($stub_file)) {
+            require $stub_file;
+            return true;
+        }
+        require __DIR__ . '/adminnew/index.php';
+        return true;
+    }
+    // Check for /adminnew/module/page pattern - try stub file first
+    if (preg_match('#^/adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/?$#', $uri, $matches)) {
+        $_GET['module'] = $matches[1];
+        $_GET['page'] = $matches[2];
+        $stub_file = __DIR__ . '/adminnew/' . $matches[1] . '/' . $matches[2] . '.php';
+        if (file_exists($stub_file)) {
+            require $stub_file;
+            return true;
+        }
+        require __DIR__ . '/adminnew/index.php';
+        return true;
+    }
+    // Check for /adminnew/module pattern - try stub file first
+    if (preg_match('#^/adminnew/([a-zA-Z0-9-]+)/?$#', $uri, $matches)) {
+        $_GET['module'] = $matches[1];
+        $stub_file = __DIR__ . '/adminnew/' . $matches[1] . '.php';
+        if (file_exists($stub_file)) {
+            require $stub_file;
+            return true;
+        }
+        require __DIR__ . '/adminnew/index.php';
+        return true;
+    }
+}
+
 // Serve static files directly (but not directories)
 if ($uri !== '/' && file_exists(__DIR__ . $uri) && is_file(__DIR__ . $uri)) {
     return false; // Serve the file as-is
@@ -22,6 +104,13 @@ if ($uri !== '/' && file_exists(__DIR__ . $uri) && is_file(__DIR__ . $uri)) {
 // Sitemap
 if ($uri === '/sitemap.xml') {
     require __DIR__ . '/sitemap.php';
+    return true;
+}
+
+// IndexNow key verification: /abcdef0123456789abcdef0123456789.txt
+if (preg_match('#^/([a-f0-9]{32})\.txt$#', $uri, $matches)) {
+    $_GET['key'] = $matches[1];
+    require __DIR__ . '/indexnow-key.php';
     return true;
 }
 
@@ -72,6 +161,38 @@ $routes = [
     '/admin/profanity-filter' => '/admin/profanity-filter.php',
     '/admin/sermons' => '/admin/sermons.php',
     '/admin/sermons/edit' => '/admin/sermons/edit.php',
+
+    // Admin People module
+    '/admin/people' => '/admin/people/index.php',
+    '/admin/people/view' => '/admin/people/view.php',
+    '/admin/people/edit' => '/admin/people/edit.php',
+    '/admin/people/households' => '/admin/people/households.php',
+    '/admin/people/tags' => '/admin/people/tags.php',
+    '/admin/people/lists' => '/admin/people/lists.php',
+
+    // Admin Groups module
+    '/admin/groups' => '/admin/groups/index.php',
+    '/admin/groups/view' => '/admin/groups/view.php',
+    '/admin/groups/edit' => '/admin/groups/edit.php',
+    '/admin/groups/types' => '/admin/groups/types.php',
+
+    // Public Groups
+    '/groups' => '/groups/index.php',
+
+    // Admin Giving module
+    '/admin/giving' => '/admin/giving/index.php',
+    '/admin/giving/funds' => '/admin/giving/funds.php',
+    '/admin/giving/recurring' => '/admin/giving/recurring.php',
+    '/admin/giving/add' => '/admin/giving/add.php',
+
+    // New Admin Panel - only root
+    '/adminnew' => '/adminnew/index.php',
+
+    // Admin Analytics - Indexing
+    '/admin/analytics/indexing' => '/admin/analytics/indexing.php',
+
+    // Music Stand PWA
+    '/musicstand' => '/musicstand/index.php',
 ];
 
 // Check if route exists
@@ -192,6 +313,13 @@ if (preg_match('#^/sermon/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
 if (preg_match('#^/sermons/series/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
     $_GET['slug'] = $matches[1];
     require __DIR__ . '/sermon-series.php';
+    return true;
+}
+
+// Groups detail page: /groups/slug
+if (preg_match('#^/groups/([a-zA-Z0-9-]+)$#', $uri, $matches)) {
+    $_GET['slug'] = $matches[1];
+    require __DIR__ . '/groups/view.php';
     return true;
 }
 

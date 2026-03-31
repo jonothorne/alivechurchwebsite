@@ -1,0 +1,21 @@
+# Redirect all requests to the parent router
+RewriteEngine On
+RewriteBase /adminnew/
+
+# Don't rewrite actual files
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Handle module/page/id pattern (e.g., blog/edit/123)
+RewriteRule ^([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/(\d+)/?$ index.php?module=$1&page=$2&id=$3 [L,QSA]
+
+# Handle module/page pattern (e.g., blog/edit)
+RewriteRule ^([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/?$ index.php?module=$1&page=$2 [L,QSA]
+
+# Handle single module pattern (e.g., blog) - route to stub file
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([a-zA-Z0-9-]+)/?$ $1.php [L,QSA]
+
+# Fallback for directories without stub files
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^([a-zA-Z0-9-]+)/?$ index.php?module=$1 [L,QSA]

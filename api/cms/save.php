@@ -75,6 +75,17 @@ try {
             log_activity($userId, 'edit_blog_post', 'blog_post', $postId,
                 "Updated blog post content (ID: {$postId})");
 
+            // Notify search engines
+            try {
+                $slug = $pdo->prepare("SELECT slug FROM blog_posts WHERE id = ?");
+                $slug->execute([$postId]);
+                $blogSlug = $slug->fetchColumn();
+                if ($blogSlug) {
+                    require_once __DIR__ . '/../../includes/services/SearchIndexingNotifier.php';
+                    (new SearchIndexingNotifier($pdo))->notifyContentChanged('/blog/' . $blogSlug, $userId);
+                }
+            } catch (Exception $e) {}
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Blog post saved successfully'
@@ -112,6 +123,12 @@ try {
         if ($success) {
             log_activity($userId, 'edit_content', 'content_block', null,
                 "Updated content block '{$key}' on page '{$page}'");
+
+            // Notify search engines
+            try {
+                require_once __DIR__ . '/../../includes/services/SearchIndexingNotifier.php';
+                (new SearchIndexingNotifier($pdo))->notifyContentChanged('/' . ltrim($page, '/'), $userId);
+            } catch (Exception $e) {}
 
             echo json_encode([
                 'success' => true,

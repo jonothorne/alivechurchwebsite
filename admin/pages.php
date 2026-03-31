@@ -51,6 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$slug, $title, $meta_description, $template, $layout, $hero_style, $published, $id]);
             log_activity($_SESSION['admin_user_id'], 'update', 'page', $id, 'Updated page: ' . $title);
             $success = 'Page updated successfully';
+
+            // Notify search engines
+            if ($published) {
+                try {
+                    require_once __DIR__ . '/../includes/services/SearchIndexingNotifier.php';
+                    (new SearchIndexingNotifier($pdo))->notifyContentChanged('/' . $slug, $_SESSION['admin_user_id']);
+                } catch (Exception $e) {}
+            }
         } else {
             // Check if slug exists
             $stmt = $pdo->prepare("SELECT id FROM pages WHERE slug = ?");
@@ -64,6 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $new_id = $pdo->lastInsertId();
                 log_activity($_SESSION['admin_user_id'], 'create', 'page', $new_id, 'Created page: ' . $title);
                 $success = 'Page created successfully. <a href="/' . htmlspecialchars($slug) . '">Click here to start editing</a>';
+
+                // Notify search engines
+                if ($published) {
+                    try {
+                        require_once __DIR__ . '/../includes/services/SearchIndexingNotifier.php';
+                        (new SearchIndexingNotifier($pdo))->notifyContentChanged('/' . $slug, $_SESSION['admin_user_id']);
+                    } catch (Exception $e) {}
+                }
             }
         }
     }

@@ -10,11 +10,13 @@ $current_user = $current_user ?? get_logged_in_user();
 $is_admin = ($current_user['role'] ?? '') === 'admin';
 
 // Determine active section
-$content_pages = ['pages', 'events', 'blog', 'bible-study', 'reading-plans', 'sermons', 'media'];
-$community_pages = ['ministries', 'groups', 'next-steps', 'serve', 'navigation'];
-$system_pages = ['forms', 'newsletter', 'users', 'settings', 'profanity-filter'];
+$content_pages = ['pages', 'events', 'blog', 'bible-study', 'reading-plans', 'sermons', 'media', 'songs'];
+$people_pages = ['index', 'view', 'edit', 'households', 'tags'];
+$community_pages = ['ministries', 'groups', 'next-steps', 'serve', 'testimonies', 'navigation'];
+$system_pages = ['forms', 'welcome-journeys', 'newsletter', 'users', 'settings', 'profanity-filter'];
 
-$is_content = in_array($admin_current_page, $content_pages) || strpos($admin_current_path, '/admin/blog/') !== false || strpos($admin_current_path, '/admin/bible-study/') !== false || strpos($admin_current_path, '/admin/reading-plans/') !== false || strpos($admin_current_path, '/admin/events/') !== false || strpos($admin_current_path, '/admin/sermons/') !== false;
+$is_content = in_array($admin_current_page, $content_pages) || strpos($admin_current_path, '/admin/blog/') !== false || strpos($admin_current_path, '/admin/bible-study/') !== false || strpos($admin_current_path, '/admin/reading-plans/') !== false || strpos($admin_current_path, '/admin/events/') !== false || strpos($admin_current_path, '/admin/sermons/') !== false || strpos($admin_current_path, '/admin/songs/') !== false;
+$is_people = strpos($admin_current_path, '/admin/people') !== false || $admin_current_page === 'people';
 $is_community = in_array($admin_current_page, $community_pages);
 $is_system = in_array($admin_current_page, $system_pages);
 ?>
@@ -40,6 +42,17 @@ $is_system = in_array($admin_current_page, $system_pages);
 
             <div class="admin-subnav-divider"></div>
 
+            <!-- People Section -->
+            <a href="/admin/people" class="admin-subnav-item <?= $is_people ? 'active' : ''; ?>">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>People</span>
+            </a>
+
             <!-- Content Dropdown -->
             <div class="admin-subnav-dropdown <?= $is_content ? 'active' : ''; ?>">
                 <button class="admin-subnav-item admin-subnav-trigger" aria-expanded="false">
@@ -60,6 +73,7 @@ $is_system = in_array($admin_current_page, $system_pages);
                     <a href="/admin/bible-study" class="<?= $admin_current_page === 'bible-study' || strpos($admin_current_path, '/admin/bible-study/') !== false ? 'active' : ''; ?>">Bible Studies</a>
                     <a href="/admin/reading-plans" class="<?= $admin_current_page === 'reading-plans' || strpos($admin_current_path, '/admin/reading-plans/') !== false ? 'active' : ''; ?>">Reading Plans</a>
                     <a href="/admin/sermons" class="<?= $admin_current_page === 'sermons' || strpos($admin_current_path, '/admin/sermons/') !== false ? 'active' : ''; ?>">Sermons</a>
+                    <a href="/admin/songs" class="<?= $admin_current_page === 'songs' || strpos($admin_current_path, '/admin/songs/') !== false ? 'active' : ''; ?>">Songs</a>
                     <a href="/admin/media" class="<?= $admin_current_page === 'media' ? 'active' : ''; ?>">Media Library</a>
                 </div>
             </div>
@@ -83,6 +97,7 @@ $is_system = in_array($admin_current_page, $system_pages);
                     <a href="/admin/groups" class="<?= $admin_current_page === 'groups' ? 'active' : ''; ?>">Groups</a>
                     <a href="/admin/next-steps" class="<?= $admin_current_page === 'next-steps' ? 'active' : ''; ?>">Next Steps</a>
                     <a href="/admin/serve" class="<?= $admin_current_page === 'serve' ? 'active' : ''; ?>">Serve</a>
+                    <a href="/admin/testimonies" class="<?= $admin_current_page === 'testimonies' ? 'active' : ''; ?>">Testimonies</a>
                     <a href="/admin/navigation" class="<?= $admin_current_page === 'navigation' ? 'active' : ''; ?>">Navigation</a>
                 </div>
             </div>
@@ -101,6 +116,7 @@ $is_system = in_array($admin_current_page, $system_pages);
                 </button>
                 <div class="admin-subnav-dropdown-menu">
                     <a href="/admin/forms" class="<?= $admin_current_page === 'forms' ? 'active' : ''; ?>">Form Submissions</a>
+                    <a href="/admin/welcome-journeys" class="<?= $admin_current_page === 'welcome-journeys' ? 'active' : ''; ?>">Welcome Journeys</a>
                     <a href="/admin/newsletter" class="<?= $admin_current_page === 'newsletter' ? 'active' : ''; ?>">Newsletter</a>
                     <?php if ($is_admin): ?>
                     <a href="/admin/users" class="<?= $admin_current_page === 'users' ? 'active' : ''; ?>">Users</a>

@@ -12,6 +12,9 @@ includes/db-config.php
 .env.local
 .env.production
 
+# Claude Code
+.claude/
+
 # IDE
 .idea/
 .vscode/
@@ -32,6 +35,14 @@ logs/
 # Cache
 cache/
 *.cache
+
+# Node modules
+node_modules/
+
+# Debug/test files
+test-*.php
+scripts/songselect/.cookies.json
+scripts/songselect/debug-*.png
 
 # Uploads (if large)
 # assets/uploads/

@@ -191,6 +191,10 @@ RewriteRule ^admin/analytics/trends/?$ admin/analytics/trends.php [L,QSA]
 RewriteRule ^admin/analytics/referrers/?$ admin/analytics/referrers.php [L,QSA]
 RewriteRule ^admin/analytics/googlebot/?$ admin/analytics/googlebot.php [L,QSA]
 RewriteRule ^admin/analytics/gsc/?$ admin/analytics/gsc.php [L,QSA]
+RewriteRule ^admin/analytics/indexing/?$ admin/analytics/indexing.php [L,QSA]
+
+# IndexNow key verification (32-char hex key as .txt file)
+RewriteRule ^([a-f0-9]{32})\.txt$ indexnow-key.php?key=$1 [L,QSA]
 
 # Admin API endpoints
 RewriteRule ^admin/api/analytics-realtime/?$ admin/api/analytics-realtime.php [L,QSA]

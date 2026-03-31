@@ -88,6 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $postId = $pdo->lastInsertId();
                 $success_message = 'Post created successfully.';
+
+                // Notify search engines
+                if ($data['status'] === 'published') {
+                    try {
+                        require_once __DIR__ . '/../../includes/services/SearchIndexingNotifier.php';
+                        (new SearchIndexingNotifier($pdo))->notifyContentChanged('/blog/' . $data['slug'], $current_user['id']);
+                    } catch (Exception $e) {}
+                }
             } else {
                 $stmt = $pdo->prepare("UPDATE blog_posts SET title = ?, slug = ?, excerpt = ?, content = ?,
                                        featured_image = ?, category_id = ?, status = ?, published_at = ?
@@ -98,6 +106,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $data['status'], $data['published_at'], $postId
                 ]);
                 $success_message = 'Post updated successfully.';
+
+                // Notify search engines
+                if ($data['status'] === 'published') {
+                    try {
+                        require_once __DIR__ . '/../../includes/services/SearchIndexingNotifier.php';
+                        (new SearchIndexingNotifier($pdo))->notifyContentChanged('/blog/' . $data['slug'], $current_user['id']);
+                    } catch (Exception $e) {}
+                }
             }
 
             // Handle tags

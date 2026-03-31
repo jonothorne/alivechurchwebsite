@@ -1,0 +1,17 @@
+{
+  "name": "songselect-scraper",
+  "version": "1.0.0",
+  "description": "SongSelect scraper using Puppeteer for Alive Church",
+  "main": "scraper.js",
+  "scripts": {
+    "search": "node scraper.js search",
+    "get-song": "node scraper.js get-song",
+    "test-login": "node scraper.js test-login"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-real-browser": "^1.4.4"
+  }
+}

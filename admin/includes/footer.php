@@ -1,5 +1,5 @@
     </div><!-- /.container -->
-</main><!-- /.admin-page -->
+</div><!-- /.admin-page -->
 
 <!-- Admin-specific JavaScript -->
 <script src="/admin/assets/js/admin.js"></script>

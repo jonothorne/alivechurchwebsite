@@ -122,6 +122,9 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
             // Sitemap
             '@^/sitemap\.xml$@' => ['file' => '/sitemap.php'],
 
+            // IndexNow key verification
+            '@^/([a-f0-9]{32})\.txt$@' => ['file' => '/indexnow-key.php', 'params' => ['key' => 1]],
+
             // Auth API routes
             '@^/api/auth/login$@' => ['file' => '/api/auth/login.php'],
             '@^/api/auth/register$@' => ['file' => '/api/auth/register.php'],
@@ -167,12 +170,51 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
             // Admin API routes
             '@^/admin/api/blog$@' => ['file' => '/admin/api/blog.php'],
             '@^/admin/api/sermons$@' => ['file' => '/admin/api/sermons.php'],
+
+            // Admin Tools
+            '@^/admin/tools/rename-images$@' => ['file' => '/admin/tools/rename-images.php'],
+            '@^/admin/tools/repair-image-refs$@' => ['file' => '/admin/tools/repair-image-refs.php'],
+            '@^/admin/tools/diagnose-uploads$@' => ['file' => '/admin/tools/diagnose-uploads.php'],
+
+            // Music Stand PWA
+            '@^/musicstand$@' => ['file' => '/musicstand/index.php'],
+            '@^/musicstand/service/(\d+)$@' => ['file' => '/musicstand/index.php'],
+            '@^/musicstand/library$@' => ['file' => '/musicstand/index.php'],
+            '@^/musicstand/song/(\d+)$@' => ['file' => '/musicstand/index.php'],
+            '@^/musicstand/settings$@' => ['file' => '/musicstand/index.php'],
+            '@^/musicstand/api/annotations$@' => ['file' => '/musicstand/api/annotations.php'],
+            '@^/musicstand/api/songs$@' => ['file' => '/musicstand/api/songs.php'],
+
+            // New Admin Panel (adminnew)
+            '@^/adminnew$@' => ['file' => '/adminnew/index.php'],
+            // Services API routes (must come before generic patterns)
+            '@^/adminnew/services/api/songselect-search\.php$@' => ['file' => '/adminnew/services/api/songselect-search.php'],
+            '@^/adminnew/services/api/chord-pdf\.php$@' => ['file' => '/adminnew/services/api/chord-pdf.php'],
+            '@^/adminnew/services/api/([a-zA-Z0-9-]+)\.php$@' => ['file' => '/adminnew/services/api/$1.php'],
+            '@^/adminnew/services/api/([a-zA-Z0-9-]+)$@' => ['file' => '/adminnew/services/api/$1.php'],
+            // Generic API routes for other modules
+            '@^/adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)\.php$@' => ['file' => '/adminnew/$1/api/$2.php'],
+            '@^/adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)$@' => ['file' => '/adminnew/$1/api/$2.php'],
+            // Module/Page/ID pattern - try stub file first (MUST come before Module/Page pattern)
+            '@^/adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)/(\d+)$@' => ['file' => '/adminnew/$1/$2.php', 'params' => ['module' => 1, 'page' => 2, 'id' => 3], 'fallback' => '/adminnew/index.php'],
+            // Module/Page pattern - try stub file first
+            '@^/adminnew/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)$@' => ['file' => '/adminnew/$1/$2.php', 'params' => ['module' => 1, 'page' => 2], 'fallback' => '/adminnew/index.php'],
+            // Module only pattern - try stub file first
+            '@^/adminnew/([a-zA-Z0-9-]+)$@' => ['file' => '/adminnew/$1.php', 'params' => ['module' => 1], 'fallback' => '/adminnew/index.php'],
         ];
 
         // Check each rewrite rule
         foreach ($rewrites as $pattern => $config) {
             if (preg_match($pattern, $path, $matches)) {
-                $targetFile = $sitePath . $config['file'];
+                // Replace $1, $2, etc. in the file path with captured groups
+                $filePath = $config['file'];
+                if (strpos($filePath, '$') !== false) {
+                    $filePath = preg_replace_callback('/\$(\d+)/', function($m) use ($matches) {
+                        return $matches[$m[1]] ?? '';
+                    }, $filePath);
+                }
+
+                $targetFile = $sitePath . $filePath;
 
                 // Set query parameters if present
                 if (isset($config['params'])) {
@@ -182,11 +224,23 @@ class LocalValetDriver extends \Valet\Drivers\BasicValetDriver
                     }
                 }
 
+                // Try the target file first
                 if (file_exists($targetFile)) {
                     $_SERVER['SCRIPT_FILENAME'] = $targetFile;
-                    $_SERVER['SCRIPT_NAME'] = $config['file'];
+                    $_SERVER['SCRIPT_NAME'] = $filePath;
                     $_SERVER['DOCUMENT_ROOT'] = $sitePath;
                     return $targetFile;
+                }
+
+                // Try fallback file if specified
+                if (isset($config['fallback'])) {
+                    $fallbackFile = $sitePath . $config['fallback'];
+                    if (file_exists($fallbackFile)) {
+                        $_SERVER['SCRIPT_FILENAME'] = $fallbackFile;
+                        $_SERVER['SCRIPT_NAME'] = $config['fallback'];
+                        $_SERVER['DOCUMENT_ROOT'] = $sitePath;
+                        return $fallbackFile;
+                    }
                 }
             }
         }

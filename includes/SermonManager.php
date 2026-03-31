@@ -762,6 +762,12 @@ class SermonManager {
             $this->updateSeriesMessageCount($data['series_id']);
         }
 
+        // Notify search engines
+        try {
+            require_once __DIR__ . '/services/SearchIndexingNotifier.php';
+            (new SearchIndexingNotifier($this->pdo))->notifyContentChanged('/sermon/' . $data['slug']);
+        } catch (Exception $e) {}
+
         return $sermonId;
     }
 
@@ -809,6 +815,15 @@ class SermonManager {
 
         $stmt = $this->pdo->prepare("UPDATE sermons SET " . implode(', ', $fields) . " WHERE id = ?");
         $result = $stmt->execute($values);
+
+        // Notify search engines
+        try {
+            $slug = $data['slug'] ?? ($current['slug'] ?? null);
+            if ($slug) {
+                require_once __DIR__ . '/services/SearchIndexingNotifier.php';
+                (new SearchIndexingNotifier($this->pdo))->notifyContentChanged('/sermon/' . $slug);
+            }
+        } catch (Exception $e) {}
 
         // Update series message counts if series changed
         $newSeriesId = $data['series_id'] ?? $oldSeriesId;

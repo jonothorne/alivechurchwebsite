@@ -51,7 +51,43 @@ $page_description = $selectedTopic
     ? 'Sermons about ' . $selectedTopic['name'] . ' at ' . $site['name']
     : 'Browse sermons by topic at ' . $site['name'] . '.';
 
+// Topic Schema Markup for SEO
+$topicSchema = null;
+if ($selectedTopic && !empty($sermons)) {
+    $topicSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Sermons about ' . $selectedTopic['name'],
+        'description' => $page_description,
+        'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/sermons/topics?topic=' . urlencode($selectedTopic['slug']),
+        'numberOfItems' => count($sermons),
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => $site['name']
+        ],
+        'mainEntity' => [
+            '@type' => 'ItemList',
+            'itemListElement' => array_map(function($sermon, $index) {
+                return [
+                    '@type' => 'ListItem',
+                    'position' => $index + 1,
+                    'item' => [
+                        '@type' => 'VideoObject',
+                        'name' => $sermon['title'],
+                        'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/sermon/' . $sermon['slug']
+                    ]
+                ];
+            }, array_slice($sermons, 0, 10), range(0, min(9, count($sermons) - 1)))
+        ]
+    ];
+}
+
 include __DIR__ . '/../includes/header.php';
+
+// Output Topic Schema
+if ($topicSchema) {
+    echo '<script type="application/ld+json">' . json_encode($topicSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
+}
 ?>
 
 <section class="sermons-page">
