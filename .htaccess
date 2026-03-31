@@ -132,7 +132,9 @@ RewriteRule ^admin/people/households/?$ admin/people/households.php [L,QSA]
 RewriteRule ^admin/people/tags/?$ admin/people/tags.php [L,QSA]
 
 # New Admin Panel (path-based routing)
-RewriteRule ^adminnew/?$ adminnew/index.php [L,QSA]
+# Redirect /adminnew to /adminnew/ - internal rewrite doesn't work
+# reliably across .htaccess boundaries with DirectorySlash Off
+RewriteRule ^adminnew$ /adminnew/ [R=301,L]
 
 # New Admin - API endpoints (MUST come first before any module patterns)
 RewriteRule ^adminnew/([a-zA-Z0-9-]+)/api/([a-zA-Z0-9-]+)\.php$ adminnew/$1/api/$2.php [L,QSA]
