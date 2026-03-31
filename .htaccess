@@ -318,8 +318,8 @@ RewriteRule ^(.*)$ page.php [L,QSA]
 # Custom error pages (optional)
 ErrorDocument 404 /404.php
 
-# Prevent directory browsing
-Options -Indexes
+# Prevent directory browsing and content negotiation
+Options -Indexes -MultiViews
 
 # Security headers
 <IfModule mod_headers.c>

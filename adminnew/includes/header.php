@@ -192,9 +192,8 @@ if (!empty($current_user['preferences'])) {
         var savedTheme = <?= $user_theme ? "'" . htmlspecialchars($user_theme) . "'" : 'localStorage.getItem("admin_theme")'; ?>;
         if (savedTheme === 'dark' || savedTheme === 'light') {
             document.documentElement.setAttribute('data-theme', savedTheme);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
         }
+        // Default to light mode - dark mode not yet fully implemented
     })();
     </script>
 </head>
